@@ -1,0 +1,7 @@
+__pycache__/
+venv3/
+
+# Folder to be published
+output/
+
+tmp/
