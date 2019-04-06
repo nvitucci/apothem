@@ -23,7 +23,7 @@ AUTHOR_FEED_RSS = None
 LINKS = (('projects.apache.org', 'https://projects.apache.org'),)
 
 ICONS = [
-    ('github', 'https://nvitucci.github.io/apothem'),
+    ('github', 'https://github.com/nvitucci/apothem'),
 ]
 
 DEFAULT_PAGINATION = 4
