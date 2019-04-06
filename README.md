@@ -4,9 +4,11 @@ The project requires Python 3.
 
 - Initialize virtual environment.
 
-        python3 -m venv venv3
-        source venv3/bin/activate
-        pip install -r requirements.txt
+```bash
+python3 -m venv venv3
+source venv3/bin/activate
+pip install -r requirements.txt
+```
 
 - Run `pelican` in listen mode and autoreload.
 
