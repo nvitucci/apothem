@@ -24,6 +24,7 @@ LINKS = (('projects.apache.org', 'https://projects.apache.org'),)
 
 ICONS = [
     ('github', 'https://github.com/nvitucci/apothem'),
+    ('twitter', 'https://twitter.com/nvitucci'),
 ]
 
 DEFAULT_PAGINATION = 4
