@@ -26,3 +26,4 @@ The project requires Python 3.
     pelican-themes -i themes/alchemy/
     ```
 
+If the theme has alread been installed, execute `pelican-themes -r themes/alchemy/` first.

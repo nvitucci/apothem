@@ -16,8 +16,7 @@ RELATIVE_URLS = False
 
 FEED_DOMAIN = SITEURL
 FEED_ALL_ATOM = 'feeds/all.atom.xml'
-# TODO: uncomment when PR #74 for theme "alchemy" is merged to main codebase
-# CATEGORY_FEED_ATOM = 'feeds/{slug}.atom.xml'
+CATEGORY_FEED_ATOM = 'feeds/{slug}.atom.xml'
 
 DELETE_OUTPUT_DIRECTORY = True
 
