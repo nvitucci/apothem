@@ -1,2 +1,288 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM - projects</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/projects.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2019-04-06T00:00:00+01:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache Daffodil</title><link href="https://apothem.blog/apache-daffodil.html" rel="alternate"></link><published>2019-04-06T00:00:00+01:00</published><updated>2019-04-06T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-04-06:/apache-daffodil.html</id><summary type="html">&lt;p&gt;Let's start this blog with a project called &lt;a href="https://daffodil.apache.org"&gt;Apache Daffodil&lt;/a&gt;. &lt;/p&gt;</summary><content type="html">&lt;p&gt;Let's start this blog with a project called &lt;a href="https://daffodil.apache.org"&gt;Apache Daffodil&lt;/a&gt;. &lt;/p&gt;</content><category term="Big Data"></category><category term="library"></category><category term="XML"></category><category term="JSON"></category></entry></feed>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM - projects</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/projects.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2019-04-07T00:00:00+01:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache Daffodil</title><link href="https://apothem.blog/apache-daffodil.html" rel="alternate"></link><published>2019-04-07T00:00:00+01:00</published><updated>2019-04-07T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-04-07:/apache-daffodil.html</id><summary type="html">&lt;p&gt;Let's start the blog with &lt;a href="https://daffodil.apache.org"&gt;Apache Daffodil&lt;/a&gt;. Daffodil presents itself as &lt;em&gt;"an open-source implementation of the Data Format Description Language to convert between fixed format data and XML/JSON"&lt;/em&gt;; basically, by using Daffodil, one should be able to read data saved into an "obscure" format and convert them into an …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Let's start the blog with &lt;a href="https://daffodil.apache.org"&gt;Apache Daffodil&lt;/a&gt;. Daffodil presents itself as &lt;em&gt;"an open-source implementation of the Data Format Description Language to convert between fixed format data and XML/JSON"&lt;/em&gt;; basically, by using Daffodil, one should be able to read data saved into an "obscure" format and convert them into an easy-to-use format, provided that a schema of the original data format is available.&lt;/p&gt;
+&lt;p&gt;Daffodil's approach is different from using a data serialization format that includes a schema (e.g. Apache Avro or Protobuf): it is &lt;em&gt;descriptive&lt;/em&gt; rather than &lt;em&gt;prescriptive&lt;/em&gt;, meaning that it allows the data to be interpreted by using only additional information rather than additional software. Daffodil uses DFDL schemas to convert raw data into an abstract model called &lt;em&gt;infoset&lt;/em&gt;, which can be represented in a &lt;a href="https://daffodil.apache.org/infoset/"&gt;variety of formats&lt;/a&gt; including XML and JSON.&lt;/p&gt;
+&lt;p&gt;The main tasks that Daffodil can perform are &lt;em&gt;parsing&lt;/em&gt;, &lt;em&gt;unparsing&lt;/em&gt;, and &lt;em&gt;testing&lt;/em&gt; (plus a few more). Parsing is the task of converting data into one or more infosets, while unparsing is the reverse task of converting an infoset into the original format; testing uses the Test Data Markup Language (TDML) to check that parsing and unparsing work correctly, either as single tasks or in a chain. In order to parse or unparse data, we need to use a schema; some publicly available schemas can be found on &lt;a href="https://github.com/DFDLSchemas"&gt;Github&lt;/a&gt;, but most likely a custom schema needs to be developed for a specific dataset.&lt;/p&gt;
+&lt;p&gt;Let's see now how the whole machinery works. In the following I will assume that you are using a Linux environment and that you are starting from scratch. You should be able to follow the same steps on MacOS, while if you are using Windows you might need to perform some of the steps manually or to write some additional code (for instance, some Java or Python code to preprocess the files); as an alternative, you can just use the &lt;a href="https://github.com/nvitucci/apothem-resources"&gt;associated repo&lt;/a&gt; where you will find all the files you need.&lt;/p&gt;
+&lt;h3&gt;Example data&lt;/h3&gt;
+&lt;p&gt;Since I am a sort of astronomy geek, I used the &lt;a href="http://tdc-www.harvard.edu/catalogs/bsc5.html"&gt;Bright Star Catalogue&lt;/a&gt; as an example data source. The BSC is a catalog of more than 9,000 objects visible to the naked eye, delivered as a compressed fixed-length format file with many fields of different types (see the section &lt;em&gt;"Byte-by-byte Description of file: catalog"&lt;/em&gt; of the &lt;a href="http://tdc-www.harvard.edu/catalogs/bsc5.readme"&gt;bsc5.readme&lt;/a&gt; file). Since it does not use separators, we cannot parse it as a CSV-like file; we need to parse it in a different way. Let's &lt;a href="http://tdc-www.harvard.edu/catalogs/bsc5.dat.gz"&gt;download&lt;/a&gt; and decompress it:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ wget -q http://tdc-www.harvard.edu/catalogs/bsc5.dat.gz
+$ gunzip bsc5.dat.gz
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We can check how the file looks like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ head bsc5.dat
+   1          BD+44 4550      3 36042          46           000001.1+444022000509.9+451345114.44-16.88 6.70  +0.07 +0.08         A1Vn               -0.012-0.018      -018      195  4.2  21.6AC   3
+   2          BD-01 4525      6128569                       235956.2-010330000503.8-003011 98.33-61.14 6.29  +1.10 +1.02        gG9                 +0.045-0.060      +014V
+   3 33    PscBD-06 6357     281285721002I         Var?     000013.0-061601000520.1-054227 93.75-65.93 4.61  +1.04 +0.89 +0.54   K0IIIbCN-0.5       -0.009+0.089 +.014-006SB1O &amp;lt; 17  2.5   0.0     3*
+   4 86    PegBD+12 5063     87 917012004                   000033.8+125023000542.0+132346106.19-47.98 5.51  +0.90               G5III              +0.045-0.012      -002V?
+   5          BD+57 2865    123 21085          61  V640 Cas 000101.8+575245000616.0+582612117.03-03.92 5.96  +0.67 +0.20         G5V                +0.263+0.030 +.047-012V          0.8   1.4      *
+   6          CD-4914337    142214963      W                000108.4-493751000619.0-490430321.61-66.38 5.70  +0.52 +0.05         G1IV               +0.565-0.038 +.050+003SB         5.7   5.4      *
+   7 10    CasBD+63 2107    144 109782005                   000114.4+633822000626.5+641146118.06  1.75 5.59  -0.03 -0.19         B9III             e+0.008 0.000      -000V     153                 *
+   8          BD+28 4704    166 73743          69     33    000125.2+282811000636.8+290117111.26-32.83 6.13  +0.75 +0.33         K0V                +0.380-0.182 +.067-008V          2.6 158.6AB   4*
+   9          CD-23    4    2031660531003                   000143.0-233947000650.1-230627 52.21-79.14 6.18  +0.38 +0.05         A7V                +0.100-0.045      +003V
+  10          BD-18 6428    256147090                       000211.8-175639000718.2-172311 74.36-75.90 6.19  +0.14 +0.10         A6Vn               -0.018+0.036      -009V?    195                 *
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;A deeper inspection reveals that the file is not correctly formatted because not all the rows have the same length. In order to make writing a working DFDL schema easier, let's fix this by padding all the rows to a length of 197 (the sum of the lengths of all the fields as described in the &lt;code&gt;bsc5.readme&lt;/code&gt; file) and creating a new file:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ awk &lt;span class="s1"&gt;&amp;#39;{printf &amp;quot;%-197s\n&amp;quot;, $0}&amp;#39;&lt;/span&gt; bsc5.dat &amp;gt; bsc5_padded.dat
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Let's extract the first two lines into a sample file that we will use in the examples:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ head -n &lt;span class="m"&gt;2&lt;/span&gt; bsc5_padded.dat &amp;gt; bsc5_padded_sample.dat
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now we can continue with the DFDL schema definition.&lt;/p&gt;
+&lt;h3&gt;DFDL schema&lt;/h3&gt;
+&lt;p&gt;A basic DFDL schema should look like the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="cp"&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot;?&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;xs:schema&lt;/span&gt; &lt;span class="na"&gt;xmlns:xs=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://www.w3.org/2001/XMLSchema&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;xmlns:fn=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://www.w3.org/2005/xpath-functions&amp;quot;&lt;/span&gt;
+  &lt;span class="na"&gt;xmlns:dfdl=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://www.ogf.org/dfdl/dfdl-1.0/&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;xmlns:ex=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://example.com&amp;quot;&lt;/span&gt;
+  &lt;span class="na"&gt;targetNamespace=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://example.com&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;elementFormDefault=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;unqualified&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+  &lt;span class="nt"&gt;&amp;lt;xs:include&lt;/span&gt; &lt;span class="na"&gt;schemaLocation=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;org/apache/daffodil/xsd/DFDLGeneralFormat.dfdl.xsd&amp;quot;&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+
+  &lt;span class="nt"&gt;&amp;lt;xs:annotation&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;xs:appinfo&lt;/span&gt; &lt;span class="na"&gt;source=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://www.ogf.org/dfdl/&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;dfdl:format&lt;/span&gt; &lt;span class="na"&gt;ref=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;ex:GeneralFormat&amp;quot;&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/xs:appinfo&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/xs:annotation&amp;gt;&lt;/span&gt;
+
+  &lt;span class="nt"&gt;&amp;lt;xs:element&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;record&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;xs:string&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthKind=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;explicit&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:length=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;197&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthUnits=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;characters&amp;quot;&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/xs:schema&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Here we are declaring:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;an XML schema with a custom namespace &lt;code&gt;http://example.com&lt;/code&gt;;&lt;/li&gt;
+&lt;li&gt;the inclusion of a &lt;code&gt;DFDLGeneralFormat.dfdl.xsd&lt;/code&gt; XML schema;&lt;/li&gt;
+&lt;li&gt;an annotation that DFDL will use to determine some default values for the schema properties;&lt;/li&gt;
+&lt;li&gt;an element that represents the data being interpreted, along with its type and some DFDL properties.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Let's create a &lt;code&gt;v1&lt;/code&gt; folder and write this XML content into &lt;code&gt;v1/bsc.dfdl.xsd&lt;/code&gt;.&lt;/p&gt;
+&lt;h3&gt;Parsing&lt;/h3&gt;
+&lt;p&gt;In order to try and parse our sample data using this schema, we need to download the Apache Daffodil binaries from the &lt;a href="https://daffodil.apache.org/releases/"&gt;Daffodil releases page&lt;/a&gt;; at the time of writing, the most recent version is the &lt;a href="https://www.apache.org/dyn/closer.lua/incubator/daffodil/2.3.0/bin/apache-daffodil-2.3.0-incubating-bin.tgz"&gt;2.3.0&lt;/a&gt;. Let's decompress the .tgz file into our current folder and run the following command:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ apache-daffodil-2.3.0-incubating-bin/bin/daffodil parse -s v1/bsc.dfdl.xsd bsc5_padded_sample.dat
+&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot; ?&amp;gt;
+&amp;lt;ex:record xmlns:ex=&amp;quot;http://example.com&amp;quot;&amp;gt;   1          BD+44 4550      3 36042          46           000001.1+444022000509.9+451345114.44-16.88 6.70  +0.07 +0.08         A1Vn               -0.012-0.018      -018      195  4.2  21.6AC   3 &amp;lt;/ex:record&amp;gt;
+[warning] Left over data. Consumed 1576 bit(s) with at least 1592 bit(s) remaining.
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This is our first Daffodil infoset! Yes, we do get a warning, but we start to see where we are headed. Now let's take a closer look at the &lt;code&gt;xs:element&lt;/code&gt; we have declared in the schema:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;xs:element&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;record&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;xs:string&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthKind=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;explicit&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:length=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;197&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthUnits=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;characters&amp;quot;&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ul&gt;
+&lt;li&gt;its name is &lt;code&gt;record&lt;/code&gt;;&lt;/li&gt;
+&lt;li&gt;it is a &lt;code&gt;xs:string&lt;/code&gt;;&lt;/li&gt;
+&lt;li&gt;it has a predefined length (&lt;code&gt;dfdl:lengthKind="explicit"&lt;/code&gt;);&lt;/li&gt;
+&lt;li&gt;the length is 197 units (&lt;code&gt;dfdl:length="197"&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;the length is measured in characters (&lt;code&gt;dfdl:lengthUnits="characters"&lt;/code&gt;).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The parser correctly read the first 197 characters of our sample file, then it stopped. We need to specify that the file actually contains a &lt;em&gt;sequence&lt;/em&gt; of lines &lt;em&gt;separated&lt;/em&gt; by a newline, so we replace the &lt;code&gt;record&lt;/code&gt; definition with the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;...
+&lt;span class="nt"&gt;&amp;lt;xs:element&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;file&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;xs:complexType&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;xs:sequence&lt;/span&gt; &lt;span class="na"&gt;dfdl:separator=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%NL;&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:separatorPosition=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;postfix&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;xs:element&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;record&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;xs:string&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthKind=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;explicit&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:length=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;197&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthUnits=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;characters&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;maxOccurs=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;unbounded&amp;quot;&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/xs:sequence&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/xs:complexType&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/xs:element&amp;gt;&lt;/span&gt;
+...
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We wrapped the previous &lt;code&gt;record&lt;/code&gt; within a &lt;code&gt;xs:sequence&lt;/code&gt; and added a &lt;code&gt;maxOccurs="unbounded"&lt;/code&gt; property to declare that it can occur an unlimited number of times; the sequence is parsed by using newlines as postfix record separators and is part of a parent &lt;code&gt;xs:element&lt;/code&gt; called &lt;code&gt;file&lt;/code&gt;. Let's create a &lt;code&gt;bsc.dfdl.xsd&lt;/code&gt; file with the updated element in a &lt;code&gt;v2&lt;/code&gt; folder and run the parser again:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ apache-daffodil-2.3.0-incubating-bin/bin/daffodil parse -s v2/bsc.dfdl.xsd bsc5_padded_sample.dat
+&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot; ?&amp;gt;
+&amp;lt;ex:file xmlns:ex=&amp;quot;http://example.com&amp;quot;&amp;gt;
+  &amp;lt;record&amp;gt;   1          BD+44 4550      3 36042          46           000001.1+444022000509.9+451345114.44-16.88 6.70  +0.07 +0.08         A1Vn               -0.012-0.018      -018      195  4.2  21.6AC   3 &amp;lt;/record&amp;gt;
+  &amp;lt;record&amp;gt;   2          BD-01 4525      6128569                       235956.2-010330000503.8-003011 98.33-61.14 6.29  +1.10 +1.02        gG9                 +0.045-0.060      +014V                          &amp;lt;/record&amp;gt;
+&amp;lt;/ex:file&amp;gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Great, no more leftover bits! The records are not very informative though, since we haven't described the fields. We need to extend the definition further by stating that the &lt;code&gt;record&lt;/code&gt; is itself a sequence of fixed-length fields, each with its own name:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;...
+&lt;span class="nt"&gt;&amp;lt;xs:element&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;file&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;xs:complexType&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;xs:sequence&lt;/span&gt; &lt;span class="na"&gt;dfdl:separator=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%NL;&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:separatorPosition=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;postfix&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;xs:element&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;record&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;maxOccurs=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;unbounded&amp;quot;&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;xs:complexType&amp;gt;&lt;/span&gt;
+          &lt;span class="nt"&gt;&amp;lt;xs:sequence&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;xs:element&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;HR&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;xs:string&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthKind=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;explicit&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:length=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;4&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthUnits=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;characters&amp;quot;&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;xs:element&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Name&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;xs:string&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthKind=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;explicit&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:length=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;10&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthUnits=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;characters&amp;quot;&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;xs:element&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;DM&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;xs:string&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthKind=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;explicit&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:length=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;11&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthUnits=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;characters&amp;quot;&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;xs:element&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;HD&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;xs:string&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthKind=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;explicit&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:length=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;6&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthUnits=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;characters&amp;quot;&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+            ...
+          &lt;span class="nt"&gt;&amp;lt;/xs:sequence&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;/xs:complexType&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;/xs:element&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/xs:sequence&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/xs:complexType&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/xs:element&amp;gt;&lt;/span&gt;
+...
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The updated version can be found in the &lt;code&gt;bsc.dfdl.xsd&lt;/code&gt; file in the &lt;code&gt;v3&lt;/code&gt; folder. When we run the parser on the new file we get this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot; ?&amp;gt;
+&amp;lt;ex:file xmlns:ex=&amp;quot;http://example.com&amp;quot;&amp;gt;
+  &amp;lt;record&amp;gt;
+    &amp;lt;HR&amp;gt;   1&amp;lt;/HR&amp;gt;
+    &amp;lt;Name&amp;gt;          &amp;lt;/Name&amp;gt;
+    &amp;lt;DM&amp;gt;BD+44 4550 &amp;lt;/DM&amp;gt;
+    &amp;lt;HD&amp;gt;     3&amp;lt;/HD&amp;gt;
+    ...
+  &amp;lt;/record&amp;gt;
+  &amp;lt;record&amp;gt;
+    &amp;lt;HR&amp;gt;   2&amp;lt;/HR&amp;gt;
+    &amp;lt;Name&amp;gt;          &amp;lt;/Name&amp;gt;
+    &amp;lt;DM&amp;gt;BD-01 4525 &amp;lt;/DM&amp;gt;
+    &amp;lt;HD&amp;gt;     6&amp;lt;/HD&amp;gt;
+    ...
+  &amp;lt;/record&amp;gt;
+&amp;lt;/ex:file&amp;gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Let's run the parser again, now saving the result into &lt;code&gt;v3/bsc5_padded_sample.xml&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ apache-daffodil-2.3.0-incubating-bin/bin/daffodil parse -s v3/bsc.dfdl.xsd bsc5_padded_sample.dat &amp;gt; v3/bsc5_padded_sample.xml
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We are now ready to try Daffodil's unparsing capabilities.&lt;/p&gt;
+&lt;h3&gt;Unparsing&lt;/h3&gt;
+&lt;p&gt;Let's run the unparser on the infoset:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ apache-daffodil-2.3.0-incubating-bin/bin/daffodil unparse -s v3/bsc.dfdl.xsd v3/bsc5_padded_sample.xml
+   1          BD+44 4550      3 36042          46           000001.1+444022000509.9+451345114.44-16.88 6.70  +0.07 +0.08         A1Vn               -0.012-0.018      -018      195  4.2  21.6AC   3 
+   2          BD-01 4525      6128569                       235956.2-010330000503.8-003011 98.33-61.14 6.29  +1.10 +1.02        gG9                 +0.045-0.060      +014V
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The output looks very similar to our original &lt;code&gt;bsc5_padded_sample.dat&lt;/code&gt; file. Let's compare the two just to make sure:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ apache-daffodil-2.3.0-incubating-bin/bin/daffodil unparse -s v3/bsc.dfdl.xsd v3/bsc5_padded_sample.xml &amp;gt; v3/bsc5_padded_sample_unparsed.dat
+$ diff -s bsc5_padded_sample.dat v3/bsc5_padded_sample_unparsed.dat
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The &lt;code&gt;diff&lt;/code&gt; command reports that the two files are identical, which means that we successfully reconstructed the source file from the derived infoset; now, if we add a new record using the schema we created and then we unparse the infoset, we will get as an output an updated file in the original format. This doesn't mean, of course, that the updated file will be valid; we have been pretty shallow in defining the schema, so all we can be sure about is that the new file will have the same structure as the original file.&lt;/p&gt;
+&lt;h3&gt;Testing&lt;/h3&gt;
+&lt;p&gt;Daffodil provides a way to check that not only parsing and unparsing work as separate tasks, but also that a sequence of parsing and unparsing leave the original file unchanged; this is done by defining test cases using the Test Data Markup Language (&lt;a href="https://daffodil.apache.org/tdml/"&gt;TDML&lt;/a&gt;). In order to replicate the &lt;code&gt;diff&lt;/code&gt; test, we can create the &lt;code&gt;bsc.tdml&lt;/code&gt; file in the &lt;code&gt;v3&lt;/code&gt; folder as follows:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="cp"&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot;?&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;testSuite&lt;/span&gt; &lt;span class="na"&gt;suiteName=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Namespaces&amp;quot;&lt;/span&gt;
+  &lt;span class="na"&gt;xmlns:dfdl=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://www.ogf.org/dfdl/dfdl-1.0/&amp;quot;&lt;/span&gt;
+  &lt;span class="na"&gt;xmlns:tdml=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://www.ibm.com/xmlns/dfdl/testData&amp;quot;&lt;/span&gt;
+  &lt;span class="na"&gt;defaultRoundTrip=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;onePass&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+  &lt;span class="nt"&gt;&amp;lt;tdml:parserTestCase&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;bsc_test&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;root=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;file&amp;quot;&lt;/span&gt;
+    &lt;span class="na"&gt;model=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;bsc.dfdl.xsd&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;description=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Test parsing and unparsing&amp;quot;&lt;/span&gt;
+    &lt;span class="na"&gt;roundTrip=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;onePass&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;tdml:document&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;tdml:documentPart&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;file&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;../bsc5_padded_sample.dat&lt;span class="nt"&gt;&amp;lt;/tdml:documentPart&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/tdml:document&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;tdml:infoset&amp;gt;&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;lt;tdml:dfdlInfoset&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;file&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;bsc5_padded_sample.xml&lt;span class="nt"&gt;&amp;lt;/tdml:dfdlInfoset&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/tdml:infoset&amp;gt;&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;lt;/tdml:parserTestCase&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/testSuite&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Then, we run the following command:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ apache-daffodil-2.3.0-incubating-bin/bin/daffodil test v3/bsc.tdml
+Creating DFDL Test Suite for v3/bsc.tdml
+[Pass] bsc_test
+
+Total: 1, Pass: 1, Fail: 0, Not Found: 0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We can see that the "one-pass" chain (i.e. a chain of parsing the data, unparsing the result, and comparing the original data with the unparsed data) is successful, although we have "cheated" a little since we created the test infoset via a parsing task rather than manually. Anyway, this is a useful and quick way to test that the schema we are developing actually behaves as we expect in both directions.&lt;/p&gt;
+&lt;h3&gt;Improving the schema&lt;/h3&gt;
+&lt;p&gt;At this point we realize that we converted our fields to strings, but we haven't really added much. This may be all we need to feed the data into a pipeline for further cleaning and processing, but we can actually make the schema more useful. We could start with trimming the strings so that they can be used straight away; we can add some properties to the &lt;code&gt;dfdl:format&lt;/code&gt; element:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;dfdl:format&lt;/span&gt; &lt;span class="na"&gt;ref=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;ex:GeneralFormat&amp;quot;&lt;/span&gt;
+  &lt;span class="na"&gt;textStringPadCharacter=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%SP;&amp;quot;&lt;/span&gt;
+  &lt;span class="na"&gt;textPadKind=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;padChar&amp;quot;&lt;/span&gt;
+  &lt;span class="na"&gt;textTrimKind=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;padChar&amp;quot;&lt;/span&gt;
+  &lt;span class="na"&gt;textStringJustification=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;center&amp;quot;&lt;/span&gt;
+&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Here we are basically using space (&lt;code&gt;"%SP;"&lt;/code&gt;) as a character to pad with (while unparsing) or to trim (while parsing), and we pad/trim both sides of a string. If we try and parse again, we will get this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot; ?&amp;gt;
+&amp;lt;ex:file xmlns:ex=&amp;quot;http://example.com&amp;quot;&amp;gt;
+  &amp;lt;record&amp;gt;
+    &amp;lt;HR&amp;gt;1&amp;lt;/HR&amp;gt;
+    &amp;lt;Name&amp;gt;&amp;lt;/Name&amp;gt;
+    &amp;lt;DM&amp;gt;BD+44 4550&amp;lt;/DM&amp;gt;
+    &amp;lt;HD&amp;gt;3&amp;lt;/HD&amp;gt;
+    ...
+  &amp;lt;/record&amp;gt;
+  &amp;lt;record&amp;gt;
+    &amp;lt;HR&amp;gt;2&amp;lt;/HR&amp;gt;
+    &amp;lt;Name&amp;gt;&amp;lt;/Name&amp;gt;
+    &amp;lt;DM&amp;gt;BD-01 4525&amp;lt;/DM&amp;gt;
+    &amp;lt;HD&amp;gt;6&amp;lt;/HD&amp;gt;
+    ...
+  &amp;lt;/record&amp;gt;
+&amp;lt;/ex:file&amp;gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Anyway, if we save the result of the parsing to &lt;code&gt;bsc5_padded_sample.xml&lt;/code&gt; in the &lt;code&gt;v4&lt;/code&gt; folder and then define a new test &lt;code&gt;bsc.tdml&lt;/code&gt; using such result as the &lt;code&gt;tdml:dfdlInfoset&lt;/code&gt;, the test will fail. The reason of the difference between the original file and the unparsed file is that some fields, after being trimmed, could not be padded back correctly; we can see this more clearly by saving the result of the unparsing task to &lt;code&gt;v4/bsc5_padded_sample_unparsed.dat&lt;/code&gt; and comparing it to the original &lt;code&gt;bsc5_padded_sample.dat&lt;/code&gt; file.&lt;/p&gt;
+&lt;p&gt;In short, if we want to extend the schema and keep making use of the unparsing capability, we need to take extra care. It is better to start by extending the definition of one or more fields and checking the results after the change; for instance, if we want to interpret a field as a floating-point number and still be able to write the field back into its original format, we need to make sure that there are no padding, conversion, or precision errors.&lt;/p&gt;
+&lt;p&gt;Let's say that we want to interpret the field &lt;code&gt;HD&lt;/code&gt; as an integer (example in the &lt;code&gt;v5&lt;/code&gt; folder); then, we need to change its declaration from this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;xs:element&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;HD&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;xs:string&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthKind=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;explicit&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:length=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;6&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthUnits=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;characters&amp;quot;&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;to this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;xs:element&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;HD&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;xs:int&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthKind=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;explicit&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:length=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;6&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:lengthUnits=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;characters&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:textPadKind=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;padChar&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:textTrimKind=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;padChar&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:textNumberPadCharacter=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%SP;&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:textNumberJustification=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;right&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;dfdl:textNumberPattern=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;#&amp;quot;&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Although the &lt;code&gt;dfdl:textNumberPadCharacter&lt;/code&gt; and &lt;code&gt;dfdl:textNumberJustification&lt;/code&gt; are redundant, since they have the same default value in the &lt;a href="https://github.com/apache/incubator-daffodil/blob/master/daffodil-lib/src/main/resources/org/apache/daffodil/xsd/DFDLGeneralFormat.dfdl.xsd"&gt;DFDL General Format schema&lt;/a&gt;, it is clear that just changing the type from &lt;code&gt;xs:string&lt;/code&gt; to &lt;code&gt;xs:int&lt;/code&gt; is not enough. The important properties here are &lt;code&gt;dfdl:textPadKind&lt;/code&gt; and &lt;code&gt;dfdl:textTrimKind&lt;/code&gt; (since they are needed to instruct the parser and the unparser to actually use the pad character), and &lt;code&gt;dfdl:textNumberPattern&lt;/code&gt; (since otherwise the default pattern would include a group separator and convert a number string such as "123456" to "123,456"). The test in the &lt;code&gt;v5&lt;/code&gt; folder includes these changes, so it will run successfully.&lt;/p&gt;
+&lt;p&gt;If you try and run the parser on the full dataset using the schema defined in the &lt;code&gt;v5&lt;/code&gt; folder, you will get a warning about leftover data. The reason is that not all records contain a value for the &lt;code&gt;HD&lt;/code&gt; field that can be parsed as an integer; we should then allow the &lt;code&gt;HD&lt;/code&gt; element to be &lt;em&gt;nillable&lt;/em&gt; by adding the following attributes:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;nillable=&amp;quot;true&amp;quot; dfdl:nilKind=&amp;quot;literalValue&amp;quot; dfdl:nilValue=&amp;quot;%ES;&amp;quot;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;In this way, when the trimmed value equals an empty string, the element is considered null and no conversion is attempted. You can find the updated schema in the &lt;code&gt;v6&lt;/code&gt; folder.&lt;/p&gt;
+&lt;h3&gt;Using a different infoset representation&lt;/h3&gt;
+&lt;p&gt;So far we have parsed the data into XML, but what if we prefer JSON instead? We just need to add a &lt;code&gt;-I json&lt;/code&gt; in the parse/unparse command as follows:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ apache-daffodil-2.3.0-incubating-bin/bin/daffodil parse -s v3/bsc.dfdl.xsd -I json bsc5_padded_sample.dat
+{
+  &amp;quot;file&amp;quot;: {
+    &amp;quot;record&amp;quot;: [
+      {
+        &amp;quot;HR&amp;quot;: &amp;quot;   1&amp;quot;,
+        &amp;quot;Name&amp;quot;: &amp;quot;          &amp;quot;,
+        &amp;quot;DM&amp;quot;: &amp;quot;BD+44 4550 &amp;quot;,
+        &amp;quot;HD&amp;quot;: &amp;quot;     3&amp;quot;,
+        ...
+      },
+      {
+        &amp;quot;HR&amp;quot;: &amp;quot;   2&amp;quot;,
+        &amp;quot;Name&amp;quot;: &amp;quot;          &amp;quot;,
+        &amp;quot;DM&amp;quot;: &amp;quot;BD-01 4525 &amp;quot;,
+        &amp;quot;HD&amp;quot;: &amp;quot;     6&amp;quot;,
+        ...
+      }
+    ]
+  }
+}
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We can save the output to a .json file and process it further. JSON is not the only alternative: &lt;a href="https://daffodil.apache.org/infoset/"&gt;other representations&lt;/a&gt; are available as well.&lt;/p&gt;
+&lt;h3&gt;Conclusions&lt;/h3&gt;
+&lt;p&gt;We have touched on the main advantages of using Apache Daffodil and, without going too much into the details of DFDL, we created a schema to successfully parse and unparse scientific data. We only used the standalone binaries, but Daffodil is available also as a Java/Scala library and as an &lt;a href="https://nifi.apache.org/"&gt;Apache Nifi&lt;/a&gt; processor.&lt;/p&gt;
+&lt;p&gt;One thing to be aware of is the size of the source data: the binaries by default load the whole dataset in memory before starting to process it, which might result in a huge memory footprint or heap space errors. A possible solution in this case would be to split the source file into multiple files, which might be easier when the source is in a text format and harder if it is in a binary format; if this is not practical, it might be worth looking into the streaming capabilities of the Daffodil API.&lt;/p&gt;</content><category term="Big Data"></category><category term="library"></category><category term="XML"></category><category term="JSON"></category></entry></feed>
