@@ -13,8 +13,8 @@ TIMEZONE = 'Europe/London'
 DEFAULT_LANG = 'en'
 
 # Feed generation is usually not desired when developing
-FEED_ALL_ATOM = None
-CATEGORY_FEED_ATOM = None
+FEED_ALL_ATOM = 'feeds/all.atom.xml'
+CATEGORY_FEED_ATOM = 'feeds/{slug}.atom.xml'
 TRANSLATION_FEED_ATOM = None
 AUTHOR_FEED_ATOM = None
 AUTHOR_FEED_RSS = None
@@ -25,6 +25,7 @@ LINKS = (('projects.apache.org', 'https://projects.apache.org'),)
 ICONS = [
     ('github', 'https://github.com/nvitucci/apothem'),
     ('twitter', 'https://twitter.com/nvitucci'),
+    ('rss', FEED_ALL_ATOM),
 ]
 
 DEFAULT_PAGINATION = 4
