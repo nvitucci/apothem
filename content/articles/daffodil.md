@@ -279,6 +279,34 @@ If you try and run the parser on the full dataset using the schema defined in th
 
 In this way, when the trimmed value equals an empty string, the element is considered null and no conversion is attempted. You can find the updated schema in the `v6` folder.
 
+**UPDATE:** I extended the schema further by adding the same `xs:int` pattern to other elements, namely `HR`, `SAO`, and `FK5`. I also took the chance to experiment with the declaration of a new type, and things got interesting because of the peculiar behaviour I wanted to replicate.
+
+The new fields to parse/unparse represent the [right ascension](https://en.wikipedia.org/wiki/Right_ascension) (RA) and the [declination](https://en.wikipedia.org/wiki/Declination) (DE) in the *hours/minutes/seconds* and *degrees/arcminutes/arcseconds* formats respectively; if we exclude RA seconds, all the other fields encode integers as zero-padded two-digit strings. The interesting part is that these fields can be empty, so we cannot use the previous pattern: if we were just to trim the "0" character we would get a null value when the field is "00", which is actually a legitimate value. The solution is to skip the trimming part and designate a double space as the "null value", since the length of the empty field is still two. We can do this by using the property `dfdl:nilValue="%WSP;%WSP;"`, so that the new type looks like this:
+
+    :::xml
+    <xs:simpleType name="twoDigitIntOrNull" dfdl:lengthKind="explicit" dfdl:length="2" dfdl:lengthUnits="characters" dfdl:textPadKind="padChar" dfdl:textNumberPadCharacter="0" dfdl:nilKind="literalValue" dfdl:nilValue="%WSP;%WSP;">
+      <xs:restriction base="xs:int" />
+    </xs:simpleType>
+
+After defining this new type, the fields can be defined as in this example:
+
+    :::xml
+    <xs:element name="RAh1900" type="ex:twoDigitIntOrNull" nillable="true" />
+
+For the sake of completeness the combination `dfdl:textPadKind="padChar" dfdl:textNumberPadCharacter="0"` in this case can be replaced by `dfdl:textNumberPattern="00" dfdl:textStandardZeroRep="00"`, so that a value of zero can still be correctly unparsed; this is not always necessarily the case, as we can see with the RA *seconds* field that we have skipped. The field encodes a decimal number as a string with two digits to the left of the decimal point and one digit to the right, so if we were to use the same approach the zero value would be unparsed to "0000"; we can do this instead:
+
+    :::xml
+    <xs:simpleType name="fourDigitDoubleOrNull" dfdl:lengthKind="explicit" dfdl:length="4" dfdl:lengthUnits="characters" dfdl:textNumberPattern="00.0" dfdl:textStandardZeroRep="00.0" dfdl:nilKind="literalValue" dfdl:nilValue="%WSP;%WSP;%WSP;%WSP;">
+      <xs:restriction base="xs:double" />
+    </xs:simpleType>
+
+and define the RA seconds fields as in this example:
+
+    :::xml
+    <xs:element name="RAs1900" type="ex:fourDigitDoubleOrNull" nillable="true" />
+
+You can find the updated schema in the `v7` folder of the associated repository.
+
 ### Using a different infoset representation
 
 So far we have parsed the data into XML, but what if we prefer JSON instead? We just need to add a `-I json` in the parse/unparse command as follows:
