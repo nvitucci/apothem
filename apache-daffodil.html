@@ -330,6 +330,32 @@ Total: 1, Pass: 1, Fail: 0, Not Found: 0
 
 
 <p>In this way, when the trimmed value equals an empty string, the element is considered null and no conversion is attempted. You can find the updated schema in the <code>v6</code> folder.</p>
+<p><strong>UPDATE:</strong> I extended the schema further by adding the same <code>xs:int</code> pattern to other elements, namely <code>HR</code>, <code>SAO</code>, and <code>FK5</code>. I also took the chance to experiment with the declaration of a new type, and things got interesting because of the peculiar behaviour I wanted to replicate.</p>
+<p>The new fields to parse/unparse represent the <a href="https://en.wikipedia.org/wiki/Right_ascension">right ascension</a> (RA) and the <a href="https://en.wikipedia.org/wiki/Declination">declination</a> (DE) in the <em>hours/minutes/seconds</em> and <em>degrees/arcminutes/arcseconds</em> formats respectively; if we exclude RA seconds, all the other fields encode integers as zero-padded two-digit strings. The interesting part is that these fields can be empty, so we cannot use the previous pattern: if we were just to trim the "0" character we would get a null value when the field is "00", which is actually a legitimate value. The solution is to skip the trimming part and designate a double space as the "null value", since the length of the empty field is still two. We can do this by using the property <code>dfdl:nilValue="%WSP;%WSP;"</code>, so that the new type looks like this:</p>
+<div class="highlight"><pre><span></span><span class="nt">&lt;xs:simpleType</span> <span class="na">name=</span><span class="s">&quot;twoDigitIntOrNull&quot;</span> <span class="na">dfdl:lengthKind=</span><span class="s">&quot;explicit&quot;</span> <span class="na">dfdl:length=</span><span class="s">&quot;2&quot;</span> <span class="na">dfdl:lengthUnits=</span><span class="s">&quot;characters&quot;</span> <span class="na">dfdl:textPadKind=</span><span class="s">&quot;padChar&quot;</span> <span class="na">dfdl:textNumberPadCharacter=</span><span class="s">&quot;0&quot;</span> <span class="na">dfdl:nilKind=</span><span class="s">&quot;literalValue&quot;</span> <span class="na">dfdl:nilValue=</span><span class="s">&quot;%WSP;%WSP;&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;xs:restriction</span> <span class="na">base=</span><span class="s">&quot;xs:int&quot;</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/xs:simpleType&gt;</span>
+</pre></div>
+
+
+<p>After defining this new type, the fields can be defined as in this example:</p>
+<div class="highlight"><pre><span></span><span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;RAh1900&quot;</span> <span class="na">type=</span><span class="s">&quot;ex:twoDigitIntOrNull&quot;</span> <span class="na">nillable=</span><span class="s">&quot;true&quot;</span> <span class="nt">/&gt;</span>
+</pre></div>
+
+
+<p>For the sake of completeness the combination <code>dfdl:textPadKind="padChar" dfdl:textNumberPadCharacter="0"</code> in this case can be replaced by <code>dfdl:textNumberPattern="00" dfdl:textStandardZeroRep="00"</code>, so that a value of zero can still be correctly unparsed; this is not always necessarily the case, as we can see with the RA <em>seconds</em> field that we have skipped. The field encodes a decimal number as a string with two digits to the left of the decimal point and one digit to the right, so if we were to use the same approach the zero value would be unparsed to "0000"; we can do this instead:</p>
+<div class="highlight"><pre><span></span><span class="nt">&lt;xs:simpleType</span> <span class="na">name=</span><span class="s">&quot;fourDigitDoubleOrNull&quot;</span> <span class="na">dfdl:lengthKind=</span><span class="s">&quot;explicit&quot;</span> <span class="na">dfdl:length=</span><span class="s">&quot;4&quot;</span> <span class="na">dfdl:lengthUnits=</span><span class="s">&quot;characters&quot;</span> <span class="na">dfdl:textNumberPattern=</span><span class="s">&quot;00.0&quot;</span> <span class="na">dfdl:textStandardZeroRep=</span><span class="s">&quot;00.0&quot;</span> <span class="na">dfdl:nilKind=</span><span class="s">&quot;literalValue&quot;</span> <span class="na">dfdl:nilValue=</span><span class="s">&quot;%WSP;%WSP;%WSP;%WSP;&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;xs:restriction</span> <span class="na">base=</span><span class="s">&quot;xs:double&quot;</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/xs:simpleType&gt;</span>
+</pre></div>
+
+
+<p>and define the RA seconds fields as in this example:</p>
+<div class="highlight"><pre><span></span><span class="nt">&lt;xs:element</span> <span class="na">name=</span><span class="s">&quot;RAs1900&quot;</span> <span class="na">type=</span><span class="s">&quot;ex:fourDigitDoubleOrNull&quot;</span> <span class="na">nillable=</span><span class="s">&quot;true&quot;</span> <span class="nt">/&gt;</span>
+</pre></div>
+
+
+<p>You can find the updated schema in the <code>v7</code> folder of the associated repository.</p>
 <h3>Using a different infoset representation</h3>
 <p>So far we have parsed the data into XML, but what if we prefer JSON instead? We just need to add a <code>-I json</code> in the parse/unparse command as follows:</p>
 <div class="highlight"><pre><span></span>$ apache-daffodil-2.3.0-incubating-bin/bin/daffodil parse -s v3/bsc.dfdl.xsd -I json bsc5_padded_sample.dat
