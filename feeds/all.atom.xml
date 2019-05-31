@@ -1,5 +1,318 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/all.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2019-04-07T00:00:00+01:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache Daffodil</title><link href="https://apothem.blog/apache-daffodil.html" rel="alternate"></link><published>2019-04-07T00:00:00+01:00</published><updated>2019-04-07T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-04-07:/apache-daffodil.html</id><summary type="html">&lt;p&gt;Let's start the blog with &lt;a href="https://daffodil.apache.org"&gt;Apache Daffodil&lt;/a&gt;. Daffodil presents itself as &lt;em&gt;"an open-source implementation of the Data Format Description Language to convert between fixed format data and XML/JSON"&lt;/em&gt;; basically, by using Daffodil, one should be able to read data saved into an "obscure" format and convert them into an …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Let's start the blog with &lt;a href="https://daffodil.apache.org"&gt;Apache Daffodil&lt;/a&gt;. Daffodil presents itself as &lt;em&gt;"an open-source implementation of the Data Format Description Language to convert between fixed format data and XML/JSON"&lt;/em&gt;; basically, by using Daffodil, one should be able to read data saved into an "obscure" format and convert them into an easy-to-use format, provided that a schema of the original data format is available.&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/all.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2019-05-31T00:00:00+01:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache MetaModel</title><link href="https://apothem.blog/apache-metamodel.html" rel="alternate"></link><published>2019-05-31T00:00:00+01:00</published><updated>2019-05-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-05-31:/apache-metamodel.html</id><summary type="html">&lt;p&gt;It's a few years now since I've got the "&lt;a href="https://martinfowler.com/bliki/PolyglotPersistence.html"&gt;polyglot persistence&lt;/a&gt;" bug, first out of interest, then out of necessity. Given the abundance of data models and storage technologies available today, it is crucial to be aware of the strengths and weaknesses of each solution; furthermore, more often than not …&lt;/p&gt;</summary><content type="html">&lt;p&gt;It's a few years now since I've got the "&lt;a href="https://martinfowler.com/bliki/PolyglotPersistence.html"&gt;polyglot persistence&lt;/a&gt;" bug, first out of interest, then out of necessity. Given the abundance of data models and storage technologies available today, it is crucial to be aware of the strengths and weaknesses of each solution; furthermore, more often than not, an architecture that integrates several types of solutions is desirable or needed.&lt;/p&gt;
+&lt;p&gt;Leaving architectural questions aside, the main question in this polyglot scenario is: how to read and interpret data from disparate data sources in a reliable and uniform fashion? Is it better to create a data lake out of all the sources, or to take a federated approach where every query is dispatched to its appropriate database? The Apache project we will work with today, &lt;a href="https://metamodel.apache.org/"&gt;MetaModel&lt;/a&gt;, aims at providing tools to deal with such challenges.&lt;/p&gt;
+&lt;h3&gt;Main concepts&lt;/h3&gt;
+&lt;p&gt;Apache MetaModel provides &lt;em&gt;"a common interface for discovery, exploration of metadata and querying of different types of data sources"&lt;/em&gt;, which means that, through the use of concepts such as &lt;em&gt;datasets&lt;/em&gt;, &lt;em&gt;tables&lt;/em&gt;, and &lt;em&gt;columns&lt;/em&gt;, it exposes a basic abstraction common to all the data sources it can connect to; such abstract data model can then be queried using SQL as an "interlanguage". It is important to note that, as stated on the website, &lt;em&gt;"MetaModel &lt;em&gt;isn't&lt;/em&gt; a data mapping framework"&lt;/em&gt;; in other words its main intended usage is not to integrate different terminologies within the same domain, but rather to make it easy to add new datasources and to maximize the usage of metadata.&lt;/p&gt;
+&lt;p&gt;MetaModel is not the only library to provide tools for data integration. A similar approach is offered by other Apache projects such as &lt;a href="https://spark.apache.org/"&gt;Spark&lt;/a&gt; or &lt;a href="https://drill.apache.org/"&gt;Drill&lt;/a&gt;, but MetaModel might be better suited than such Big Data tools in scenarios where the main challenge is the diversity in the data and the schema variability rather than the scale; it can be plugged into an existing project with no additional setup and it offers many convenience methods to start using data sources (including plain CSV, JSON and XML files!) right away. Now let's see how to include MetaModel in a project, along with a few examples.&lt;/p&gt;
+&lt;p&gt;(Note: in some sections of this article I will make use of Docker for convenience. If you don't want to use Docker at the moment, you can just skip those sections; otherwise, make sure to &lt;a href="https://docs.docker.com/install/"&gt;install it&lt;/a&gt; in order to follow.)&lt;/p&gt;
+&lt;h3&gt;Setup&lt;/h3&gt;
+&lt;p&gt;The best way to get started with MetaModel is to include it as a Maven dependency. If you use an IDE such as Eclipse or IntelliJ, all you need to do is to create a new &lt;code&gt;apache-metamodel-example&lt;/code&gt; Maven project; otherwise, you can have a look &lt;a href="https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html"&gt;here&lt;/a&gt; to get an idea of how to install and work with Maven. In any case, as usual you will find a fully working project on the &lt;a href="https://github.com/nvitucci/apothem-resources"&gt;associated repository&lt;/a&gt; under the &lt;code&gt;apache-metamodel&lt;/code&gt; folder.&lt;/p&gt;
+&lt;p&gt;The content of the &lt;code&gt;pom.xml&lt;/code&gt; file should look like the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="cp"&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot;?&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;project&lt;/span&gt; &lt;span class="na"&gt;xmlns=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://maven.apache.org/POM/4.0.0&amp;quot;&lt;/span&gt;
+         &lt;span class="na"&gt;xmlns:xsi=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://www.w3.org/2001/XMLSchema-instance&amp;quot;&lt;/span&gt;
+         &lt;span class="na"&gt;xsi:schemaLocation=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;modelVersion&amp;gt;&lt;/span&gt;4.0.0&lt;span class="nt"&gt;&amp;lt;/modelVersion&amp;gt;&lt;/span&gt;
+
+     &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;groupId&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;apache-metamodel-example&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;0.0.1-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+
+     &lt;span class="nt"&gt;&amp;lt;dependencies&amp;gt;&lt;/span&gt;
+         &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+             &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.apache.metamodel&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+             &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;MetaModel-full&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+             &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;5.3.0&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+         &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+     &lt;span class="nt"&gt;&amp;lt;/dependencies&amp;gt;&lt;/span&gt;
+ &lt;span class="nt"&gt;&amp;lt;/project&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Once the &lt;code&gt;pom.xml&lt;/code&gt; file is saved, your IDE should download all the needed dependencies automatically; if you are doing everything manually, you can run the following command to trigger a first build:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ mvn package
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now let's create a new Java file called &lt;code&gt;MetaModelExample.java&lt;/code&gt; with the following content:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;package&lt;/span&gt; &lt;span class="nn"&gt;com.example&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;org.apache.metamodel.data.DataSet&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;org.apache.metamodel.data.Row&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;MetaModelExample&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;static&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;[])&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;MetaModelExample&lt;/span&gt; &lt;span class="n"&gt;example&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;MetamodelExample&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If you don't get any errors in the imports, the project is set up correctly.&lt;/p&gt;
+&lt;h3&gt;Examples&lt;/h3&gt;
+&lt;p&gt;We can now start to add a few different data sources to explore MetaModel's capabilities.&lt;/p&gt;
+&lt;h4&gt;CSV files&lt;/h4&gt;
+&lt;p&gt;Let's start with a simple CSV file. We can manually create an &lt;code&gt;example.csv&lt;/code&gt; file under &lt;code&gt;/tmp&lt;/code&gt; with the following content:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;project,language,completed
+Project1,Java,true
+Project2,Java,false
+Project3,Python,true
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Let's add the following method to the &lt;code&gt;MetaModelExample&lt;/code&gt; class:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;processCsv&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;filename&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;DataContext&lt;/span&gt; &lt;span class="n"&gt;dataContext&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;DataContextFactory&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;createCsvDataContext&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;File&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;filename&lt;/span&gt;&lt;span class="o"&gt;));&lt;/span&gt;
+    &lt;span class="n"&gt;List&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;tableNames&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dataContext&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getDefaultSchema&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;getTableNames&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+    &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;println&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Arrays&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toString&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tableNames&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toArray&lt;/span&gt;&lt;span class="o"&gt;()));&lt;/span&gt;
+
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;table&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;tableNames&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;get&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+
+    &lt;span class="n"&gt;DataSet&lt;/span&gt; &lt;span class="n"&gt;dataSet&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dataContext&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;query&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt;
+            &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;from&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;table&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+            &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;select&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;project&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+            &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;where&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;language&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;eq&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Java&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+            &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;and&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;completed&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;eq&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+            &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;execute&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Row&lt;/span&gt; &lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;dataSet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toRows&lt;/span&gt;&lt;span class="o"&gt;())&lt;/span&gt;
+        &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;println&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Arrays&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toString&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getValues&lt;/span&gt;&lt;span class="o"&gt;()));&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and then a call to this method within the main:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;...&lt;/span&gt;
+&lt;span class="n"&gt;MetaModelExample&lt;/span&gt; &lt;span class="n"&gt;example&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;MetamodelExample&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+&lt;span class="n"&gt;example&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;processCsv&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/tmp/example.csv&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;...&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If we run the main method, we will get the following output:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;[example.csv, default_table]
+[Project2]
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;What have we just done?&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;We created a &lt;code&gt;DataContext&lt;/code&gt; (more specifically, a &lt;code&gt;CsvDataContext&lt;/code&gt;) wrapping the CSV file.&lt;/li&gt;
+&lt;li&gt;We extracted the names of all the tables from the default schema and printed them; since the data source is a single file, the default schema is the only available schema and there is only one table (the second one being a convenience &lt;code&gt;default_table&lt;/code&gt; alias).&lt;/li&gt;
+&lt;li&gt;We ran a SQL query on the first table: we selected the &lt;code&gt;project&lt;/code&gt; column from the rows where the &lt;code&gt;language&lt;/code&gt; is &lt;code&gt;Java&lt;/code&gt; and &lt;code&gt;completed&lt;/code&gt; is &lt;code&gt;false&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;We printed the result of the query.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;So, in the end, we ran a SQL query on a CSV file! Perhaps even more interestingly, we can update the file with some update instructions by replacing the &lt;code&gt;DataContext&lt;/code&gt; class with &lt;code&gt;UpdateableDataContext&lt;/code&gt; and then adding the following lines:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;dataContext&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;executeUpdate&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;UpdateScript&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;run&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;UpdateCallback&lt;/span&gt; &lt;span class="n"&gt;callback&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;callback&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;update&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;table&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;value&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;completed&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;true&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;where&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;language&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;eq&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Java&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;execute&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="n"&gt;callback&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;insertInto&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;table&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+                &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;value&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;project&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;Project4&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+                &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;value&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;language&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;Java&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+                &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;value&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;completed&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;false&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+                &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;execute&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;});&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If we run again the previous query, we'll see that the file has been updated and &lt;code&gt;Project2&lt;/code&gt; is no longer listed, while &lt;code&gt;Project4&lt;/code&gt; is. Neat!&lt;/p&gt;
+&lt;h4&gt;XLSX files&lt;/h4&gt;
+&lt;p&gt;Now let's look at a slightly more complex example. Spreadsheets can contain more than one table, which makes them closer to a relational database; MetaModel can use XLSX (&lt;a href="https://en.wikipedia.org/wiki/Office_Open_XML"&gt;Office Open XML&lt;/a&gt; Workbook) files, which can be read and saved with open source tools such as LibreOffice and OpenOffice. You can find an example file on the repo, or create your own one. All we need to do is to add a method such as this one:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;processSpreadsheet&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;filename&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;DataContext&lt;/span&gt; &lt;span class="n"&gt;dataContext&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;DataContextFactory&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;createExcelDataContext&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;File&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;filename&lt;/span&gt;&lt;span class="o"&gt;));&lt;/span&gt;
+
+    &lt;span class="n"&gt;List&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;sheetNames&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dataContext&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getDefaultSchema&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;getTableNames&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;println&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Arrays&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toString&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sheetNames&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toArray&lt;/span&gt;&lt;span class="o"&gt;()));&lt;/span&gt;
+
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;sheetName&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;sheetNames&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;List&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;Column&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;sheetColumns&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dataContext&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getDefaultSchema&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;getTableByName&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sheetName&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;getColumns&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Column&lt;/span&gt; &lt;span class="n"&gt;col&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;sheetColumns&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+            &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;println&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;col&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getName&lt;/span&gt;&lt;span class="o"&gt;());&lt;/span&gt;
+
+        &lt;span class="n"&gt;DataSet&lt;/span&gt; &lt;span class="n"&gt;content&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dataContext&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;query&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;from&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sheetName&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;selectAll&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;execute&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Row&lt;/span&gt; &lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;content&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toRows&lt;/span&gt;&lt;span class="o"&gt;())&lt;/span&gt;
+            &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;println&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Arrays&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toString&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getValues&lt;/span&gt;&lt;span class="o"&gt;()));&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and include it in the main method as we did with the previous example. The output will show the name of all the sheets and, for each sheet, the names of its columns and its data. But there is more! Since in this example the first column of each sheet represents the ID of a customer, we can perform a join between the two sheets by adding the following lines:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;DataSet&lt;/span&gt; &lt;span class="n"&gt;joined&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dataContext&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;query&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt;
+        &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;from&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sheetNames&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;get&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;))&lt;/span&gt;
+        &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;innerJoin&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sheetNames&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;get&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="o"&gt;)).&lt;/span&gt;&lt;span class="na"&gt;on&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;id&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;id&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+        &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;select&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Names.surname&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;Products.amount&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+        &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;execute&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Row&lt;/span&gt; &lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;joined&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toRows&lt;/span&gt;&lt;span class="o"&gt;())&lt;/span&gt;
+    &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;println&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Arrays&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toString&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getValues&lt;/span&gt;&lt;span class="o"&gt;()));&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and the output will show the selected columns from the joined table.&lt;/p&gt;
+&lt;h4&gt;JSON files&lt;/h4&gt;
+&lt;p&gt;So far we have looked at tabular data, but what if we have data structured in a different format such as JSON? We may need to make some compromise between the expressivity of a non-relational model and the ease of use of a relational model, so in some cases we will need to "flatten out" some internal fields. Given instead a simple (and quite common) case, where the file is an array containing objects with the same fields like the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;
+    &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="nt"&gt;&amp;quot;id&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt;
+    &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="nt"&gt;&amp;quot;id&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt;
+    &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="nt"&gt;&amp;quot;id&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;12&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;we can write code similar to what we already wrote before and run SQL queries on JSON files:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;processJson&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;filename&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;DataContext&lt;/span&gt; &lt;span class="n"&gt;dataContext&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;DataContextFactory&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;createJsonDataContext&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;File&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;filename&lt;/span&gt;&lt;span class="o"&gt;));&lt;/span&gt;
+
+    &lt;span class="n"&gt;List&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;tableNames&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dataContext&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getDefaultSchema&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;getTableNames&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;println&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Arrays&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toString&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tableNames&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toArray&lt;/span&gt;&lt;span class="o"&gt;()));&lt;/span&gt;
+
+    &lt;span class="n"&gt;DataSet&lt;/span&gt; &lt;span class="n"&gt;dataSet&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dataContext&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;query&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;from&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tableNames&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;get&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;))&lt;/span&gt;
+            &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;select&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;id&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+            &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;where&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;value&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+            &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;gte&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+            &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;execute&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Row&lt;/span&gt; &lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;dataSet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toRows&lt;/span&gt;&lt;span class="o"&gt;())&lt;/span&gt;
+        &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;println&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Arrays&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toString&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getValues&lt;/span&gt;&lt;span class="o"&gt;()));&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;Databases&lt;/h4&gt;
+&lt;p&gt;By now we have understood how to "enhance" static files with querying capabilities, but what if we want to connect to a real datastore such as SQLite, PostgreSQL or MongoDB?&lt;/p&gt;
+&lt;p&gt;MetaModel provides connectors for a wide variety of databases, including a generic JDBC connector and a specific connector for MongoDB, which support schema creation and inserts/updates as well. Let's see an example with MongoDB:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;connectToMongo&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;UpdateableDataContext&lt;/span&gt; &lt;span class="n"&gt;dataContext&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;DataContextFactory&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;createMongoDbDataContext&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;
+            &lt;span class="s"&gt;&amp;quot;localhost&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;27017&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;test&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+
+    &lt;span class="n"&gt;List&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;tableNames&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dataContext&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getDefaultSchema&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;getTableNames&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tableNames&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;isEmpty&lt;/span&gt;&lt;span class="o"&gt;())&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;dataContext&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;executeUpdate&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;UpdateScript&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;run&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;UpdateCallback&lt;/span&gt; &lt;span class="n"&gt;callback&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                &lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;table&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;mytable&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+
+                &lt;span class="n"&gt;callback&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;createTable&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;callback&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getDataContext&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;getDefaultSchema&lt;/span&gt;&lt;span class="o"&gt;(),&lt;/span&gt; &lt;span class="n"&gt;table&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+                        &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;withColumn&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;color&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;ofType&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ColumnType&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;VARCHAR&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+                        &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;withColumn&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;size&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;ofType&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ColumnType&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;CHAR&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+                        &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;execute&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+                &lt;span class="n"&gt;callback&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;insertInto&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;table&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;value&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;color&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;red&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;value&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;size&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;L&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;execute&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+                &lt;span class="n"&gt;callback&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;insertInto&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;table&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;value&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;color&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;yellow&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;value&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;size&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;S&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;execute&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+            &lt;span class="o"&gt;}&lt;/span&gt;
+        &lt;span class="o"&gt;});&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="n"&gt;tableNames&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dataContext&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getDefaultSchema&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;getTableNames&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;println&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Arrays&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toString&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tableNames&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toArray&lt;/span&gt;&lt;span class="o"&gt;()));&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;In this example, we create a connection to a MongoDB instance running on &lt;code&gt;localhost:27017&lt;/code&gt; and we connect to the &lt;code&gt;test&lt;/code&gt; database (which might not exist yet); then, we get the list of "tables" (MongoDB collections) and, if none is found, we create a new one called &lt;code&gt;mytable&lt;/code&gt; with "columns" (MongoDB document fields) &lt;code&gt;color&lt;/code&gt; and &lt;code&gt;size&lt;/code&gt;; finally, we insert two example "records" (MongoDB documents) in the newly created collections. In order to make sure that this works, we can add a query section like in the previous examples:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;DataSet&lt;/span&gt; &lt;span class="n"&gt;dataSet&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dataContext&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;query&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;from&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tableNames&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;get&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;))&lt;/span&gt;
+        &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;selectAll&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt;
+        &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;where&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;size&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+        &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;eq&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;S&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+        &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;execute&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Row&lt;/span&gt; &lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;dataSet&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toRows&lt;/span&gt;&lt;span class="o"&gt;())&lt;/span&gt;
+    &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;println&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Arrays&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toString&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getValues&lt;/span&gt;&lt;span class="o"&gt;()));&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and we can see that only the second record will be printed, with the values we inserted plus an additional value (the &lt;code&gt;_id&lt;/code&gt; field that MongoDB creates automatically if none is supplied).&lt;/p&gt;
+&lt;p&gt;In order to run this example, the easiest solution is to download and run a MongoDB Docker image:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ docker pull mongo
+$ docker run -p &lt;span class="m"&gt;27017&lt;/span&gt;:27017 mongo
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If this is not an option, MongoDB can be installed manually following the instructions &lt;a href="https://www.mongodb.com/download-center/community"&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Other data sources can be connected to and used in a similar fashion.&lt;/p&gt;
+&lt;h3&gt;Apache Membrane&lt;/h3&gt;
+&lt;p&gt;A fantastic and little known addition to MetaModel is its subproject &lt;a href="https://cwiki.apache.org/confluence/display/METAMODEL/Membrane"&gt;Membrane&lt;/a&gt;. Membrane is essentially a &lt;a href="https://en.wikipedia.org/wiki/Representational_state_transfer"&gt;RESTful&lt;/a&gt; Web service that can be used to manage and query different data sources &lt;em&gt;live&lt;/em&gt; by adding them to &lt;em&gt;"tenants"&lt;/em&gt; (which are basically independent contexts, each with its own connections to any number of data sources).&lt;/p&gt;
+&lt;p&gt;In order to run Membrane, we should clone the repository and build it:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ git clone https://github.com/apache/metamodel-membrane
+$ mvn clean install
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Since it has many dependencies, the building process will take a while. When the build is ready, we can run it with the following command:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ java -server -jar undertow/target/membrane-undertow-server.jar
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The server will now run on port 8080, and we can submit requests to it by using &lt;code&gt;curl&lt;/code&gt; or any REST client such as &lt;a href="https://www.getpostman.com/"&gt;Postman&lt;/a&gt;, &lt;a href="https://install.advancedrestclient.com/"&gt;Advanced REST Client&lt;/a&gt;, &lt;a href="https://restlet.com/modules/client/"&gt;Restlet client&lt;/a&gt;, etc.&lt;/p&gt;
+&lt;hr&gt;
+&lt;blockquote&gt;
+&lt;p&gt;If you are using Docker, you can use cool API description tools such as &lt;a href="https://swagger.io/tools/swagger-ui/"&gt;Swagger UI&lt;/a&gt; or &lt;a href="https://github.com/Rebilly/ReDoc"&gt;ReDoc&lt;/a&gt;; they can both be easily installed with &lt;code&gt;docker pull&lt;/code&gt; and run with &lt;code&gt;docker run&lt;/code&gt;, making sure to use a port different from 8080 where Membrane is running, and to use the Membrane-generated &lt;code&gt;swagger.json&lt;/code&gt; as the API specification:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ docker pull redocly/redoc
+$ docker run -p &lt;span class="m"&gt;8000&lt;/span&gt;:80 -e &lt;span class="nv"&gt;SPEC_URL&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;http://localhost:8080/swagger.json redocly/redoc
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;In order to call Membrane from such services, though, &lt;a href="https://en.wikipedia.org/wiki/Cross-origin_resource_sharing#Request_headers"&gt;CORS headers&lt;/a&gt; have to be enabled; I sent a &lt;a href="https://github.com/apache/metamodel-membrane/pull/22"&gt;pull request&lt;/a&gt; to add this capability with the help of a &lt;code&gt;MEMBRANE_ENABLE_CORS&lt;/code&gt; variable, so that the server can be run with:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ &lt;span class="nv"&gt;MEMBRANE_ENABLE_CORS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nb"&gt;true&lt;/span&gt; java -server -jar undertow/target/membrane-undertow-server.jar
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/blockquote&gt;
+&lt;hr&gt;
+&lt;p&gt;Having the server running, we can try out the endpoints. Let's first of all create a tenant:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ curl -X PUT http://localhost:8080/my-tenant
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We will now add our first data source, for instance a CSV file:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ curl -H &lt;span class="s2"&gt;&amp;quot;Content-Type: application/json&amp;quot;&lt;/span&gt; -X PUT http://localhost:8080/my-tenant/my-csv -d &lt;span class="s1"&gt;&amp;#39;&lt;/span&gt;
+&lt;span class="s1"&gt;{&lt;/span&gt;
+&lt;span class="s1"&gt;  &amp;quot;type&amp;quot;: &amp;quot;csv&amp;quot;,&lt;/span&gt;
+&lt;span class="s1"&gt;  &amp;quot;resource&amp;quot;: &amp;quot;/tmp/example.csv&amp;quot;,&lt;/span&gt;
+&lt;span class="s1"&gt;  &amp;quot;quote-char&amp;quot;: &amp;quot;\&amp;quot;&amp;quot;,&lt;/span&gt;
+&lt;span class="s1"&gt;  &amp;quot;separator-char&amp;quot;: &amp;quot;,&amp;quot;,&lt;/span&gt;
+&lt;span class="s1"&gt;  &amp;quot;escape-char&amp;quot;: &amp;quot;\\&amp;quot;,&lt;/span&gt;
+&lt;span class="s1"&gt;  &amp;quot;encoding&amp;quot;: &amp;quot;UTF-8&amp;quot;&lt;/span&gt;
+&lt;span class="s1"&gt;}&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and we will get a response like the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;quot;type&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;datasource&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;quot;name&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;my-csv&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;quot;tenant&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;my-tenant&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;quot;updateable&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;quot;query_uri&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/my-tenant/my-csv/query&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;quot;schemas&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+      &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;quot;name&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;information_schema&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;quot;uri&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/my-tenant/my-csv/s/information_schema&amp;quot;&lt;/span&gt;
+      &lt;span class="p"&gt;},&lt;/span&gt;
+      &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;quot;name&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;resources&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;quot;uri&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/my-tenant/my-csv/s/resources&amp;quot;&lt;/span&gt;
+      &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;which will show some endpoints we can explore. The &lt;code&gt;/my-tenant/my-csv/s/information_schema&lt;/code&gt; endpoint, for instance, shows the structure of a generic information schema; the &lt;code&gt;/my-tenant/my-csv/s/resources&lt;/code&gt; endpoint, instead, shows the tables of our datasource - we can, for instance, get the metadata on the CSV file by exploring the &lt;code&gt;/my-tenant/my-csv/s/resources/t/default_table&lt;/code&gt; endpoint. The most interesting endpoint, though, is probably &lt;code&gt;/my-tenant/my-csv/query&lt;/code&gt;: we can submit a query as a GET parameter and immediately get results. For instance, we can call:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ curl -G &lt;span class="s2"&gt;&amp;quot;http://localhost:8080/my-tenant/my-csv/query&amp;quot;&lt;/span&gt; --data-urlencode &lt;span class="s2"&gt;&amp;quot;sql=SELECT * FROM default_table&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;to get the whole content of the example CSV file. (Here, &lt;code&gt;-G&lt;/code&gt; and &lt;code&gt;--data-urlencode&lt;/code&gt; are used in order to URL-encode the &lt;code&gt;sql&lt;/code&gt; parameter and still send it as a &lt;code&gt;GET&lt;/code&gt; request.)&lt;/p&gt;
+&lt;h3&gt;Conclusions&lt;/h3&gt;
+&lt;p&gt;MetaModel is an easy-to-use and extendable tool that makes it easier to integrate multiple data sources programmatically (even at runtime, with its subproject Membrane). I believe it is worth exploring further since it can simplify what is usually a chore, although most likely it cannot easily scale.&lt;/p&gt;
+&lt;p&gt;Just a note of caution: since the project is at a very early stage, there are no strict security measures and the Membrane API could expose information that should not be exposed. Take this into account before releasing anything!&lt;/p&gt;</content><category term="Big Data"></category><category term="library"></category><category term="database"></category></entry><entry><title>Apache Daffodil</title><link href="https://apothem.blog/apache-daffodil.html" rel="alternate"></link><published>2019-04-07T00:00:00+01:00</published><updated>2019-04-07T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-04-07:/apache-daffodil.html</id><summary type="html">&lt;p&gt;Let's start the blog with &lt;a href="https://daffodil.apache.org"&gt;Apache Daffodil&lt;/a&gt;. Daffodil presents itself as &lt;em&gt;"an open-source implementation of the Data Format Description Language to convert between fixed format data and XML/JSON"&lt;/em&gt;; basically, by using Daffodil, one should be able to read data saved into an "obscure" format and convert them into an …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Let's start the blog with &lt;a href="https://daffodil.apache.org"&gt;Apache Daffodil&lt;/a&gt;. Daffodil presents itself as &lt;em&gt;"an open-source implementation of the Data Format Description Language to convert between fixed format data and XML/JSON"&lt;/em&gt;; basically, by using Daffodil, one should be able to read data saved into an "obscure" format and convert them into an easy-to-use format, provided that a schema of the original data format is available.&lt;/p&gt;
 &lt;p&gt;Daffodil's approach is different from using a data serialization format that includes a schema (e.g. Apache Avro or Protobuf): it is &lt;em&gt;descriptive&lt;/em&gt; rather than &lt;em&gt;prescriptive&lt;/em&gt;, meaning that it allows the data to be interpreted by using only additional information rather than additional software. Daffodil uses DFDL schemas to convert raw data into an abstract model called &lt;em&gt;infoset&lt;/em&gt;, which can be represented in a &lt;a href="https://daffodil.apache.org/infoset/"&gt;variety of formats&lt;/a&gt; including XML and JSON.&lt;/p&gt;
 &lt;p&gt;The main tasks that Daffodil can perform are &lt;em&gt;parsing&lt;/em&gt;, &lt;em&gt;unparsing&lt;/em&gt;, and &lt;em&gt;testing&lt;/em&gt; (plus a few more). Parsing is the task of converting data into one or more infosets, while unparsing is the reverse task of converting an infoset into the original format; testing uses the Test Data Markup Language (TDML) to check that parsing and unparsing work correctly, either as single tasks or in a chain. In order to parse or unparse data, we need to use a schema; some publicly available schemas can be found on &lt;a href="https://github.com/DFDLSchemas"&gt;Github&lt;/a&gt;, but most likely a custom schema needs to be developed for a specific dataset.&lt;/p&gt;
 &lt;p&gt;Let's see now how the whole machinery works. In the following I will assume that you are using a Linux environment and that you are starting from scratch. You should be able to follow the same steps on MacOS, while if you are using Windows you might need to perform some of the steps manually or to write some additional code (for instance, some Java or Python code to preprocess the files); as an alternative, you can just use the &lt;a href="https://github.com/nvitucci/apothem-resources"&gt;associated repo&lt;/a&gt; where you will find all the files you need.&lt;/p&gt;
