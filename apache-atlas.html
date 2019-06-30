@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>  Apache Atlas | APOTHEM
+</title>
+  <link rel="canonical" href="https://apothem.blog/apache-atlas.html">
+
+
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/pygments/default.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/theme.css">
+
+  <link rel="alternate" type="application/atom+xml" title="Full Atom Feed"
+        href="https://apothem.blog/feeds/all.atom.xml">
+  <link rel="alternate" type="application/atom+xml" title="Categories Atom Feed"
+        href="https://apothem.blog/feeds/{slug}.atom.xml">  
+  <meta name="description" content="Since I have always been interested in (and mainly working with) Semantic Web technologies and knowledge engineering, metadata is a topic I care about quite a lot. "Metadata" means "data about data", which practically speaking may include the format, the source, the purpose, the author, the creation date, and many …">
+
+
+</head>
+
+<body>
+  <header class="header">
+    <div class="container">
+<div class="row">
+    <div class="col-sm-4">
+      <a href="https://apothem.blog/">
+        <img class="img-fluid rounded" src=https://apothem.blog/images/profile.svg width=180 alt="APOTHEM">
+      </a>
+    </div>
+  <div class="col-sm-8">
+    <h1 class="title"><a href="https://apothem.blog/">APOTHEM</a></h1>
+      <p class="text-muted">Apache Project(s) of the month</p>
+      <ul class="list-inline">
+          <li class="list-inline-item"><a href="https://projects.apache.org" target="_blank">projects.apache.org</a></li>
+              <li class="list-inline-item text-muted">|</li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/about.html">About</a></li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/faq.html">FAQ</a></li>
+            <li class=" list-inline-item text-muted">|</li>
+          <li class="list-inline-item"><a class="fa fa-github" href="https://github.com/nvitucci/apothem" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-twitter" href="https://twitter.com/nvitucci" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-rss" href="feeds/all.atom.xml" target="_blank"></a></li>
+      </ul>
+  </div>
+</div>    </div>
+  </header>
+
+  <div class="main">
+    <div class="container">
+      <h1>  Apache Atlas
+</h1>
+      <hr>
+  <article class="article">
+    <header>
+      <ul class="list-inline">
+        <li class="list-inline-item text-muted" title="2019-06-30T00:00:00+01:00">
+          <i class="fa fa-clock-o"></i>
+          dom 30 giugno 2019
+        </li>
+        <li class="list-inline-item">
+          <i class="fa fa-folder-open-o"></i>
+          <a href="https://apothem.blog/category/projects.html">projects</a>
+        </li>
+          <li class="list-inline-item">
+            <i class="fa fa-files-o"></i>
+              <a href="https://apothem.blog/tag/big-data.html">#Big Data</a>          </li>
+      </ul>
+    </header>
+    <div class="content">
+      <p>Since I have always been interested in (and mainly working with) Semantic Web technologies and knowledge engineering, metadata is a topic I care about quite a lot. "Metadata" means "data about data", which practically speaking may include the format, the source, the purpose, the author, the creation date, and many other aspects of some given data. Many languages and tools have been proposed to make the inclusion and management of metadata easier, but only recently there has been a renewed interest in metadata from a Big Data perspective; in fact, given the vast number of data sources and processes that a Big Data architecture might have to manage, a scalable tool for metadata management and governance was much needed. Enter <a href="https://atlas.apache.org/">Apache Atlas</a>.</p>
+<p>From its homepage:</p>
+<blockquote>
+<p>Apache Atlas provides open metadata management and governance capabilities for organizations to build a catalog of their data assets, classify and govern these assets and provide collaboration capabilities around these data assets for data scientists, analysts and the data governance team.</p>
+</blockquote>
+<p>In short, Atlas is a tool that adds metadata management features (descriptions, classifications, controlled vocabularies, tagging, search, and so on) to a Hadoop-based data environment (such as Hive) through bridges, hooks (for automated updates) and an easy-to-use UI.</p>
+<p>So far, Atlas has mostly been used and deployed with the <a href="https://hortonworks.com/products/data-platforms/hdp/">Hortonworks Data Platform (HDP)</a> and, recently, added to AWS as an <a href="https://aws.amazon.com/blogs/big-data/metadata-classification-lineage-and-discovery-using-apache-atlas-on-amazon-emr/">Amazon EMR template</a>. Since I wanted to look at its latest version and install it <em>vanilla</em>, this article will be different from the previous ones in that I will write about a more widely used project and, being it a bit lacking in documentation, my main focus will be to make it work rather than providing many examples. I will then take the chance to touch on another nice Apache project, <a href="https://bigtop.apache.org/">Bigtop</a>.</p>
+<p>In the following, I will use CentOS 7 as the underlying operating system. If you are not already using it, you can either install it on a <a href="https://wiki.centos.org/HowTos/Virtualization/Introduction">virtual machine</a> using your favourite VM tool, or use a <a href="https://docs.docker.com/install/linux/docker-ce/centos/">Docker image</a>.</p>
+<h3>Installing Bigtop</h3>
+<p><a href="https://bigtop.apache.org/">Apache Bigtop</a> is a comprehensive Big Data package, offered both as a downloadable archive and as an RPM repository. Its intent is to make the installation and management of Big Data tools easy. Although being actively developed, it is not as up-to-date as other commercially-backed solutions; this means that Bigtop components are often a few versions behind their standalone counterparts. Since this article is about Atlas, this will not be an issue as we do not need the latest version of any of the components.</p>
+<p>In order to use Bigtop and to have Hadoop and Hive available as CentOS RPM packages, we need to install the Bigtop repository by downloading the <a href="http://apache.mirror.anlx.net/bigtop/bigtop-1.4.0/repos/centos7/bigtop.repo">bigtop.repo</a> file into the <code>/etc/yum.repos.d/</code> folder on our CentOS environment.</p>
+<h3>Installing Hadoop and Hive</h3>
+<p>Our first step will be to have a working Hadoop environment, with Hive on top of it. With the Bigtop repository now available, we can install Hive (and the other components it depends on) with:</p>
+<div class="highlight"><pre><span></span>$ yum install hive hive-metastore hive-server2
+</pre></div>
+
+
+<p>Since this is a "development" installation, we will use the embedded Derby database as Hive metastore; for a production environment, a fully-fledged DBMS such as PostgreSQL or MySQL should be used. </p>
+<p>In order to initialize the metastore, we need to:</p>
+<ol>
+<li>Find where the Derby DB will be located; it should be <code>/var/lib/hive/metastore/metastore_db</code>, or anyway the value of the <code>javax.jdo.option.ConnectionURL</code> property in the <code>hive-site.xml</code> file (likely located under <code>/etc/hive/conf/</code>).</li>
+<li>
+<p>Go to the parent folder of the metastore root folder (in our case <code>/var/lib/hive/</code>) and run the following command as root:</p>
+<div class="highlight"><pre><span></span>$ /usr/lib/hive/bin/schematool -initSchema -dbType derby
+</pre></div>
+
+
+<p>If we want to use another user or to change the location of the Derby DB, we need to update the <code>hive-site.xml</code> accordingly.</p>
+</li>
+<li>
+<p>Launch <code>hive-metastore</code> and <code>hive-server2</code> with:</p>
+<div class="highlight"><pre><span></span>$ sudo service hive-metastore start
+$ sudo service hive-hiveserver2 start
+</pre></div>
+
+
+</li>
+<li>
+<p>Try running a Hive query, for instance:</p>
+<div class="highlight"><pre><span></span>sudo hive -e <span class="s2">&quot;show databases;&quot;</span>
+</pre></div>
+
+
+<p>(<code>sudo</code> is necessary if we performed the previous operations as root).</p>
+</li>
+</ol>
+<p>If everything ran successfully, we should see something like this:</p>
+<div class="highlight"><pre><span></span>OK
+default
+Time taken: 8.111 seconds, Fetched: 1 row(s)
+</pre></div>
+
+
+<p>surrounded by other log lines. If the Hive query fails with an exception related to access rights, we might need to execute the following operations:</p>
+<div class="highlight"><pre><span></span>$ hdfs dfs -mkdir /tmp
+$ hdfs dfs -mkdir /user/hive/warehouse
+$ hdfs dfs -chmod g+w /tmp
+$ hdfs dfs -chmod g+w /user/hive/warehouse
+</pre></div>
+
+
+<h3>Installing Atlas</h3>
+<h4>Java environment</h4>
+<p>In order to install Atlas, let's first of all make sure that Java 8 is installed:</p>
+<div class="highlight"><pre><span></span>$ java -version
+</pre></div>
+
+
+<p>It is important here that the Java version be 8, because full compatibility with newer versions is not guaranteed. If the installed version of Java is not 8, we need to install Java 8 alongside; then, in the following, we have to replace the <code>java</code> command with the full path of the Java 8 binary (e.g. <code>/usr/lib/jvm/java-1.8.0/jre/bin/java</code>) or take advantage of the <code>alternatives</code> tool (as explained for example <a href="https://access.redhat.com/documentation/en-US/JBoss_Communications_Platform/5.1/html/Platform_Installation_Guide/sect-Setting_the_Default_JDK.html">here</a>).</p>
+<p>After this, let's make sure that the environment variable <code>JAVA_HOME</code> is initialized:</p>
+<div class="highlight"><pre><span></span>$ <span class="nb">echo</span> <span class="nv">$JAVA_HOME</span>
+</pre></div>
+
+
+<p>If the result is an empty string, we need to initialize it with a command such as this one:</p>
+<div class="highlight"><pre><span></span>$ <span class="nb">export</span> <span class="nv">JAVA_HOME</span><span class="o">=</span>/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.212.b04-0.el7_6.x86_64/
+</pre></div>
+
+
+<p>using whatever path leads to our Java SDK (<em>not</em> JRE) home folder. It is not needed to add this line to the <code>.bashrc</code> file if all the steps are performed from the same terminal within the same session, although it would be still useful to do so.</p>
+<h4>Installing Maven</h4>
+<p>Let's now install Maven, which is roughly to Java what <code>pip</code> is to Python. The version we will need in order to build Atlas correctly is at least the 3.5, and likely the CentOS 7 distribution we are using only provides an older version. If that is the case (and it can be found out by trying to run <code>sudo yum install maven</code> and looking at the version of the package), we need to:</p>
+<ol>
+<li>
+<p>Add the <a href="https://wiki.centos.org/AdditionalResources/Repositories/SCL">Software Collections repository</a> to <code>yum</code>:</p>
+<div class="highlight"><pre><span></span>$ sudo yum install centos-release-scl
+</pre></div>
+
+
+</li>
+<li>
+<p>Install the <code>rh-maven35</code> package:</p>
+<div class="highlight"><pre><span></span>$ sudo yum install rh-maven35
+</pre></div>
+
+
+</li>
+<li>
+<p>Open a shell in the environment containing the installed package:</p>
+<div class="highlight"><pre><span></span>$ scl <span class="nb">enable</span> rh-maven35 bash
+</pre></div>
+
+
+</li>
+<li>
+<p>Check the Maven version:</p>
+<div class="highlight"><pre><span></span>$ mvn --version
+</pre></div>
+
+
+</li>
+</ol>
+<p>If everything worked correctly, Maven 3.5 should be available in the new shell. This environment will only be needed to compile and build Atlas, after which it can be closed.</p>
+<h4>Building Atlas</h4>
+<p>Now we can download Atlas from the <a href="https://www.apache.org/dyn/closer.cgi/atlas/2.0.0/apache-atlas-2.0.0-sources.tar.gz">download page</a> and decompress it in a folder of our choice:</p>
+<div class="highlight"><pre><span></span>$ tar zxvf apache-atlas-2.0.0-sources.tar.gz
+$ <span class="nb">cd</span> apache-atlas-sources-2.0.0
+</pre></div>
+
+
+<p>In order to run Atlas in the simplest way, we will build it with both Apache Cassandra (the underlying database) and Apache Solr (the underlying search engine) as embedded services; in a production environment, the two services would be configured each on its own. Let's run this command:</p>
+<div class="highlight"><pre><span></span>$ mvn clean -DskipTests package -Pdist,embedded-cassandra-solr
+</pre></div>
+
+
+<p>and wait until it completes successfully, after which we run:</p>
+<div class="highlight"><pre><span></span>$ <span class="nb">cd</span> ..
+$ tar zxvf apache-atlas-sources-2.0.0/distro/target/apache-atlas-2.0.0-server.tar.gz
+$ <span class="nb">cd</span> apache-atlas-2.0.0
+</pre></div>
+
+
+<p>We are now in the main Atlas folder, from which we can launch the Atlas server:</p>
+<div class="highlight"><pre><span></span>$ bin/atlas_start.py
+</pre></div>
+
+
+<p>then open the browser on <code>http://localhost:21000</code> and presto! Atlas is available and ready for our experiments.</p>
+<p><img src="images/atlas_login.png" alt="Atlas login" class="img-fluid" /></p>
+<p>The default credentials are <code>admin / admin</code>.</p>
+<p><img src="images/atlas_main.png" alt="Atlas main screen" class="img-fluid" /></p>
+<p>We can also run a "quick start" script from the same folder and populate Atlas with some example data:</p>
+<div class="highlight"><pre><span></span>$ bin/quick_start.py
+</pre></div>
+
+
+<p>and start exploring the tool.</p>
+<h4>Installing the Hive hook</h4>
+<p>Now that Atlas is up and running, we need to let Atlas "know" about Hive metadata and listen for changes. First of all, let's make the Hive hook available to Atlas:</p>
+<div class="highlight"><pre><span></span>$ tar zxvf ../apache-atlas-sources-2.0.0/distro/target/apache-atlas-2.0.0-hive-hook.tar.gz
+$ mv apache-atlas-hive-hook-2.0.0/* .
+$ rm -rf apache-atlas-hive-hook-2.0.0/
+</pre></div>
+
+
+<p>Because of <a href="https://issues.apache.org/jira/browse/ATLAS-3172">a bug</a>, some JAR files need to be copied manually:</p>
+<div class="highlight"><pre><span></span>$ cp ../apache-atlas-sources-2.0.0/webapp/target/atlas-webapp-2.0.0/WEB-INF/lib/jackson-jaxrs-base-2.9.8.jar hook/hive/atlas-hive-plugin-impl
+$ cp ../apache-atlas-sources-2.0.0/webapp/target/atlas-webapp-2.0.0/WEB-INF/lib/jackson-jaxrs-json-provider-2.9.8.jar hook/hive/atlas-hive-plugin-impl
+$ cp ../apache-atlas-sources-2.0.0/webapp/target/atlas-webapp-2.0.0/WEB-INF/lib/jackson-module-jaxb-annotations-2.9.8.jar hook/hive/atlas-hive-plugin-impl
+</pre></div>
+
+
+<p>This is enough from Atlas side; now we need to configure Hive as well so that it knows where to send data to Atlas when a change occurs. First of all we need to initialize the <code>HIVE_HOME</code> environment variable:</p>
+<div class="highlight"><pre><span></span>$ <span class="nb">export</span> <span class="nv">HIVE_HOME</span><span class="o">=</span>/usr/lib/hive
+</pre></div>
+
+
+<p>Then, we need to copy (or create a symlink to) the Atlas configuration files into Hive configuration folder:</p>
+<div class="highlight"><pre><span></span>$ cp conf/atlas-application.properties /etc/hive/conf/
+</pre></div>
+
+
+<p>and to update the <code>/etc/hive/conf/hive-site.xml</code> adding this content:</p>
+<div class="highlight"><pre><span></span><span class="nt">&lt;property&gt;</span>
+    <span class="nt">&lt;name&gt;</span>hive.exec.post.hooks<span class="nt">&lt;/name&gt;</span>
+    <span class="nt">&lt;value&gt;</span>org.apache.atlas.hive.hook.HiveHook<span class="nt">&lt;/value&gt;</span>
+<span class="nt">&lt;/property&gt;</span>
+</pre></div>
+
+
+<p>then, finally, to add the following line to <code>/etc/hive/conf/hive-env.sh</code>:</p>
+<div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">HIVE_AUX_JARS_PATH</span><span class="o">=</span>&lt;atlas package&gt;/hook/hive
+</pre></div>
+
+
+<h3>Hive-Atlas connection</h3>
+<p>We are now ready to check that Hive can actually send information to Atlas. Let's launch the Hive CLI (with <code>sudo</code> if the Derby DB was initialized as root):</p>
+<div class="highlight"><pre><span></span>$ hive
+</pre></div>
+
+
+<p>and run the following commands to create a <code>test</code> database and a <code>people</code> table with some data:</p>
+<div class="highlight"><pre><span></span><span class="n">hive</span><span class="o">&gt;</span> <span class="k">create</span> <span class="k">database</span> <span class="n">test</span><span class="p">;</span>
+<span class="n">hive</span><span class="o">&gt;</span> <span class="n">use</span> <span class="n">test</span><span class="p">;</span>
+<span class="n">hive</span><span class="o">&gt;</span> <span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">people</span> <span class="p">(</span><span class="n">name</span> <span class="n">string</span><span class="p">,</span> <span class="n">surname</span> <span class="n">string</span><span class="p">,</span> <span class="n">age</span> <span class="nb">int</span><span class="p">,</span> <span class="n">person_id</span> <span class="nb">int</span><span class="p">);</span>
+<span class="n">hive</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="k">TABLE</span> <span class="n">people</span> <span class="k">VALUES</span> <span class="p">(</span><span class="ss">&quot;John&quot;</span><span class="p">,</span> <span class="ss">&quot;Smith&quot;</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+<span class="n">hive</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="k">TABLE</span> <span class="n">people</span> <span class="k">VALUES</span> <span class="p">(</span><span class="ss">&quot;Jack&quot;</span><span class="p">,</span> <span class="ss">&quot;Smith&quot;</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+<span class="n">hive</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="k">TABLE</span> <span class="n">people</span> <span class="k">VALUES</span> <span class="p">(</span><span class="ss">&quot;Jane&quot;</span><span class="p">,</span> <span class="ss">&quot;Doe&quot;</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>
+</pre></div>
+
+
+<p>and let's run a <code>SELECT</code> query to check that the data has been inserted correctly:</p>
+<div class="highlight"><pre><span></span><span class="n">hive</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">people</span><span class="p">;</span>
+</pre></div>
+
+
+<p>If everything ran correctly, we should see something like this:</p>
+<div class="highlight"><pre><span></span>OK
+Jane    Doe     22      3
+John    Smith   30      1
+Jack    Smith   32      2
+Time taken: 9.918 seconds, Fetched: 3 row(s)
+</pre></div>
+
+
+<p>Now we can add another table with some more data:</p>
+<div class="highlight"><pre><span></span><span class="n">hive</span><span class="o">&gt;</span> <span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">documents</span> <span class="p">(</span><span class="n">person_id</span> <span class="nb">int</span><span class="p">,</span> <span class="n">doc_id</span> <span class="nb">int</span><span class="p">,</span> <span class="n">country</span> <span class="n">string</span><span class="p">);</span>
+<span class="n">hive</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="k">TABLE</span> <span class="n">documents</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="ss">&quot;US&quot;</span><span class="p">);</span>
+<span class="n">hive</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="k">TABLE</span> <span class="n">documents</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="ss">&quot;US&quot;</span><span class="p">);</span>
+<span class="n">hive</span><span class="o">&gt;</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="k">TABLE</span> <span class="n">documents</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="ss">&quot;UK&quot;</span><span class="p">);</span>
+</pre></div>
+
+
+<p>and, finally, a new table from a <code>JOIN</code> across the two tables just created:</p>
+<div class="highlight"><pre><span></span><span class="n">hive</span><span class="o">&gt;</span> <span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">joined</span> <span class="k">AS</span> <span class="p">(</span><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">people</span> <span class="k">JOIN</span> <span class="n">documents</span> <span class="k">USING</span> <span class="p">(</span><span class="n">person_id</span><span class="p">));</span>
+</pre></div>
+
+
+<p>As a check, we can run another <code>SELECT</code> query:</p>
+<div class="highlight"><pre><span></span><span class="n">hive</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">people</span><span class="p">;</span>
+</pre></div>
+
+
+<p>and verify that the output is like the following:</p>
+<div class="highlight"><pre><span></span><span class="n">OK</span>
+<span class="mi">3</span>       <span class="n">Jane</span>    <span class="n">Doe</span>     <span class="mi">22</span>      <span class="mi">3</span>       <span class="n">UK</span>
+<span class="mi">1</span>       <span class="n">John</span>    <span class="n">Smith</span>   <span class="mi">30</span>      <span class="mi">1</span>       <span class="n">US</span>
+<span class="mi">2</span>       <span class="n">Jack</span>    <span class="n">Smith</span>   <span class="mi">32</span>      <span class="mi">2</span>       <span class="n">US</span>
+<span class="n">Time</span> <span class="n">taken</span><span class="p">:</span> <span class="mi">0</span><span class="p">.</span><span class="mi">297</span> <span class="n">seconds</span><span class="p">,</span> <span class="n">Fetched</span><span class="p">:</span> <span class="mi">3</span> <span class="k">row</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+</pre></div>
+
+
+<p>During this session we might receive this warning:</p>
+<div class="highlight"><pre><span></span>(WARNING: Hive-on-MR is deprecated in Hive 2 and may not be available in the future versions. Consider using a different execution engine (i.e. spark, tez) or using Hive 1.X releases.)
+</pre></div>
+
+
+<p>We do not need to worry about it, because this is related to the way Hive runs. From the point of view of Atlas, it does not make any difference.</p>
+<p>Let's check if Atlas is aware of these changes by selecting <code>hive_table</code> in the <code>Search by type</code> dropdown menu.</p>
+<p><img src="images/atlas_hive_tables.png" alt="Atlas - Hive tables" class="img-fluid" /></p>
+<p>The three tables can be seen in the main section, and for each of the tables we can see useful information such as their schema:</p>
+<p><img src="images/atlas_schema.png" alt="Atlas - Schema" class="img-fluid" /></p>
+<p>and their lineage:</p>
+<p><img src="images/atlas_lineage.png" alt="Atlas - Lineage" class="img-fluid" /></p>
+<p>which we will expand upon in another article.</p>
+<h3>Conclusions</h3>
+<p>In this article we saw how to install Apache Atlas from scratch (a not-so-straightforward process) and how to configure Hive hooks in order to automatically send changes in the Hive metastore to Atlas. In another article we will look a bit deeper into Atlas capabilities and we will see how to configure hooks to more data sources.</p>
+    </div>
+  </article>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+<div class="row">
+  <ul class="col-sm-6 list-inline">
+    <li class="list-inline-item"><a href="https://apothem.blog/archives.html">Archives</a></li>
+    <li class="list-inline-item"><a href="https://apothem.blog/categories.html">Categories</a></li>
+      <li class="list-inline-item"><a href="https://apothem.blog/tags.html">Tags</a></li>
+  </ul>
+  <p class="col-sm-6 text-sm-right text-muted">
+    Generated by <a href="https://github.com/getpelican/pelican" target="_blank">Pelican</a>
+    / <a href="https://github.com/nairobilug/pelican-alchemy" target="_blank">&#x2728;</a>
+  </p>
+</div>    </div>
+  </footer>
+</body>
+
+</html>
