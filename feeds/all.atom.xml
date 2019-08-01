@@ -1,5 +1,282 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/all.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2019-06-30T00:00:00+01:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache Atlas</title><link href="https://apothem.blog/apache-atlas.html" rel="alternate"></link><published>2019-06-30T00:00:00+01:00</published><updated>2019-06-30T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-06-30:/apache-atlas.html</id><summary type="html">&lt;p&gt;Since I have always been interested in (and mainly working with) Semantic Web technologies and knowledge engineering, metadata is a topic I care about quite a lot. "Metadata" means "data about data", which practically speaking may include the format, the source, the purpose, the author, the creation date, and many …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Since I have always been interested in (and mainly working with) Semantic Web technologies and knowledge engineering, metadata is a topic I care about quite a lot. "Metadata" means "data about data", which practically speaking may include the format, the source, the purpose, the author, the creation date, and many other aspects of some given data. Many languages and tools have been proposed to make the inclusion and management of metadata easier, but only recently there has been a renewed interest in metadata from a Big Data perspective; in fact, given the vast number of data sources and processes that a Big Data architecture might have to manage, a scalable tool for metadata management and governance was much needed. Enter &lt;a href="https://atlas.apache.org/"&gt;Apache Atlas&lt;/a&gt;.&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/all.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2019-07-31T00:00:00+01:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache Atlas (part 2)</title><link href="https://apothem.blog/apache-atlas-part-2.html" rel="alternate"></link><published>2019-07-31T00:00:00+01:00</published><updated>2019-07-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-07-31:/apache-atlas-part-2.html</id><summary type="html">&lt;p&gt;Since Atlas is a fairly large and complex project, one article was definitely not enough to explore all of its capabilities. Building on the &lt;a href="https://apothem.blog/apache-atlas.html"&gt;previous article&lt;/a&gt;, we will explore classifications and glossary, the REST API, and two more sources of lineage information (Spark and Kafka).&lt;/p&gt;
+&lt;h2&gt;Classification&lt;/h2&gt;
+&lt;p&gt;Let's start with classification …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Since Atlas is a fairly large and complex project, one article was definitely not enough to explore all of its capabilities. Building on the &lt;a href="https://apothem.blog/apache-atlas.html"&gt;previous article&lt;/a&gt;, we will explore classifications and glossary, the REST API, and two more sources of lineage information (Spark and Kafka).&lt;/p&gt;
+&lt;h2&gt;Classification&lt;/h2&gt;
+&lt;p&gt;Let's start with classification. In our previous example we created some Hive tables containing information about people and their documents, and now we'll put ourselves in the shoes of a data steward: How can we describe the data contained in a table, or even in a single column? How can we explain that some data should not be visible to everybody, or that their value is higher, or that they are covered by a SLA?&lt;/p&gt;
+&lt;p&gt;Let's take the &lt;code&gt;people&lt;/code&gt; table we created before, which looks like the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;surname&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;age&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;person_id&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt;
+&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="c1"&gt;------|---------|-----|-----------|&lt;/span&gt;
+&lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;Jane&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt;     &lt;span class="n"&gt;Doe&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt;  &lt;span class="mi"&gt;22&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt;         &lt;span class="mi"&gt;3&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt;
+&lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;John&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt;   &lt;span class="n"&gt;Smith&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt;  &lt;span class="mi"&gt;30&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt;         &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt;
+&lt;span class="p"&gt;...&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We might want to say that this table contains &lt;a href="https://en.wikipedia.org/wiki/Personal_data"&gt;personally identifying information (PII)&lt;/a&gt;, so that other teams can create policies to control the access to such information. In Atlas, doing this is a matter of creating the classification itself:&lt;/p&gt;
+&lt;p&gt;&lt;img src="images/atlas_classification.png" alt="Atlas classification" class="img-fluid" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="images/atlas_classification_create.png" alt="Atlas classification" class="img-fluid" /&gt;&lt;/p&gt;
+&lt;p&gt;and assigning it to the items we want to classify:&lt;/p&gt;
+&lt;p&gt;&lt;img src="images/atlas_classification_before.png" alt="Atlas classification" class="img-fluid" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="images/atlas_classification_add.png" alt="Atlas classification" class="img-fluid" /&gt;&lt;/p&gt;
+&lt;p&gt;An interesting thing we will see is that this classification automatically extends to the &lt;code&gt;joined&lt;/code&gt; table, and that is where Atlas really shines: the classification is propagated thanks to the lineage information that relates all these tables.&lt;/p&gt;
+&lt;p&gt;&lt;img src="images/atlas_classification_after.png" alt="Atlas classification" class="img-fluid" /&gt;&lt;/p&gt;
+&lt;p&gt;Let's create another classification, &lt;code&gt;External&lt;/code&gt;, with a &lt;code&gt;Group&lt;/code&gt; string attribute:&lt;/p&gt;
+&lt;p&gt;&lt;img src="images/atlas_classification_attr.png" alt="Atlas classification" class="img-fluid" /&gt;&lt;/p&gt;
+&lt;p&gt;This classification is meant to capture the provenance of a certain dataset, and for this reason it is not to be automatically propagated through the lineage (if a certain group is responsible for a dataset, it is not necessarily responsible for derived data). We can prevent the propagation of a classification by clicking on the "Propagate" checkbox when assigning the classification to an item:&lt;/p&gt;
+&lt;p&gt;&lt;img src="images/atlas_classification_noprop.png" alt="Atlas classification" class="img-fluid" /&gt;&lt;/p&gt;
+&lt;h2&gt;Glossary&lt;/h2&gt;
+&lt;p&gt;We have seen how to classify the metadata and how the classifications take advantage of lineage information. What if we want to attach tags describing data and metadata according to a specific terminology? In pretty much the same way we have created classifications, we can create one or more &lt;em&gt;glossaries&lt;/em&gt; to group together &lt;em&gt;terms&lt;/em&gt; and &lt;em&gt;categories&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;In the "Glossary" section we need first of all to create a glossary, for instance &lt;code&gt;Identification&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;&lt;img src="images/atlas_glossary_add.png" alt="Atlas glossary" class="img-fluid" /&gt;&lt;/p&gt;
+&lt;p&gt;Then, we create a category by clicking on the "Terms/Category" selector and selecting "Create category" from the glossary contextual menu:&lt;/p&gt;
+&lt;p&gt;&lt;img src="images/atlas_glossary_cat.png" alt="Atlas glossary" class="img-fluid" /&gt;&lt;/p&gt;
+&lt;p&gt;Now, in the same way, we switch to "Terms" and create the two terms &lt;code&gt;National ID card&lt;/code&gt; and &lt;code&gt;Passport&lt;/code&gt;. If we click on any of the terms, we will see the term's detail page where we can assign classifications and categories. We can even create relationships between terms, for instance to say that a &lt;code&gt;National ID card&lt;/code&gt; is somewhat related to a &lt;code&gt;Passport&lt;/code&gt; via a &lt;code&gt;seeAlso&lt;/code&gt; relation. After this, we can finally assign the terms to any metadata item, for instance to the &lt;code&gt;document&lt;/code&gt; table, by clicking on the plus sign under the "Term" column in the search view:&lt;/p&gt;
+&lt;p&gt;&lt;img src="images/atlas_terms_assign.png" alt="Atlas glossary" class="img-fluid" /&gt;&lt;/p&gt;
+&lt;p&gt;For further information, the &lt;a href="https://atlas.apache.org/Glossary.html"&gt;Glossary page&lt;/a&gt; on the Atlas website is very detailed and shows some useful examples.&lt;/p&gt;
+&lt;h2&gt;The REST API&lt;/h2&gt;
+&lt;p&gt;Another very strong feature that Atlas offers is its rich REST API. Basically, everything that can be done via the UI can be done via the API as well. A &lt;a href="https://atlas.apache.org/2.0.0/api/v2/ui/index.html"&gt;Swagger interactive interface&lt;/a&gt; is available on the website for easier exploration; here we will touch on the main sections with a couple examples.&lt;/p&gt;
+&lt;p&gt;As usual, the following API calls can be performed with any client (curl, Postman, etc.). In the following, every call is run via &lt;code&gt;curl&lt;/code&gt; with JSON as the response content type and with the correct access credentials (which, as a default, are &lt;code&gt;admin / admin&lt;/code&gt;); in other words, an API call such as &lt;code&gt;/api/atlas/v2/types/typedefs&lt;/code&gt; is performed with:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ curl -u admin:admin -H &lt;span class="s2"&gt;&amp;quot;Accept: application/json&amp;quot;&lt;/span&gt; http://localhost:21000/api/atlas/v2/types/typedefs
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If the client is based on the command line, a tool such as &lt;code&gt;json_pp&lt;/code&gt; is recommended in order to pretty-print the JSON response.&lt;/p&gt;
+&lt;h4&gt;Types&lt;/h4&gt;
+&lt;p&gt;To list all entity types:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/types/typedefs
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Description of a single type by type name (e.g. &lt;code&gt;hive_table&lt;/code&gt;):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/types/typedef/name/hive_table
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;Search&lt;/h4&gt;
+&lt;p&gt;Metadata entities can be searched in multiple ways. The basic search endpoint has to be used with at least one parameter, for instance the type name:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/search/basic?typeName=hive_table
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;or a full-text query:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/search/basic?typeName=hive_table&amp;amp;query=people
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;or a classification:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/search/basic?classification=PII
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If we had deleted any entities (e.g. if we dropped any Hive tables), we would see a few entities with a field &lt;code&gt;"status": "DELETED"&lt;/code&gt;; in order to exclude such entities we should add the &lt;code&gt;excludeDeletedEntities=true&lt;/code&gt; parameter:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/search/basic?typeName=hive_table&amp;amp;query=people&amp;amp;excludeDeletedEntities=true
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;An advanced search endpoint using Atlas DSL is available as well, but we will not cover it here. Further information on the DSL can be found &lt;a href="https://atlas.apache.org/Search-Advanced.html"&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;h4&gt;Single entity&lt;/h4&gt;
+&lt;p&gt;The previous endpoints returned a (possibly empty) list of entities as a result. If we want to explore a single entity, we have to extract its &lt;code&gt;guid&lt;/code&gt; from any of the previous calls. Let's say we are interested in the entity with &lt;code&gt;"guid": "ad9915a8-fdab-4570-964f-8f636a8da20c"&lt;/code&gt;; a rich description of the entity can be obtained by calling this endpoint:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/entity/guid/ad9915a8-fdab-4570-964f-8f636a8da20c
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We might be interested in the entity's classifications only:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/entity/guid/ad9915a8-fdab-4570-964f-8f636a8da20c/classifications
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;or in its lineage:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/lineage/ad9915a8-fdab-4570-964f-8f636a8da20c
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Since the lineage is a graph, the &lt;code&gt;relations&lt;/code&gt; object will contain a list of all the relationships where each relationship is an edge connecting an entity to another:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;quot;relations&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+    &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;fromEntityId&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;edefa7cb-c19d-4955-9da5-22e43786ced5&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;relationshipId&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;33591207-ac0d-4374-91a2-5fadd71d6f0c&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;toEntityId&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;9a7712d5-31f8-403a-92ea-77fad0d59e61&amp;quot;&lt;/span&gt;
+    &lt;span class="p"&gt;},&lt;/span&gt;
+    &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;fromEntityId&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;ad9915a8-fdab-4570-964f-8f636a8da20c&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;toEntityId&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;edefa7cb-c19d-4955-9da5-22e43786ced5&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;relationshipId&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;22bd9863-0161-4334-b73f-1f33fa8880cb&amp;quot;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+  &lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;In order to explore each of these relationships, we can call the &lt;code&gt;relationship&lt;/code&gt; endpoint with the &lt;code&gt;guid&lt;/code&gt; of the relationship we are interested in:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/relationship/guid/33591207-ac0d-4374-91a2-5fadd71d6f0c
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;Glossary&lt;/h4&gt;
+&lt;p&gt;To retrieve all glossaries:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/glossary
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;To describe a specific glossary by using its &lt;code&gt;guid&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/glossary/dd2de287-96ae-4c24-8402-1eea0d477b59
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and, more specifically, its terms:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/glossary/dd2de287-96ae-4c24-8402-1eea0d477b59/terms
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and categories:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/glossary/dd2de287-96ae-4c24-8402-1eea0d477b59/categories
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;More (meta)data sources&lt;/h2&gt;
+&lt;p&gt;In order to see how Atlas can be expanded with more sources, we will add a connector to &lt;a href="https://spark.apache.org/"&gt;Apache Spark&lt;/a&gt; and use it to track the lineage of both standard batch processes and stream processes with &lt;a href="https://kafka.apache.org/"&gt;Apache Kafka&lt;/a&gt; as a source. As usual, since the focus of the article is not on any of the two sources, the easiest way to get started with them will be used.&lt;/p&gt;
+&lt;h4&gt;Preparation&lt;/h4&gt;
+&lt;p&gt;Let's first of all install Spark. We could use the previously installed Apache Bigtop repository and install Spark via &lt;code&gt;yum&lt;/code&gt;, but since the connector needs at least Spark 2.3 to work, we need to &lt;a href="https://spark.apache.org/downloads.html"&gt;download it&lt;/a&gt; (choosing the package pre-built for Hadoop 2.7) and extract it to a folder of our choice, for instance &lt;code&gt;/opt/spark&lt;/code&gt;. When this is done, we need to copy the Atlas configuration file in the Spark configuration folder, for instance (if Atlas was installed in &lt;code&gt;/opt/atlas/apache-atlas-2.0.0/&lt;/code&gt;):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ &lt;span class="nb"&gt;cd&lt;/span&gt; /opt/spark/spark-2.4.3-bin-hadoop2.7
+$ cp /opt/atlas/apache-atlas-2.0.0/conf/atlas-application.properties conf/
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;After this, we need to download the Spark-Atlas connector; we will use &lt;a href="https://github.com/hortonworks-spark/spark-atlas-connector"&gt;Hortonworks's connector&lt;/a&gt; since it has been created for this specific use case. Once again, we will need Maven and Git installed (but we can use any version of Maven):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ git clone https://github.com/hortonworks-spark/spark-atlas-connector
+$ &lt;span class="nb"&gt;cd&lt;/span&gt; spark-atlas-connector
+$ mvn package -DskipTests
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Once the package is built, we need to "patch" Atlas to include the Spark model:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ cp patch/1100-spark_model.json /opt/atlas/apache-atlas-2.0.0/models/1000-Hadoop
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and then we have to restart Atlas:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ &lt;span class="nb"&gt;cd&lt;/span&gt; /opt/atlas/apache-atlas-2.0.0/
+$ ./bin/atlas_stop.py
+$ ./bin/atlas_start.py
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If we open Atlas again and look into the "Search By Type" dropdown menu, we should see a few more entity types starting with &lt;code&gt;spark_&lt;/code&gt;.&lt;/p&gt;
+&lt;h4&gt;Spark batch&lt;/h4&gt;
+&lt;p&gt;As an example, let's create a test CSV file in &lt;code&gt;/tmp/test.csv&lt;/code&gt; with this content:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;person_id,name,surname
+1,John,Smith
+2,Jane,Doe
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We are now ready to launch the Spark shell as follows:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ /opt/spark/spark-2.4.3-bin-hadoop2.7/bin/spark-shell &lt;span class="se"&gt;\&lt;/span&gt;
+    --jars spark-atlas-connector/target/spark-atlas-connector_2.11-0.1.0-SNAPSHOT.jar &lt;span class="se"&gt;\&lt;/span&gt;
+    --conf spark.extraListeners&lt;span class="o"&gt;=&lt;/span&gt;com.hortonworks.spark.atlas.SparkAtlasEventTracker &lt;span class="se"&gt;\&lt;/span&gt;
+    --conf spark.sql.queryExecutionListeners&lt;span class="o"&gt;=&lt;/span&gt;com.hortonworks.spark.atlas.SparkAtlasEventTracker &lt;span class="se"&gt;\&lt;/span&gt;
+    --conf spark.sql.streaming.streamingQueryListeners&lt;span class="o"&gt;=&lt;/span&gt;com.hortonworks.spark.atlas.SparkAtlasStreamingQueryEventTracker
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;From the Spark shell, let's run the following commands to read the test CSV file and write it to a different CSV file with one derived column:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;val&lt;/span&gt; &lt;span class="n"&gt;test&lt;/span&gt; &lt;span class="k"&gt;=&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;option&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;header&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;csv&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/tmp/test.csv&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="n"&gt;test&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;withColumn&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;fullname&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;concat&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;upper&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;col&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;surname&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)),&lt;/span&gt; &lt;span class="n"&gt;upper&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;col&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;name&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;))))&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;write&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;csv&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/tmp/test2.csv&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;(A series of warnings about configuration values might appear.)&lt;/p&gt;
+&lt;p&gt;If everything went fine, on Atlas we should see at least one item when searching by the &lt;code&gt;spark_process&lt;/code&gt; type. When we open the detail page for such item, the lineage section should show something like this:&lt;/p&gt;
+&lt;p&gt;&lt;img src="images/atlas_spark_batch.png" alt="Atlas-Spark connector" class="img-fluid" /&gt;&lt;/p&gt;
+&lt;p&gt;We will now save the same file to a Hive table:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;test&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;write&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;saveAsTable&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;spark_test_table&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;table&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;spark_test_table&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;withColumn&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;fullname&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;concat&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;upper&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;col&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;surname&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)),&lt;/span&gt; &lt;span class="n"&gt;upper&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;col&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;name&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;))))&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;write&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;saveAsTable&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;spark_test_table_derived&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now the lineage will look like this:&lt;/p&gt;
+&lt;p&gt;&lt;img src="images/atlas_spark_batch_2.png" alt="Atlas-Spark connector" class="img-fluid" /&gt;&lt;/p&gt;
+&lt;p&gt;(If the lineage does not change, try to click on the "Clear" button and search for Spark processes again.)&lt;/p&gt;
+&lt;p&gt;The current version of the connector considers everything that is run in a single shell execution as a single process, so the lineage will include all the steps together.&lt;/p&gt;
+&lt;h4&gt;Spark streaming&lt;/h4&gt;
+&lt;p&gt;In order to track the lineage of a Spark streaming application, we will use &lt;a href="https://kafka.apache.org/"&gt;Apache Kafka&lt;/a&gt; as a stream source. Atlas already includes a Kafka server, but we will download the full package in order to create the topics more easily.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ wget http://apache.mirror.anlx.net/kafka/2.2.0/kafka_2.12-2.2.0.tgz
+$ tar zxvf kafka_2.12-2.2.0.tgz
+$ &lt;span class="nb"&gt;cd&lt;/span&gt; kafka_2.12-2.2.0/
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;In order to create a topic, we can run the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ ./bin/kafka-topics.sh --create --bootstrap-server localhost:9027 --replication-factor &lt;span class="m"&gt;1&lt;/span&gt; --partitions &lt;span class="m"&gt;1&lt;/span&gt; --topic test-topic
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The address used as a bootstrap server has to be the same that is configured as the value of the &lt;code&gt;atlas.kafka.bootstrap.servers&lt;/code&gt; parameter in &lt;code&gt;atlas-application.properties&lt;/code&gt; (the Atlas configuration file within its &lt;code&gt;conf&lt;/code&gt; directory), unless we want to run a separate Kafka server.&lt;/p&gt;
+&lt;p&gt;Now we need to store some data into Kafka. We'll do it with the following command:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ ./bin/kafka-console-producer.sh --broker-list localhost:9027 --topic test-topic
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;where we will be prompted to insert one or more lines; after inserting a few lines, &lt;code&gt;Ctrl + D&lt;/code&gt; will close the prompt. We are now ready to run the Spark shell again, this time adding &lt;code&gt;--packages org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.3&lt;/code&gt; to avoid Kafka-related exceptions:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ /opt/spark/spark-2.4.3-bin-hadoop2.7/bin/spark-shell &lt;span class="se"&gt;\&lt;/span&gt;
+    --jars /opt/atlas/spark-atlas-connector/spark-atlas-connector-assembly/target/spark-atlas-connector-assembly-0.1.0-SNAPSHOT.jar &lt;span class="se"&gt;\&lt;/span&gt;
+    --conf spark.extraListeners&lt;span class="o"&gt;=&lt;/span&gt;com.hortonworks.spark.atlas.SparkAtlasEventTracker &lt;span class="se"&gt;\&lt;/span&gt;
+    --conf spark.sql.queryExecutionListeners&lt;span class="o"&gt;=&lt;/span&gt;com.hortonworks.spark.atlas.SparkAtlasEventTracker &lt;span class="se"&gt;\&lt;/span&gt;
+    --conf spark.sql.streaming.streamingQueryListeners&lt;span class="o"&gt;=&lt;/span&gt;com.hortonworks.spark.atlas.SparkAtlasStreamingQueryEventTracker &lt;span class="se"&gt;\&lt;/span&gt;
+    --packages org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.3
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;From the shell, we can then run this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;val&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="k"&gt;=&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;readStream&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;kafka&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;option&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;kafka.bootstrap.servers&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;localhost:9027&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;option&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;subscribe&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;test-topic&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;option&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;startingOffsets&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;earliest&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+
+&lt;span class="k"&gt;val&lt;/span&gt; &lt;span class="n"&gt;df2&lt;/span&gt; &lt;span class="k"&gt;=&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;selectExpr&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;topic&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;CAST(key AS STRING)&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;CAST(value AS STRING)&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;writeStream&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;outputMode&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;append&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;json&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;option&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;path&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;/tmp/stream_kafka.json&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;option&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;checkpointLocation&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;/tmp/chkpoint_dir&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;start&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;where we basically create a dataset out of a Kafka stream by subscribing to the &lt;code&gt;test-topic&lt;/code&gt; topic and starting from its beginning, then we create a new stream to be written as a JSON file (actually, as a directory containing multiple JSON files).&lt;/p&gt;
+&lt;p&gt;If we check the lineage for this process, we should now see something like this:&lt;/p&gt;
+&lt;p&gt;&lt;img src="images/atlas_spark_streaming.png" alt="Atlas-Spark connector" class="img-fluid" /&gt;&lt;/p&gt;
+&lt;p&gt;We can even route the data from the first topic into another Kafka topic! All we need to do is to create a new topic:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ /opt/kafka/kafka_2.12-2.2.0/bin/kafka-topics.sh --create --bootstrap-server localhost:9027 --replication-factor &lt;span class="m"&gt;1&lt;/span&gt; --partitions &lt;span class="m"&gt;1&lt;/span&gt; --topic test-topic-rec
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and then, from the shell, run this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;val&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="k"&gt;=&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;readStream&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;kafka&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;option&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;kafka.bootstrap.servers&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;localhost:9027&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;option&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;subscribe&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;test-topic&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;option&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;startingOffsets&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;earliest&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+
+&lt;span class="k"&gt;val&lt;/span&gt; &lt;span class="n"&gt;df2&lt;/span&gt; &lt;span class="k"&gt;=&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;selectExpr&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;topic&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;CAST(key AS STRING)&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;CAST(value AS STRING)&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;writeStream&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;kafka&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;option&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;kafka.bootstrap.servers&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;localhost:9027&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;option&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;topic&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;test-topic-rec&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;option&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;checkpointLocation&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;/tmp/chkpoint_dir_rec&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;start&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;which is the same as before except for the different type of write stream (Kafka rather than JSON files), and will result in this lineage:&lt;/p&gt;
+&lt;p&gt;&lt;img src="images/atlas_spark_streaming_2.png" alt="Atlas-Spark connector" class="img-fluid" /&gt;&lt;/p&gt;
+&lt;p&gt;(In case an exception such as &lt;code&gt;org.I0Itec.zkclient.exception.ZkTimeoutException: Unable to connect to zookeeper server 'localhost:9026' with timeout of 200 ms&lt;/code&gt; is thrown, the value of the &lt;code&gt;atlas.kafka.zookeeper.connection.timeout.ms&lt;/code&gt; field within the &lt;code&gt;atlas-application.properties&lt;/code&gt; configuration file should be increased (e.g. set it to 2000) and Atlas be restarted.)&lt;/p&gt;
+&lt;p&gt;As we can see, lineage information from a Spark batch or streaming job can be easily sent to Atlas. Spark ML pipelines are also supported by the connector, but since this would require patching and recompiling Atlas, I decided to skip them for the time being.&lt;/p&gt;
+&lt;h2&gt;Conclusions&lt;/h2&gt;
+&lt;p&gt;In this article we have explored Atlas capabilities into more details, understanding what classifications and glossaries are and how to make use of them, then listing a few REST API endpoints along with examples, and finally trying out an external connector to add even more lineage information. Atlas is quite mature as a solution, but documentation is still a bit scattered; even if I haven't touched on everything (especially the underlying datastores and the creation of new entities), I hope to have added a little bit to the coverage of this fantastic tool.&lt;/p&gt;</content><category term="Big Data"></category></entry><entry><title>Apache Atlas</title><link href="https://apothem.blog/apache-atlas.html" rel="alternate"></link><published>2019-06-30T00:00:00+01:00</published><updated>2019-06-30T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-06-30:/apache-atlas.html</id><summary type="html">&lt;p&gt;Since I have always been interested in (and mainly working with) Semantic Web technologies and knowledge engineering, metadata is a topic I care about quite a lot. "Metadata" means "data about data", which practically speaking may include the format, the source, the purpose, the author, the creation date, and many …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Since I have always been interested in (and mainly working with) Semantic Web technologies and knowledge engineering, metadata is a topic I care about quite a lot. "Metadata" means "data about data", which practically speaking may include the format, the source, the purpose, the author, the creation date, and many other aspects of some given data. Many languages and tools have been proposed to make the inclusion and management of metadata easier, but only recently there has been a renewed interest in metadata from a Big Data perspective; in fact, given the vast number of data sources and processes that a Big Data architecture might have to manage, a scalable tool for metadata management and governance was much needed. Enter &lt;a href="https://atlas.apache.org/"&gt;Apache Atlas&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;From its homepage:&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Apache Atlas provides open metadata management and governance capabilities for organizations to build a catalog of their data assets, classify and govern these assets and provide collaboration capabilities around these data assets for data scientists, analysts and the data governance team.&lt;/p&gt;
@@ -228,7 +505,7 @@ Time taken: 9.918 seconds, Fetched: 3 row(s)
 
 
 &lt;p&gt;As a check, we can run another &lt;code&gt;SELECT&lt;/code&gt; query:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;hive&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;SELECT&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="k"&gt;FROM&lt;/span&gt; &lt;span class="n"&gt;people&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;hive&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;SELECT&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="k"&gt;FROM&lt;/span&gt; &lt;span class="n"&gt;joined&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -255,7 +532,7 @@ Time taken: 9.918 seconds, Fetched: 3 row(s)
 &lt;p&gt;&lt;img src="images/atlas_lineage.png" alt="Atlas - Lineage" class="img-fluid" /&gt;&lt;/p&gt;
 &lt;p&gt;which we will expand upon in another article.&lt;/p&gt;
 &lt;h3&gt;Conclusions&lt;/h3&gt;
-&lt;p&gt;In this article we saw how to install Apache Atlas from scratch (a not-so-straightforward process) and how to configure Hive hooks in order to automatically send changes in the Hive metastore to Atlas. In another article we will look a bit deeper into Atlas capabilities and we will see how to configure hooks to more data sources.&lt;/p&gt;</content><category term="Big Data"></category></entry><entry><title>Apache MetaModel</title><link href="https://apothem.blog/apache-metamodel.html" rel="alternate"></link><published>2019-05-31T00:00:00+01:00</published><updated>2019-05-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-05-31:/apache-metamodel.html</id><summary type="html">&lt;p&gt;It's a few years now since I've got the "&lt;a href="https://martinfowler.com/bliki/PolyglotPersistence.html"&gt;polyglot persistence&lt;/a&gt;" bug, first out of interest, then out of necessity. Given the abundance of data models and storage technologies available today, it is crucial to be aware of the strengths and weaknesses of each solution; furthermore, more often than not …&lt;/p&gt;</summary><content type="html">&lt;p&gt;It's a few years now since I've got the "&lt;a href="https://martinfowler.com/bliki/PolyglotPersistence.html"&gt;polyglot persistence&lt;/a&gt;" bug, first out of interest, then out of necessity. Given the abundance of data models and storage technologies available today, it is crucial to be aware of the strengths and weaknesses of each solution; furthermore, more often than not, an architecture that integrates several types of solutions is desirable or needed.&lt;/p&gt;
+&lt;p&gt;In this article we saw how to install Apache Atlas from scratch (a not-so-straightforward process) and how to configure Hive hooks in order to automatically send changes in the Hive metastore to Atlas. In another article we will look a bit deeper into Atlas capabilities and we will see how to configure more data sources.&lt;/p&gt;</content><category term="Big Data"></category></entry><entry><title>Apache MetaModel</title><link href="https://apothem.blog/apache-metamodel.html" rel="alternate"></link><published>2019-05-31T00:00:00+01:00</published><updated>2019-05-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-05-31:/apache-metamodel.html</id><summary type="html">&lt;p&gt;It's a few years now since I've got the "&lt;a href="https://martinfowler.com/bliki/PolyglotPersistence.html"&gt;polyglot persistence&lt;/a&gt;" bug, first out of interest, then out of necessity. Given the abundance of data models and storage technologies available today, it is crucial to be aware of the strengths and weaknesses of each solution; furthermore, more often than not …&lt;/p&gt;</summary><content type="html">&lt;p&gt;It's a few years now since I've got the "&lt;a href="https://martinfowler.com/bliki/PolyglotPersistence.html"&gt;polyglot persistence&lt;/a&gt;" bug, first out of interest, then out of necessity. Given the abundance of data models and storage technologies available today, it is crucial to be aware of the strengths and weaknesses of each solution; furthermore, more often than not, an architecture that integrates several types of solutions is desirable or needed.&lt;/p&gt;
 &lt;p&gt;Leaving architectural questions aside, the main question in this polyglot scenario is: how to read and interpret data from disparate data sources in a reliable and uniform fashion? Is it better to create a data lake out of all the sources, or to take a federated approach where every query is dispatched to its appropriate database? The Apache project we will work with today, &lt;a href="https://metamodel.apache.org/"&gt;MetaModel&lt;/a&gt;, aims at providing tools to deal with such challenges.&lt;/p&gt;
 &lt;h3&gt;Main concepts&lt;/h3&gt;
 &lt;p&gt;Apache MetaModel provides &lt;em&gt;"a common interface for discovery, exploration of metadata and querying of different types of data sources"&lt;/em&gt;, which means that, through the use of concepts such as &lt;em&gt;datasets&lt;/em&gt;, &lt;em&gt;tables&lt;/em&gt;, and &lt;em&gt;columns&lt;/em&gt;, it exposes a basic abstraction common to all the data sources it can connect to; such abstract data model can then be queried using SQL as an "interlanguage". It is important to note that, as stated on the website, &lt;em&gt;"MetaModel &lt;em&gt;isn't&lt;/em&gt; a data mapping framework"&lt;/em&gt;; in other words its main intended usage is not to integrate different terminologies within the same domain, but rather to make it easy to add new datasources and to maximize the usage of metadata.&lt;/p&gt;

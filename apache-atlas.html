@@ -302,7 +302,7 @@ Time taken: 9.918 seconds, Fetched: 3 row(s)
 
 
 <p>As a check, we can run another <code>SELECT</code> query:</p>
-<div class="highlight"><pre><span></span><span class="n">hive</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">people</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><span class="n">hive</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">joined</span><span class="p">;</span>
 </pre></div>
 
 
@@ -329,7 +329,7 @@ Time taken: 9.918 seconds, Fetched: 3 row(s)
 <p><img src="images/atlas_lineage.png" alt="Atlas - Lineage" class="img-fluid" /></p>
 <p>which we will expand upon in another article.</p>
 <h3>Conclusions</h3>
-<p>In this article we saw how to install Apache Atlas from scratch (a not-so-straightforward process) and how to configure Hive hooks in order to automatically send changes in the Hive metastore to Atlas. In another article we will look a bit deeper into Atlas capabilities and we will see how to configure hooks to more data sources.</p>
+<p>In this article we saw how to install Apache Atlas from scratch (a not-so-straightforward process) and how to configure Hive hooks in order to automatically send changes in the Hive metastore to Atlas. In another article we will look a bit deeper into Atlas capabilities and we will see how to configure more data sources.</p>
     </div>
   </article>
     </div>
