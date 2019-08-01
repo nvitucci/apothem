@@ -244,7 +244,7 @@ and, finally, a new table from a `JOIN` across the two tables just created:
 As a check, we can run another `SELECT` query:
 
     :::sql
-    hive> SELECT * FROM people;
+    hive> SELECT * FROM joined;
 
 and verify that the output is like the following:
 
@@ -278,4 +278,4 @@ which we will expand upon in another article.
 
 ### Conclusions
 
-In this article we saw how to install Apache Atlas from scratch (a not-so-straightforward process) and how to configure Hive hooks in order to automatically send changes in the Hive metastore to Atlas. In another article we will look a bit deeper into Atlas capabilities and we will see how to configure hooks to more data sources.
+In this article we saw how to install Apache Atlas from scratch (a not-so-straightforward process) and how to configure Hive hooks in order to automatically send changes in the Hive metastore to Atlas. In another article we will look a bit deeper into Atlas capabilities and we will see how to configure more data sources.
