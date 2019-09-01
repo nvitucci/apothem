@@ -1,5 +1,253 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM - projects</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/projects.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2019-07-31T00:00:00+01:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache Atlas (part 2)</title><link href="https://apothem.blog/apache-atlas-part-2.html" rel="alternate"></link><published>2019-07-31T00:00:00+01:00</published><updated>2019-07-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-07-31:/apache-atlas-part-2.html</id><summary type="html">&lt;p&gt;Since Atlas is a fairly large and complex project, one article was definitely not enough to explore all of its capabilities. Building on the &lt;a href="https://apothem.blog/apache-atlas.html"&gt;previous article&lt;/a&gt;, we will explore classifications and glossary, the REST API, and two more sources of lineage information (Spark and Kafka).&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM - projects</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/projects.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2019-08-31T00:00:00+01:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache Rya</title><link href="https://apothem.blog/apache-rya.html" rel="alternate"></link><published>2019-08-31T00:00:00+01:00</published><updated>2019-08-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-08-31:/apache-rya.html</id><summary type="html">&lt;p&gt;Since I have been working with Semantic Web technologies for quite some time, I was looking forward to explore new Apache projects within the area. &lt;a href="https://rya.incubator.apache.org/"&gt;Apache Rya&lt;/a&gt; fit the purpose perfectly, as it is a SPARQL-enabled triplestore for Big Data, promising to scale to billions of triples across multiple nodes …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Since I have been working with Semantic Web technologies for quite some time, I was looking forward to explore new Apache projects within the area. &lt;a href="https://rya.incubator.apache.org/"&gt;Apache Rya&lt;/a&gt; fit the purpose perfectly, as it is a SPARQL-enabled triplestore for Big Data, promising to scale to billions of triples across multiple nodes. If you are completely lost after this terminology, you can take a look at the &lt;a href="https://en.wikipedia.org/wiki/Semantic_Web"&gt;Wikipedia article&lt;/a&gt; and the &lt;a href="https://www.w3.org/2009/Talks/0615-SanJose-tutorial-IH/Slides.pdf"&gt;W3C presentation&lt;/a&gt; to get an idea of the subject.&lt;/p&gt;
+&lt;p&gt;Rya runs on top of another Apache project, &lt;a href="https://accumulo.apache.org/"&gt;Accumulo&lt;/a&gt; (a distributed key/value store), and is deployed as a Web service. Since Accumulo by itself requires a fairly complex installation procedure as it is based on &lt;a href="https://hadoop.apache.org/"&gt;Apache Hadoop&lt;/a&gt; and &lt;a href="https://zookeeper.apache.org/"&gt;Apache Zookeeper&lt;/a&gt;, we will use yet another great Apache project, &lt;a href="http://fluo.apache.org/"&gt;Apache Fluo&lt;/a&gt; (or, more specifically, its subproject &lt;a href="https://github.com/apache/fluo-uno"&gt;Fluo Uno&lt;/a&gt;), to simplify the whole procedure; we will then use a well-known server, &lt;a href="http://tomcat.apache.org/"&gt;Apache Tomcat&lt;/a&gt;, to run it.&lt;/p&gt;
+&lt;p&gt;In this article we will see how to get a single-machine Rya instance up and running and how to perform basic operations; scalability, management, and more complex operations will be covered in another article. As usual, the reference operating system will be CentOS 7 (if possible, an empty/fresh instance).&lt;/p&gt;
+&lt;h2&gt;Preparing the environment&lt;/h2&gt;
+&lt;h3&gt;Installing Tomcat&lt;/h3&gt;
+&lt;p&gt;First of all we need to have Tomcat installed and running. On CentOS 7 it is just a matter of running the following two commands (both requiring &lt;code&gt;sudo&lt;/code&gt; rights):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo yum install tomcat
+$ sudo service tomcat start
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;Prerequisites for Fluo Uno&lt;/h3&gt;
+&lt;p&gt;In the following, we will download and use Fluo Uno to setup a single-machine Accumulo instance; its sibling project, &lt;a href="https://github.com/apache/fluo-muchos"&gt;Fluo Muchos&lt;/a&gt;, can be used instead to create a real cluster in Amazon's EC2.&lt;/p&gt;
+&lt;p&gt;In order to use Fluo Uno, we need to have Java 8, &lt;em&gt;wget&lt;/em&gt;, &lt;em&gt;maven&lt;/em&gt;, and &lt;em&gt;git&lt;/em&gt; already installed; if any of these components is missing, it can be installed with &lt;code&gt;sudo yum install&lt;/code&gt;. We also need to install the &lt;em&gt;shasum&lt;/em&gt; program (&lt;strong&gt;not&lt;/strong&gt; the &lt;em&gt;sha1sum&lt;/em&gt; or the similar ones that are likely already installed), which is contained in the &lt;em&gt;perl-Digest-SHA&lt;/em&gt; package, and we might install &lt;em&gt;curl&lt;/em&gt; to test Rya's API. A quick way to install all the needed packages is to run:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo yum install java wget maven git perl-Digest-SHA curl
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Once all the components are present, we need to export the Java path. If Java has been installed under, say, &lt;code&gt;/usr/lib/jvm/java-1.8.0&lt;/code&gt;, we need to run:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ &lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;JAVA_HOME&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;/usr/lib/jvm/java-1.8.0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now, in order for Hadoop to work correctly, we need to make sure we can log into localhost with SSH:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ ssh localhost
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If this does not work, we need to create a local pair of SSH keys. First of all, let's make sure that we do not really have any SSH keys:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ ls ~/.ssh
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If no results are returned, we can run this command:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ ssh-keygen
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;which will create a default RSA key. If, instead, some keys are already present, try to debug the error and, before running the keygen, back them up first. Once the keys are created, they need to be added to the list of authorized keys:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ cat ~/.ssh/id_rsa.pub &amp;gt;&amp;gt; ~/.ssh/authorized_keys
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now, &lt;code&gt;ssh localhost&lt;/code&gt; should successfully open a new shell.&lt;/p&gt;
+&lt;h3&gt;Downloading and using Fluo Uno&lt;/h3&gt;
+&lt;p&gt;We are now ready to clone Fluo Uno from Github:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;git clone https://github.com/apache/fluo-uno.git
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and enter the directory:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;cd&lt;/span&gt; fluo-uno
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Since at the time of writing Rya supports Accumulo only up to version 1.7, we need to add the next two lines at the beginning of &lt;code&gt;./conf/uno.conf&lt;/code&gt; to ensure compatibility:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;HADOOP_VERSION=2.9.0
+ACCUMULO_VERSION=1.7.3
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;After saving, we can run the following commands:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ ./bin/uno fetch accumulo
+$ ./bin/uno setup accumulo
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If everything ran successfully, we should see an output like this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Apache Hadoop 3.2.0 is running
+    * NameNode status: http://localhost:9870/
+    * ResourceManager status: http://localhost:8088/
+    * view logs at /path/to/fluo-uno/install/logs/hadoop
+Apache ZooKeeper 3.4.14 is running
+    * view logs at /path/to/fluo-uno/install/logs/zookeeper
+Apache Accumulo 2.0.0 is running
+    * Accumulo Monitor: http://localhost:9995/
+    * view logs at /path/to/fluo-uno/install/logs/accumulo
+Setup complete.
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If the output is different or some errors are displayed, try checking the &lt;code&gt;./install/logs&lt;/code&gt; folder to debug.&lt;/p&gt;
+&lt;h2&gt;Installing Rya&lt;/h2&gt;
+&lt;p&gt;Once the environment is ready as detailed in the previous sections, we can clone Rya:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ git clone https://github.com/apache/incubator-rya
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and build it:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ &lt;span class="nb"&gt;cd&lt;/span&gt; incubator-rya
+$ mvn clean install
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;(the last command will take a while to complete because all the tests are run, which is highly recommended).&lt;/p&gt;
+&lt;p&gt;When Maven has finished building, we run the following command to deploy Rya on Tomcat:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo cp ./web/web.rya/target/web.rya.war /var/lib/tomcat/webapps/
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Before we can use Rya, we need to create an &lt;code&gt;environment.properties&lt;/code&gt; file with the following content:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# Accumulo instance name
+instance.name=uno
+# Accumulo Zookeepers
+instance.zk=localhost:2181
+# Accumulo username
+instance.username=root
+# Accumulo password
+instance.password=secret
+
+# Rya Table Prefix
+rya.tableprefix=triplestore_
+# To display the query plan
+rya.displayqueryplan=true
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;then assign it to the Tomcat user (usually &lt;code&gt;tomcat&lt;/code&gt;), move it into the Web application classpath and restart Tomcat:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo chown tomcat:tomcat environment.properties
+$ sudo mv environment.properties /var/lib/tomcat/webapps/web.rya/WEB-INF/classes
+$ sudo service tomcat restart
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;In order to test that Rya is deployed and configured successfully, we can run:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ curl -I &lt;span class="s2"&gt;&amp;quot;localhost:8080/web.rya/queryrdf&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;which should give 200 as the status code. Yay, we have a running Rya instance!&lt;/p&gt;
+&lt;h2&gt;Examples&lt;/h2&gt;
+&lt;p&gt;Let's open the SPARQL endpoint on &lt;code&gt;http://localhost:8080/web.rya/sparqlQuery.jsp&lt;/code&gt;. Rya's SPARQL endpoint supports SPARQL Update, so we can insert some example triples using the following query (inspired by Rya's documentation):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;INSERT DATA&lt;/span&gt;
+&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;GRAPH&lt;/span&gt; &lt;span class="nl"&gt;&amp;lt;http://example.com/mygraph&amp;gt;&lt;/span&gt;
+    &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="nl"&gt;&amp;lt;http://mynamespace/ProductType1&amp;gt;&lt;/span&gt; &lt;span class="nl"&gt;&amp;lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#type&amp;gt;&lt;/span&gt; &lt;span class="nl"&gt;&amp;lt;http://mynamespace/ProductType&amp;gt;&lt;/span&gt; &lt;span class="p"&gt;.&lt;/span&gt;
+        &lt;span class="nl"&gt;&amp;lt;http://mynamespace/ProductType1&amp;gt;&lt;/span&gt; &lt;span class="nl"&gt;&amp;lt;http://www.w3.org/2000/01/rdf-schema#label&amp;gt;&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;Thing&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;.&lt;/span&gt;
+        &lt;span class="nl"&gt;&amp;lt;http://mynamespace/ProductType1&amp;gt;&lt;/span&gt; &lt;span class="nl"&gt;&amp;lt;http://purl.org/dc/elements/1.1/publisher&amp;gt;&lt;/span&gt; &lt;span class="nl"&gt;&amp;lt;http://mynamespace/Publisher1&amp;gt;&lt;/span&gt; &lt;span class="p"&gt;.&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;then retrieve them with another SPARQL query and selecting &lt;em&gt;JSON&lt;/em&gt; as the result format:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;SELECT&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+&lt;span class="k"&gt;WHERE&lt;/span&gt;
+&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;GRAPH&lt;/span&gt; &lt;span class="nv"&gt;?g&lt;/span&gt;
+    &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="nv"&gt;?s&lt;/span&gt; &lt;span class="nv"&gt;?p&lt;/span&gt; &lt;span class="nv"&gt;?o&lt;/span&gt; &lt;span class="p"&gt;.&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;which should give a result similar to the following (the order of the fields might be different):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+   &lt;span class="nt"&gt;&amp;quot;head&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;vars&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+         &lt;span class="s2"&gt;&amp;quot;g&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+         &lt;span class="s2"&gt;&amp;quot;s&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+         &lt;span class="s2"&gt;&amp;quot;p&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+         &lt;span class="s2"&gt;&amp;quot;o&amp;quot;&lt;/span&gt;
+      &lt;span class="p"&gt;]&lt;/span&gt;
+   &lt;span class="p"&gt;},&lt;/span&gt;
+   &lt;span class="nt"&gt;&amp;quot;results&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;bindings&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+         &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;quot;s&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://mynamespace/ProductType1&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;type&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;uri&amp;quot;&lt;/span&gt;
+            &lt;span class="p"&gt;},&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;quot;o&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://mynamespace/Publisher1&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;type&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;uri&amp;quot;&lt;/span&gt;
+            &lt;span class="p"&gt;},&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;quot;g&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;type&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;uri&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://example.com/mygraph&amp;quot;&lt;/span&gt;
+            &lt;span class="p"&gt;},&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;quot;p&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;type&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;uri&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://purl.org/dc/elements/1.1/publisher&amp;quot;&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+         &lt;span class="p"&gt;},&lt;/span&gt;
+         &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;quot;o&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://mynamespace/ProductType&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;type&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;uri&amp;quot;&lt;/span&gt;
+            &lt;span class="p"&gt;},&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;quot;s&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://mynamespace/ProductType1&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;type&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;uri&amp;quot;&lt;/span&gt;
+            &lt;span class="p"&gt;},&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;quot;p&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://www.w3.org/1999/02/22-rdf-syntax-ns#type&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;type&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;uri&amp;quot;&lt;/span&gt;
+            &lt;span class="p"&gt;},&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;quot;g&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://example.com/mygraph&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;type&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;uri&amp;quot;&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+         &lt;span class="p"&gt;},&lt;/span&gt;
+         &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;quot;g&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;type&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;uri&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://example.com/mygraph&amp;quot;&lt;/span&gt;
+            &lt;span class="p"&gt;},&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;quot;p&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://www.w3.org/2000/01/rdf-schema#label&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;type&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;uri&amp;quot;&lt;/span&gt;
+            &lt;span class="p"&gt;},&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;quot;o&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;Thing&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;type&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;literal&amp;quot;&lt;/span&gt;
+            &lt;span class="p"&gt;},&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;quot;s&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;type&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;uri&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://mynamespace/ProductType1&amp;quot;&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+         &lt;span class="p"&gt;},&lt;/span&gt;
+         &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;quot;o&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;type&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;literal&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;3.0.0&amp;quot;&lt;/span&gt;
+            &lt;span class="p"&gt;},&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;quot;s&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;urn:org.apache.rya/2012/05#rts&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;type&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;uri&amp;quot;&lt;/span&gt;
+            &lt;span class="p"&gt;},&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;quot;p&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;urn:org.apache.rya/2012/05#version&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="nt"&gt;&amp;quot;type&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;uri&amp;quot;&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+         &lt;span class="p"&gt;}&lt;/span&gt;
+      &lt;span class="p"&gt;]&lt;/span&gt;
+   &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We can get the same result using the &lt;code&gt;queryrdf&lt;/code&gt; REST endpoint:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ curl &lt;span class="s2"&gt;&amp;quot;localhost:8080/web.rya/queryrdf&amp;quot;&lt;/span&gt; -d query.resultformat&lt;span class="o"&gt;=&lt;/span&gt;json --data-urlencode &lt;span class="nv"&gt;query&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;SELECT * WHERE {GRAPH ?g {?s ?p ?o}}&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Conclusions&lt;/h2&gt;
+&lt;p&gt;Like other Apache projects still in incubation, Rya's documentation and examples may be still somewhat incomplete or difficult to follow. My aim was to try and streamline the installation process, and to provide a couple examples which allow a user to quickly see that everything is working correctly. A more complex setup and more interesting examples to come soon!&lt;/p&gt;</content><category term="Big Data"></category><category term="Semantic Web"></category></entry><entry><title>Apache Atlas (part 2)</title><link href="https://apothem.blog/apache-atlas-part-2.html" rel="alternate"></link><published>2019-07-31T00:00:00+01:00</published><updated>2019-07-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-07-31:/apache-atlas-part-2.html</id><summary type="html">&lt;p&gt;Since Atlas is a fairly large and complex project, one article was definitely not enough to explore all of its capabilities. Building on the &lt;a href="https://apothem.blog/apache-atlas.html"&gt;previous article&lt;/a&gt;, we will explore classifications and glossary, the REST API, and two more sources of lineage information (Spark and Kafka).&lt;/p&gt;
 &lt;h2&gt;Classification&lt;/h2&gt;
 &lt;p&gt;Let's start with classification …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Since Atlas is a fairly large and complex project, one article was definitely not enough to explore all of its capabilities. Building on the &lt;a href="https://apothem.blog/apache-atlas.html"&gt;previous article&lt;/a&gt;, we will explore classifications and glossary, the REST API, and two more sources of lineage information (Spark and Kafka).&lt;/p&gt;
 &lt;h2&gt;Classification&lt;/h2&gt;
