@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>  Apache CarbonData | APOTHEM
+</title>
+  <link rel="canonical" href="https://apothem.blog/apache-carbondata.html">
+
+
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/pygments/default.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/theme.css">
+
+  <link rel="alternate" type="application/atom+xml" title="Full Atom Feed"
+        href="https://apothem.blog/feeds/all.atom.xml">
+  <link rel="alternate" type="application/atom+xml" title="Categories Atom Feed"
+        href="https://apothem.blog/feeds/{slug}.atom.xml">  
+  <meta name="description" content="In the last few years I have been working quite extensively with Apache Spark, and I have come to realize that a good storage format goes a long way toward efficiency and speed. For instance, when dealing with large CSV or JSON files, adding an Apache Parquet writing step would …">
+
+
+</head>
+
+<body>
+  <header class="header">
+    <div class="container">
+<div class="row">
+    <div class="col-sm-4">
+      <a href="https://apothem.blog/">
+        <img class="img-fluid rounded" src=https://apothem.blog/images/profile.svg width=180 alt="APOTHEM">
+      </a>
+    </div>
+  <div class="col-sm-8">
+    <h1 class="title"><a href="https://apothem.blog/">APOTHEM</a></h1>
+      <p class="text-muted">Apache Project(s) of the month</p>
+      <ul class="list-inline">
+          <li class="list-inline-item"><a href="https://projects.apache.org" target="_blank">projects.apache.org</a></li>
+              <li class="list-inline-item text-muted">|</li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/about.html">About</a></li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/faq.html">FAQ</a></li>
+            <li class=" list-inline-item text-muted">|</li>
+          <li class="list-inline-item"><a class="fa fa-github" href="https://github.com/nvitucci/apothem" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-twitter" href="https://twitter.com/nvitucci" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-rss" href="feeds/all.atom.xml" target="_blank"></a></li>
+      </ul>
+  </div>
+</div>    </div>
+  </header>
+
+  <div class="main">
+    <div class="container">
+      <h1>  Apache CarbonData
+</h1>
+      <hr>
+  <article class="article">
+    <header>
+      <ul class="list-inline">
+        <li class="list-inline-item text-muted" title="2019-09-30T00:00:00+01:00">
+          <i class="fa fa-clock-o"></i>
+          lun 30 settembre 2019
+        </li>
+        <li class="list-inline-item">
+          <i class="fa fa-folder-open-o"></i>
+          <a href="https://apothem.blog/category/projects.html">projects</a>
+        </li>
+          <li class="list-inline-item">
+            <i class="fa fa-files-o"></i>
+              <a href="https://apothem.blog/tag/big-data.html">#Big Data</a>,               <a href="https://apothem.blog/tag/data-storage-format.html">#data storage format</a>          </li>
+      </ul>
+    </header>
+    <div class="content">
+      <p>In the last few years I have been working quite extensively with Apache Spark, and I have come to realize that a good storage format goes a long way toward efficiency and speed. For instance, when dealing with large CSV or JSON files, adding an <a href="https://parquet.apache.org/">Apache Parquet</a> writing step would improve performance in virtually every subsequent task, or at least in all tasks that would profit from a columnar storage. I have briefly dabbled with <a href="https://orc.apache.org/">Apache ORC</a> and, then, I found out a rather new format which I haven't really explored until last month, which is what we will see in this article: enter <a href="https://carbondata.apache.org/">Apache CarbonData</a>.</p>
+<p>Developed by Huawei and launched as an Apache Incubator project in 2016, CarbonData is now is at version 1.6.0. The reasons why it caught my interest are several:</p>
+<ul>
+<li>the promise to cover different use cases (full scan queries, small scan queries, multi-dimensional OLAP queries) at the same time;</li>
+<li>the tight integration with Spark and other processing engines;</li>
+<li>the increased encoding efficiency thanks to global and local dictionaries;</li>
+<li>the speed-up on filter queries thanks to multi-level indexing;</li>
+<li>the support for Update and Delete operations;</li>
+<li>the concept of Datamaps, additional structures (Time Series, Bloom filter, Lucene full-text, Materialized Views); to reduce execution time for some classes of analytics queries;</li>
+<li>the support of streaming use cases via near-real time insertion.</li>
+</ul>
+<p>That's quite a lot of features! So, let's see how to make use of each one of them. As usual, I will refer to a CentOS 7 system; there are not so many tools that need to be installed: besides the usual <code>wget</code>, <code>git</code>, and <code>Java 8</code>, we will need <code>gcc</code> in order to compile the data generation library.</p>
+<h2>Data</h2>
+<p>In order to generate data to load in our CarbonData tables we will use the TPC-H <em>dbgen</em> tool, which is commonly used for database benchmarks (and, in fact, is used to benchmark CarbonData as well). The tool creates synthetic data based on a real-world scenario, where vendors place orders to buy parts from suppliers and to sell parts to customers. The TPC-H benchmark includes a query generation tool as well, which we won't use here.</p>
+<p>To build our dataset, let's clone the repo into <code>/tmp</code> (or any other folder) and build the tools:</p>
+<div class="highlight"><pre><span></span>$ <span class="nb">cd</span> /tmp
+$ git clone https://github.com/electrum/tpch-dbgen
+$ <span class="nb">cd</span> tpch-dbgen
+$ make
+</pre></div>
+
+
+<p>and, once finished, let's run the following command:</p>
+<div class="highlight"><pre><span></span>$ ./dbgen -v
+</pre></div>
+
+
+<p>which will create 8 files for a total size of about 1 GB. If you want to create larger files you can use the <code>-s</code> parameter (the scale factor) as in this example, which will generate about 10 GB of data:</p>
+<div class="highlight"><pre><span></span>$ ./dbgen -s <span class="m">10</span> -v
+</pre></div>
+
+
+<p>We will mostly use only one file, <code>lineitem.tbl</code>, which is the largest one; anyway, the other files can provide some more context - and can be used for more experiments.</p>
+<h2>Spark and CarbonData</h2>
+<p>We will explore CarbonData features using the simplest setup: a Spark shell in standalone mode with CarbonData already packaged as a JAR file. We therefore need to:</p>
+<ul>
+<li>download Spark from <a href="https://www.apache.org/dyn/closer.lua/spark/spark-2.3.4/spark-2.3.4-bin-hadoop2.7.tgz">this page</a> (we will use Spark 2.3.4 since the latest version of CarbonData is compatible with Spark up to 2.3.2);</li>
+<li>extract the content of the <code>.tgz</code> file into a folder (e.g. <code>/opt/spark</code>);</li>
+<li>download the latest version of the CarbonData JAR file built for Spark 2.3.2 from <a href="https://dist.apache.org/repos/dist/release/carbondata/1.6.0/apache-carbondata-1.6.0-bin-spark2.3.2-hadoop2.7.2.jar">here</a>;</li>
+<li>copy the JAR file to the Spark folder.</li>
+</ul>
+<p>We can then launch the Spark shell from the Spark folder as follows:</p>
+<div class="highlight"><pre><span></span>$ spark-shell --jars apache-carbondata-1.6.0-bin-spark2.3.2-hadoop2.7.2.jar
+</pre></div>
+
+
+<p>and, once the shell is running, we need to create a <code>CarbonSession</code> (which is similar to a <code>SparkSession</code>). Since we will run everything on the local filesystem, we can create a folder such as <code>/var/carbondata</code> (and assign it a suitable owner and permissions) where we will store both the data and the metastore; supposing that the data will be saved in <code>/var/carbondata/data/store</code> and the metastore in <code>/var/carbondata/metastore</code>, the <code>CarbonSession</code> can be created as follows:</p>
+<div class="highlight"><pre><span></span><span class="k">import</span> <span class="nn">org.apache.spark.sql.SparkSession</span>
+<span class="k">import</span> <span class="nn">org.apache.spark.sql.CarbonSession._</span>
+
+<span class="k">val</span> <span class="n">carbon</span> <span class="k">=</span> <span class="nc">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">()</span>
+            <span class="o">.</span><span class="n">config</span><span class="o">(</span><span class="n">sc</span><span class="o">.</span><span class="n">getConf</span><span class="o">)</span>
+            <span class="o">.</span><span class="n">getOrCreateCarbonSession</span><span class="o">(</span><span class="s">&quot;/var/carbondata/data/store&quot;</span><span class="o">,</span> <span class="s">&quot;/var/carbondata/metastore&quot;</span><span class="o">)</span>
+</pre></div>
+
+
+<p>(Pro tip: a whole piece of code can be pasted and run into the Scala shell by running the command <code>:paste</code>, pasting the code, and pressing Ctrl + D)</p>
+<p>Now we are ready!</p>
+<h2>Creating tables and loading data</h2>
+<p>First of all, we need to create a table and load some data into it. Every SQL command can be run via the <code>carbon.sql()</code> method, so we can create a <code>lineitem</code> table in this way:</p>
+<div class="highlight"><pre><span></span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;CREATE TABLE IF NOT EXISTS lineitem(l_shipdate DATE, l_shipmode STRING, l_shipinstruct STRING, l_returnflag STRING, l_receiptdate DATE, l_orderkey INT, l_partkey INT, l_suppkey STRING, l_linenumber INT, l_quantity DOUBLE, l_extendedprice DOUBLE, l_discount DOUBLE, l_tax DOUBLE, l_linestatus STRING, l_commitdate DATE, l_comment STRING) STORED AS carbondata&quot;</span><span class="o">)</span>
+</pre></div>
+
+
+<p>and then load data like so:</p>
+<div class="highlight"><pre><span></span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;LOAD DATA INPATH &#39;/tmp/tpch-dbgen/lineitem.tbl&#39; INTO TABLE lineitem OPTIONS(&#39;DELIMITER&#39; = &#39;|&#39;, &#39;FILEHEADER&#39; = &#39;l_orderkey,l_partkey,l_suppkey,l_linenumber,l_quantity,l_extendedprice,l_discount,l_tax,l_returnflag,l_linestatus,l_shipdate,l_commitdate,l_receiptdate,l_shipinstruct,l_shipmode,l_comment&#39;)&quot;</span><span class="o">)</span>
+</pre></div>
+
+
+<p>We can run SQL queries like so:</p>
+<div class="highlight"><pre><span></span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;SELECT COUNT(*) FROM lineitem WHERE l_shipdate = &#39;1996-06-06&#39;&quot;</span><span class="o">).</span><span class="n">show</span>
+</pre></div>
+
+
+<p>and also time every query using <code>spark.time()</code>, for instance:</p>
+<div class="highlight"><pre><span></span>spark.time(carbon.sql(&quot;SELECT COUNT(*) FROM lineitem WHERE l_shipdate = &#39;1996-06-06&#39;&quot;).show)
+</pre></div>
+
+
+<h2>Multi-dimensional keys (MDKs)</h2>
+<p>Let's now create and populate a new table using multi-dimensional keys (MDKs) by means of the <code>SORT_COLUMNS</code> table property:</p>
+<div class="highlight"><pre><span></span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;CREATE TABLE IF NOT EXISTS lineitem_sorted(l_shipdate DATE, l_shipmode STRING, l_shipinstruct STRING, l_returnflag STRING, l_receiptdate DATE, l_orderkey INT, l_partkey INT, l_suppkey STRING, l_linenumber INT, l_quantity DOUBLE, l_extendedprice DOUBLE, l_discount DOUBLE, l_tax DOUBLE, l_linestatus STRING, l_commitdate DATE, l_comment STRING) STORED AS carbondata TBLPROPERTIES (&#39;SORT_COLUMNS&#39; = &#39;l_shipdate,l_shipmode,l_shipinstruct,l_receiptdate,l_commitdate,l_returnflag,l_linestatus&#39;)&quot;</span><span class="o">)</span>
+
+<span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;LOAD DATA INPATH &#39;/tpch-dbgen/small/lineitem.tbl&#39; INTO TABLE lineitem_dic OPTIONS(&#39;DELIMITER&#39; = &#39;|&#39;, &#39;FILEHEADER&#39; = &#39;l_orderkey,l_partkey,l_suppkey,l_linenumber,l_quantity,l_extendedprice,l_discount,l_tax,l_returnflag,l_linestatus,l_shipdate,l_commitdate,l_receiptdate,l_shipinstruct,l_shipmode,l_comment&#39;)&quot;</span><span class="o">)</span>
+</pre></div>
+
+
+<p>Let's run the following query:</p>
+<div class="highlight"><pre><span></span><span class="n">spark</span><span class="o">.</span><span class="n">time</span><span class="o">(</span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;SELECT COUNT(*) FROM lineitem WHERE l_shipdate = &#39;1996-06-06&#39;&quot;</span><span class="o">).</span><span class="n">show</span><span class="o">)</span>
+</pre></div>
+
+
+<p>On my machine, a VPS with 8 vCPUs and 32 GB of RAM, it took about 4.2 seconds. Now let's run the same query on the <code>lineitem_sorted</code> table:</p>
+<div class="highlight"><pre><span></span><span class="n">spark</span><span class="o">.</span><span class="n">time</span><span class="o">(</span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;SELECT COUNT(*) FROM lineitem_sorted WHERE l_shipdate = &#39;1996-06-06&#39;&quot;</span><span class="o">).</span><span class="n">show</span><span class="o">)</span>
+</pre></div>
+
+
+<p>It took 90 <em>milliseconds</em>! So, indeed, MDKs are improving significantly the queries that make use of filters. Let's try with another query on both tables:</p>
+<div class="highlight"><pre><span></span><span class="n">spark</span><span class="o">.</span><span class="n">time</span><span class="o">(</span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;SELECT l_shipdate, COUNT(*) c FROM lineitem WHERE l_commitdate &lt; &#39;1996-01-01&#39; GROUP BY l_shipdate ORDER BY c DESC&quot;</span><span class="o">).</span><span class="n">show</span><span class="o">)</span>
+
+<span class="n">spark</span><span class="o">.</span><span class="n">time</span><span class="o">(</span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;SELECT l_shipdate, COUNT(*) c FROM lineitem_sorted WHERE l_commitdate &lt; &#39;1996-01-01&#39; GROUP BY l_shipdate ORDER BY c DESC&quot;</span><span class="o">).</span><span class="n">show</span><span class="o">)</span>
+</pre></div>
+
+
+<p>In this case the first one takes about 5 seconds, while the second one takes about 3 seconds.</p>
+<p>Let's now take a look at the directories and files that CarbonData created under <code>/var/carbondata/data/store</code>:</p>
+<div class="highlight"><pre><span></span>$ ls -lah /var/carbondata/data/store
+</pre></div>
+
+
+<p>We'll see that there are two folders, <code>default</code> and <code>_system</code>, where the first one is used to store the default database; since we didn't create a new database, our tables will be a <code>lineitem</code> and a <code>lineitem_sorted</code> directories within <code>default</code>. If we have <code>tree</code> installed (and, if not, we can simply install it with <code>sudo yum install tree</code>), we can see for instance the structure of <code>lineitem</code>:</p>
+<div class="highlight"><pre><span></span>$ tree /var/carbondata/data/store/default/lineitem
+
+:::text
+/var/carbondata/data/store/default/lineitem
+├── Fact
+│   └── Part0
+│       └── Segment_0
+│           ├── 0_1569876396402.carbonindexmerge
+│           └── part-0-0_batchno0-0-0-1569876355317.carbondata
+├── LockFiles
+│   ├── Segment_0.lock
+│   └── tablestatus.lock
+└── Metadata
+    ├── schema
+    ├── segments
+    │   └── 0_1569876355317.segment
+    └── tablestatus
+</pre></div>
+
+
+<p>The file names will most likely be different, but we are interested in the directory structure; for more details on CarbonData file format, take a look at the <a href="https://carbondata.apache.org/file-structure-of-carbondata.html">documentation</a>. If we look at the size of the <code>Fact</code> directory, we will see that it is approximately 222 MB:</p>
+<div class="highlight"><pre><span></span>$ du -sh /var/carbondata/data/store/default/lineitem/Fact
+</pre></div>
+
+
+<p>If we look at the size of the same directory for the <code>lineitem_sorted</code> directory, instead, we will see that it's 190 MB! So, MDKs are convenient from the storage point of view as well.</p>
+<h2>Update and Delete operations</h2>
+<p>Update operations are very simple in CarbonData. The format is the following:</p>
+<div class="highlight"><pre><span></span><span class="k">UPDATE</span> <span class="o">&lt;</span><span class="k">table_name</span><span class="o">&gt;</span> 
+<span class="k">SET</span> <span class="p">(</span><span class="n">column_name_1</span><span class="p">,</span> <span class="n">column_name_2</span><span class="p">,</span> <span class="p">...</span> <span class="n">column_name_n</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">column_1_expression</span><span class="p">,</span> <span class="n">column_2_expression</span><span class="p">,</span> <span class="p">...</span> <span class="n">column_n_expression</span> <span class="p">)</span>
+<span class="p">[</span> <span class="k">WHERE</span> <span class="err">{</span> <span class="o">&lt;</span><span class="n">filter_condition</span><span class="o">&gt;</span> <span class="err">}</span> <span class="p">]</span>
+</pre></div>
+
+
+<p>for simple updates where the column expressions are calculated from the same table, or the following for more generic updates:</p>
+<div class="highlight"><pre><span></span><span class="k">UPDATE</span> <span class="o">&lt;</span><span class="k">table_name</span><span class="o">&gt;</span>
+<span class="k">SET</span> <span class="p">(</span><span class="n">column_name_1</span><span class="p">,</span> <span class="n">column_name_2</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="k">SELECT</span> <span class="n">sourceColumn_1</span><span class="p">,</span> <span class="n">sourceColumn_2</span> <span class="k">FROM</span> <span class="n">sourceTable</span> <span class="p">[</span> <span class="k">WHERE</span> <span class="err">{</span> <span class="o">&lt;</span><span class="n">filter_condition</span><span class="o">&gt;</span> <span class="err">}</span> <span class="p">]</span> <span class="p">)</span>
+<span class="p">[</span> <span class="k">WHERE</span> <span class="err">{</span> <span class="o">&lt;</span><span class="n">filter_condition</span><span class="o">&gt;</span> <span class="err">}</span> <span class="p">]</span>
+</pre></div>
+
+
+<p>Let's see an example. First of all, let's check the total number of records and the number of records for a specific <code>l_shipdate</code>:</p>
+<div class="highlight"><pre><span></span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;SELECT COUNT(*) FROM lineitem_sorted&quot;</span><span class="o">).</span><span class="n">show</span>
+
+<span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;SELECT COUNT(*) FROM lineitem_sorted WHERE l_shipdate = &#39;1996-06-06&#39;&quot;</span><span class="o">).</span><span class="n">show</span>
+</pre></div>
+
+
+<p>We get 6,001,215 and 2,454 results respectively. Let's update the <code>l_shipdate</code> for those same records:</p>
+<div class="highlight"><pre><span></span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;UPDATE lineitem_sorted SET (l_shipdate) = (&#39;2016-06-06&#39;) WHERE l_shipdate = &#39;1996-06-06&#39;&quot;</span><span class="o">).</span><span class="n">show</span>
+</pre></div>
+
+
+<p>Now, running the second <code>COUNT</code> query will not return any results, while we'll get 2,454 results by running this query instead:</p>
+<div class="highlight"><pre><span></span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;SELECT COUNT(*) FROM lineitem_sorted WHERE l_shipdate = &#39;2016-06-06&#39;&quot;</span><span class="o">).</span><span class="n">show</span>
+</pre></div>
+
+
+<p>The Delete operation is even simpler. Let's run the following query:</p>
+<div class="highlight"><pre><span></span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;DELETE FROM lineitem_sorted WHERE l_shipdate = &#39;2016-06-06&#39;&quot;</span><span class="o">).</span><span class="n">show</span>
+</pre></div>
+
+
+<p>Now the last <code>COUNT</code> query will return zero results.</p>
+<h2>Datamaps</h2>
+<p>The concept of datamap is quite interesting: basically, a new data structure is added on top of the existing data in order to improve the performance of some specific queries. Let's look for instance at the <em>Lucene</em> datamap, which adds a Lucene-based full-text index to a give column. </p>
+<h3>Lucene datamap</h3>
+<p>In order to create a Lucene full-text datamap, we run the following query:</p>
+<div class="highlight"><pre><span></span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;CREATE DATAMAP comment ON TABLE lineitem_sorted USING &#39;lucene&#39; DMPROPERTIES(&#39;INDEX_COLUMNS&#39; = &#39;l_comment&#39;, &#39;SPLIT_BLOCKLET&#39; = &#39;false&#39;)&quot;</span><span class="o">)</span>
+</pre></div>
+
+
+<p>We have just created a Lucene index on the <code>l_comment</code> column which stores the BlockletIds as well (it is not very clear to me why but, if this property is not present, the full-text queries throw exceptions). When the index is ready we can run queries such as the following, where we ask for comments containing words that start with <code>quick</code>:</p>
+<div class="highlight"><pre><span></span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;SELECT l_comment FROM lineitem_sorted WHERE TEXT_MATCH_WITH_LIMIT(&#39;l_comment:quick*&#39;, 10)&quot;</span><span class="o">).</span><span class="n">show</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
+</pre></div>
+
+
+<p>which will return a result like this:</p>
+<div class="highlight"><pre><span></span>+------------------------------------------+
+|l_comment                                 |
++------------------------------------------+
+|fix. quickly ironic instruct              |
+| packages detect furiously quick          |
+|ely ironic deposits sleep quickly un      |
+|ffily regular ideas haggle quick          |
+|y ironic instructions among the quick     |
+|ts wake quickly after the u               |
+|e quickly along the express ideas-- slyly |
+|ctions. quickly even                      |
+|about the quickly express pl              |
+|s nag quick                               |
+|ly regular deposits. even deposits kindle |
+|ly. furiously                             |
+|ajole slyly after the blithely re         |
+|aggle blithely slyly even inst            |
+|ithe pinto beans. special, iron           |
+|silent foxes. slyly                       |
+|sts sleep af                              |
+|. daring pinto beans wake                 |
+|slyly after the furio                     |
+| ironic requests. final, ironic depo      |
++------------------------------------------+
+</pre></div>
+
+
+<p>or like the following, where we ask for comments containing words that start with <code>quick</code> but no words that start with <code>ironic</code>:</p>
+<div class="highlight"><pre><span></span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;SELECT l_comment FROM lineitem_sorted WHERE TEXT_MATCH_WITH_LIMIT(&#39;l_comment:quick* -l_comment:ironic*&#39;, 10)&quot;</span><span class="o">).</span><span class="n">show</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
+</pre></div>
+
+
+<p>which will result in something like this:</p>
+<div class="highlight"><pre><span></span>+------------------------------------------+
+|l_comment                                 |
++------------------------------------------+
+| packages detect furiously quick          |
+|ffily regular ideas haggle quick          |
+|ts wake quickly after the u               |
+|e quickly along the express ideas-- slyly |
+|ctions. quickly even                      |
+|about the quickly express pl              |
+|s nag quick                               |
+|gle slowly. quickly regular theodo        |
+|t quickly blithely                        |
+|unts affix quickly! regu                  |
+|ly. furiously                             |
+|aggle blithely slyly even inst            |
+|silent foxes. slyly                       |
+|sts sleep af                              |
+|. daring pinto beans wake                 |
+|slyly after the furio                     |
+| ironic requests. final, ironic depo      |
+| orbits. blithely unusual ideas above th  |
+|ost after the furiously express           |
+|kly final accounts wake b                 |
++------------------------------------------+
+</pre></div>
+
+
+<p>Another thing which is not clearly specified is why more than 10 results are returned even though, starting with the 11th, they seem irrelevant; until this is clarified, I would recommend to add a <code>LIMIT 10</code> to the query.</p>
+<h3>Time Series datamap</h3>
+<p>Another useful datamap is the Time Series datamap, which creates a separate table to optimize queries on time series. We can run queries like the following without a datamap:</p>
+<div class="highlight"><pre><span></span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;SELECT TIMESERIES(l_shipdate, &#39;year&#39;) t, AVG(l_quantity) FROM lineitem_sorted GROUP BY t ORDER BY t DESC&quot;</span><span class="o">)</span>
+</pre></div>
+
+
+<p>where we calculate the average <code>l_quantity</code> for every year, but the performance would not be great (it takes about 4.2 seconds on my machine). We can instead create a Time Series datamap, but we first need to convert the <code>l_shipdate</code> to a <code>timestamp</code> field, and since we already created a datamap on our table we cannot run any <code>ALTER TABLE</code> statements; we can anyway create a new table with a <em>CTAS</em> (<em>create table as</em>) statement adding a <code>l_shipdate_t</code> field of type <code>timestamp</code> from the existing <code>l_shipdate</code> field:</p>
+<div class="highlight"><pre><span></span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;CREATE TABLE lineitem_t STORED AS carbondata AS SELECT *, timestamp(l_shipdate) l_shipdate_t FROM lineitem&quot;</span><span class="o">)</span>
+</pre></div>
+
+
+<p>and then create a datamap on top of the newly-created table:</p>
+<div class="highlight"><pre><span></span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;CREATE DATAMAP agg_qty_year ON TABLE lineitem_t USING &#39;timeseries&#39; DMPROPERTIES(&#39;EVENT_TIME&#39; = &#39;l_shipdate_t&#39;, &#39;YEAR_GRANULARITY&#39; = &#39;1&#39;) AS SELECT l_shipdate_t, AVG(l_quantity) qty FROM lineitem_t GROUP BY l_shipdate_t&quot;</span><span class="o">)</span>
+</pre></div>
+
+
+<p>Now, the previous query (rewritten just to use the new table and the added field) will run much faster:</p>
+<div class="highlight"><pre><span></span><span class="n">spark</span><span class="o">.</span><span class="n">time</span><span class="o">(</span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;SELECT TIMESERIES(l_shipdate_t, &#39;year&#39;) t, AVG(l_quantity) FROM lineitem_t GROUP BY t ORDER BY t DESC&quot;</span><span class="o">).</span><span class="n">show</span><span class="o">)</span>
+</pre></div>
+
+
+<p>(it takes less than 1 second on my machine).</p>
+<p>The query and the datamap we have created work on a year granularity, but we can create as many datamaps as we need to support finer granularities (down to the minute).</p>
+<h3>Multivalue datamap</h3>
+<p>The last datamap we will see (as we are not going to cover the Bloom datamap) is the Multivalued (MV) datamap, which generalizes the deprecated Pre-Aggregate datamap. This type of datamap is very useful for aggregation queries such as the following:</p>
+<div class="highlight"><pre><span></span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;SELECT l_partkey, AVG(l_quantity) avg_q, AVG(l_extendedprice) avg_p FROM lineitem_sorted GROUP BY l_partkey ORDER BY avg_q DESC LIMIT 10&quot;</span><span class="o">).</span><span class="n">show</span>
+</pre></div>
+
+
+<p>where we calculate several aggregated quantities after grouping by the <code>l_partkey</code> field, whose cardinality is relatively high. This query takes about 2.8 seconds on my machine.</p>
+<p>Let's create an MV datamap:</p>
+<div class="highlight"><pre><span></span><span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;CREATE DATAMAP avg_qty_price ON TABLE lineitem_sorted USING &#39;MV&#39; AS SELECT l_partkey, AVG(l_quantity) avg_q, AVG(l_extendedprice) avg_p FROM lineitem_sorted GROUP BY l_partkey&quot;</span><span class="o">)</span>
+</pre></div>
+
+
+<p>Now the previous query takes less than half a second. It is worth noting that, now that the datamap is in place, every time that new data are added (for instance via the <code>INSERT</code> statement) the datamap will reflect the changes.</p>
+<p>We can also make sure that the query actually makes use of the datamap by using the <code>explain</code> method:</p>
+<div class="highlight"><pre><span></span>carbon.sql<span class="o">(</span><span class="s2">&quot;SELECT l_partkey, AVG(l_quantity) avg_q, AVG(l_extendedprice) avg_p FROM lineitem_sorted GROUP BY l_partkey ORDER BY avg_q DESC LIMIT 10&quot;</span><span class="o">)</span>.explain
+</pre></div>
+
+
+<p>The resulting plan is the following:</p>
+<div class="highlight"><pre><span></span>== Physical Plan ==
+TakeOrderedAndProject(limit=10, orderBy=[avg_q#2573 DESC NULLS LAST], output=[l_partkey#2689,avg_q#2573,avg_p#2574])
++- *(1) Project [lineitem_sorted_l_partkey#2572 AS l_partkey#2689, avg_q#2573, avg_p#2574]
+   +- *(1) FileScan carbondata default.avg_qty_price_table[lineitem_sorted_l_partkey#2572,avg_q#2573,avg_p#2574] ReadSchema: struct&lt;avg_p:double,avg_q:double,lineitem_sorted_l_partkey:int&gt;
+</pre></div>
+
+
+<p>where we can see a <code>FileScan</code> on the <code>avg_qty_price_table</code> table (the MV datamap is backed by a table).</p>
+<h2>Conclusions</h2>
+<p>We have seen some of the best features that CarbonData offers, although we haven't looked in too much detail at the performance and at the structure of the data, and we haven't explored the streaming capabilities and other integrations. The documentation is quite good even though some changes are not well described (for instance, after the <code>SORT_COLUMNS</code> option has been introduced, do we still need the <code>DICTIONARY_INCLUDE</code> option? what is the difference?), but the project is still alive and has a fairly large community to support it. I definitely want to find out more and to follow it closely.</p>
+    </div>
+  </article>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+<div class="row">
+  <ul class="col-sm-6 list-inline">
+    <li class="list-inline-item"><a href="https://apothem.blog/archives.html">Archives</a></li>
+    <li class="list-inline-item"><a href="https://apothem.blog/categories.html">Categories</a></li>
+      <li class="list-inline-item"><a href="https://apothem.blog/tags.html">Tags</a></li>
+  </ul>
+  <p class="col-sm-6 text-sm-right text-muted">
+    Generated by <a href="https://github.com/getpelican/pelican" target="_blank">Pelican</a>
+    / <a href="https://github.com/nairobilug/pelican-alchemy" target="_blank">&#x2728;</a>
+  </p>
+</div>    </div>
+  </footer>
+</body>
+
+</html>

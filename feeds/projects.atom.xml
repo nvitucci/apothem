@@ -1,5 +1,306 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM - projects</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/projects.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2019-08-31T00:00:00+01:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache Rya</title><link href="https://apothem.blog/apache-rya.html" rel="alternate"></link><published>2019-08-31T00:00:00+01:00</published><updated>2019-08-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-08-31:/apache-rya.html</id><summary type="html">&lt;p&gt;Since I have been working with Semantic Web technologies for quite some time, I was looking forward to explore new Apache projects within the area. &lt;a href="https://rya.incubator.apache.org/"&gt;Apache Rya&lt;/a&gt; fit the purpose perfectly, as it is a SPARQL-enabled triplestore for Big Data, promising to scale to billions of triples across multiple nodes …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Since I have been working with Semantic Web technologies for quite some time, I was looking forward to explore new Apache projects within the area. &lt;a href="https://rya.incubator.apache.org/"&gt;Apache Rya&lt;/a&gt; fit the purpose perfectly, as it is a SPARQL-enabled triplestore for Big Data, promising to scale to billions of triples across multiple nodes. If you are completely lost after this terminology, you can take a look at the &lt;a href="https://en.wikipedia.org/wiki/Semantic_Web"&gt;Wikipedia article&lt;/a&gt; and the &lt;a href="https://www.w3.org/2009/Talks/0615-SanJose-tutorial-IH/Slides.pdf"&gt;W3C presentation&lt;/a&gt; to get an idea of the subject.&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM - projects</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/projects.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2019-09-30T00:00:00+01:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache CarbonData</title><link href="https://apothem.blog/apache-carbondata.html" rel="alternate"></link><published>2019-09-30T00:00:00+01:00</published><updated>2019-09-30T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-09-30:/apache-carbondata.html</id><summary type="html">&lt;p&gt;In the last few years I have been working quite extensively with Apache Spark, and I have come to realize that a good storage format goes a long way toward efficiency and speed. For instance, when dealing with large CSV or JSON files, adding an &lt;a href="https://parquet.apache.org/"&gt;Apache Parquet&lt;/a&gt; writing step would …&lt;/p&gt;</summary><content type="html">&lt;p&gt;In the last few years I have been working quite extensively with Apache Spark, and I have come to realize that a good storage format goes a long way toward efficiency and speed. For instance, when dealing with large CSV or JSON files, adding an &lt;a href="https://parquet.apache.org/"&gt;Apache Parquet&lt;/a&gt; writing step would improve performance in virtually every subsequent task, or at least in all tasks that would profit from a columnar storage. I have briefly dabbled with &lt;a href="https://orc.apache.org/"&gt;Apache ORC&lt;/a&gt; and, then, I found out a rather new format which I haven't really explored until last month, which is what we will see in this article: enter &lt;a href="https://carbondata.apache.org/"&gt;Apache CarbonData&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Developed by Huawei and launched as an Apache Incubator project in 2016, CarbonData is now is at version 1.6.0. The reasons why it caught my interest are several:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the promise to cover different use cases (full scan queries, small scan queries, multi-dimensional OLAP queries) at the same time;&lt;/li&gt;
+&lt;li&gt;the tight integration with Spark and other processing engines;&lt;/li&gt;
+&lt;li&gt;the increased encoding efficiency thanks to global and local dictionaries;&lt;/li&gt;
+&lt;li&gt;the speed-up on filter queries thanks to multi-level indexing;&lt;/li&gt;
+&lt;li&gt;the support for Update and Delete operations;&lt;/li&gt;
+&lt;li&gt;the concept of Datamaps, additional structures (Time Series, Bloom filter, Lucene full-text, Materialized Views); to reduce execution time for some classes of analytics queries;&lt;/li&gt;
+&lt;li&gt;the support of streaming use cases via near-real time insertion.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;That's quite a lot of features! So, let's see how to make use of each one of them. As usual, I will refer to a CentOS 7 system; there are not so many tools that need to be installed: besides the usual &lt;code&gt;wget&lt;/code&gt;, &lt;code&gt;git&lt;/code&gt;, and &lt;code&gt;Java 8&lt;/code&gt;, we will need &lt;code&gt;gcc&lt;/code&gt; in order to compile the data generation library.&lt;/p&gt;
+&lt;h2&gt;Data&lt;/h2&gt;
+&lt;p&gt;In order to generate data to load in our CarbonData tables we will use the TPC-H &lt;em&gt;dbgen&lt;/em&gt; tool, which is commonly used for database benchmarks (and, in fact, is used to benchmark CarbonData as well). The tool creates synthetic data based on a real-world scenario, where vendors place orders to buy parts from suppliers and to sell parts to customers. The TPC-H benchmark includes a query generation tool as well, which we won't use here.&lt;/p&gt;
+&lt;p&gt;To build our dataset, let's clone the repo into &lt;code&gt;/tmp&lt;/code&gt; (or any other folder) and build the tools:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ &lt;span class="nb"&gt;cd&lt;/span&gt; /tmp
+$ git clone https://github.com/electrum/tpch-dbgen
+$ &lt;span class="nb"&gt;cd&lt;/span&gt; tpch-dbgen
+$ make
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and, once finished, let's run the following command:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ ./dbgen -v
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;which will create 8 files for a total size of about 1 GB. If you want to create larger files you can use the &lt;code&gt;-s&lt;/code&gt; parameter (the scale factor) as in this example, which will generate about 10 GB of data:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ ./dbgen -s &lt;span class="m"&gt;10&lt;/span&gt; -v
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We will mostly use only one file, &lt;code&gt;lineitem.tbl&lt;/code&gt;, which is the largest one; anyway, the other files can provide some more context - and can be used for more experiments.&lt;/p&gt;
+&lt;h2&gt;Spark and CarbonData&lt;/h2&gt;
+&lt;p&gt;We will explore CarbonData features using the simplest setup: a Spark shell in standalone mode with CarbonData already packaged as a JAR file. We therefore need to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;download Spark from &lt;a href="https://www.apache.org/dyn/closer.lua/spark/spark-2.3.4/spark-2.3.4-bin-hadoop2.7.tgz"&gt;this page&lt;/a&gt; (we will use Spark 2.3.4 since the latest version of CarbonData is compatible with Spark up to 2.3.2);&lt;/li&gt;
+&lt;li&gt;extract the content of the &lt;code&gt;.tgz&lt;/code&gt; file into a folder (e.g. &lt;code&gt;/opt/spark&lt;/code&gt;);&lt;/li&gt;
+&lt;li&gt;download the latest version of the CarbonData JAR file built for Spark 2.3.2 from &lt;a href="https://dist.apache.org/repos/dist/release/carbondata/1.6.0/apache-carbondata-1.6.0-bin-spark2.3.2-hadoop2.7.2.jar"&gt;here&lt;/a&gt;;&lt;/li&gt;
+&lt;li&gt;copy the JAR file to the Spark folder.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We can then launch the Spark shell from the Spark folder as follows:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ spark-shell --jars apache-carbondata-1.6.0-bin-spark2.3.2-hadoop2.7.2.jar
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and, once the shell is running, we need to create a &lt;code&gt;CarbonSession&lt;/code&gt; (which is similar to a &lt;code&gt;SparkSession&lt;/code&gt;). Since we will run everything on the local filesystem, we can create a folder such as &lt;code&gt;/var/carbondata&lt;/code&gt; (and assign it a suitable owner and permissions) where we will store both the data and the metastore; supposing that the data will be saved in &lt;code&gt;/var/carbondata/data/store&lt;/code&gt; and the metastore in &lt;code&gt;/var/carbondata/metastore&lt;/code&gt;, the &lt;code&gt;CarbonSession&lt;/code&gt; can be created as follows:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;org.apache.spark.sql.SparkSession&lt;/span&gt;
+&lt;span class="k"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;org.apache.spark.sql.CarbonSession._&lt;/span&gt;
+
+&lt;span class="k"&gt;val&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt; &lt;span class="k"&gt;=&lt;/span&gt; &lt;span class="nc"&gt;SparkSession&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;builder&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt;
+            &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sc&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getConf&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+            &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getOrCreateCarbonSession&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/var/carbondata/data/store&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;/var/carbondata/metastore&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;(Pro tip: a whole piece of code can be pasted and run into the Scala shell by running the command &lt;code&gt;:paste&lt;/code&gt;, pasting the code, and pressing Ctrl + D)&lt;/p&gt;
+&lt;p&gt;Now we are ready!&lt;/p&gt;
+&lt;h2&gt;Creating tables and loading data&lt;/h2&gt;
+&lt;p&gt;First of all, we need to create a table and load some data into it. Every SQL command can be run via the &lt;code&gt;carbon.sql()&lt;/code&gt; method, so we can create a &lt;code&gt;lineitem&lt;/code&gt; table in this way:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE TABLE IF NOT EXISTS lineitem(l_shipdate DATE, l_shipmode STRING, l_shipinstruct STRING, l_returnflag STRING, l_receiptdate DATE, l_orderkey INT, l_partkey INT, l_suppkey STRING, l_linenumber INT, l_quantity DOUBLE, l_extendedprice DOUBLE, l_discount DOUBLE, l_tax DOUBLE, l_linestatus STRING, l_commitdate DATE, l_comment STRING) STORED AS carbondata&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and then load data like so:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;LOAD DATA INPATH &amp;#39;/tmp/tpch-dbgen/lineitem.tbl&amp;#39; INTO TABLE lineitem OPTIONS(&amp;#39;DELIMITER&amp;#39; = &amp;#39;|&amp;#39;, &amp;#39;FILEHEADER&amp;#39; = &amp;#39;l_orderkey,l_partkey,l_suppkey,l_linenumber,l_quantity,l_extendedprice,l_discount,l_tax,l_returnflag,l_linestatus,l_shipdate,l_commitdate,l_receiptdate,l_shipinstruct,l_shipmode,l_comment&amp;#39;)&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We can run SQL queries like so:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT COUNT(*) FROM lineitem WHERE l_shipdate = &amp;#39;1996-06-06&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and also time every query using &lt;code&gt;spark.time()&lt;/code&gt;, for instance:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;spark.time(carbon.sql(&amp;quot;SELECT COUNT(*) FROM lineitem WHERE l_shipdate = &amp;#39;1996-06-06&amp;#39;&amp;quot;).show)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Multi-dimensional keys (MDKs)&lt;/h2&gt;
+&lt;p&gt;Let's now create and populate a new table using multi-dimensional keys (MDKs) by means of the &lt;code&gt;SORT_COLUMNS&lt;/code&gt; table property:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE TABLE IF NOT EXISTS lineitem_sorted(l_shipdate DATE, l_shipmode STRING, l_shipinstruct STRING, l_returnflag STRING, l_receiptdate DATE, l_orderkey INT, l_partkey INT, l_suppkey STRING, l_linenumber INT, l_quantity DOUBLE, l_extendedprice DOUBLE, l_discount DOUBLE, l_tax DOUBLE, l_linestatus STRING, l_commitdate DATE, l_comment STRING) STORED AS carbondata TBLPROPERTIES (&amp;#39;SORT_COLUMNS&amp;#39; = &amp;#39;l_shipdate,l_shipmode,l_shipinstruct,l_receiptdate,l_commitdate,l_returnflag,l_linestatus&amp;#39;)&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;LOAD DATA INPATH &amp;#39;/tpch-dbgen/small/lineitem.tbl&amp;#39; INTO TABLE lineitem_dic OPTIONS(&amp;#39;DELIMITER&amp;#39; = &amp;#39;|&amp;#39;, &amp;#39;FILEHEADER&amp;#39; = &amp;#39;l_orderkey,l_partkey,l_suppkey,l_linenumber,l_quantity,l_extendedprice,l_discount,l_tax,l_returnflag,l_linestatus,l_shipdate,l_commitdate,l_receiptdate,l_shipinstruct,l_shipmode,l_comment&amp;#39;)&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Let's run the following query:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT COUNT(*) FROM lineitem WHERE l_shipdate = &amp;#39;1996-06-06&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;On my machine, a VPS with 8 vCPUs and 32 GB of RAM, it took about 4.2 seconds. Now let's run the same query on the &lt;code&gt;lineitem_sorted&lt;/code&gt; table:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT COUNT(*) FROM lineitem_sorted WHERE l_shipdate = &amp;#39;1996-06-06&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;It took 90 &lt;em&gt;milliseconds&lt;/em&gt;! So, indeed, MDKs are improving significantly the queries that make use of filters. Let's try with another query on both tables:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT l_shipdate, COUNT(*) c FROM lineitem WHERE l_commitdate &amp;lt; &amp;#39;1996-01-01&amp;#39; GROUP BY l_shipdate ORDER BY c DESC&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT l_shipdate, COUNT(*) c FROM lineitem_sorted WHERE l_commitdate &amp;lt; &amp;#39;1996-01-01&amp;#39; GROUP BY l_shipdate ORDER BY c DESC&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;In this case the first one takes about 5 seconds, while the second one takes about 3 seconds.&lt;/p&gt;
+&lt;p&gt;Let's now take a look at the directories and files that CarbonData created under &lt;code&gt;/var/carbondata/data/store&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ ls -lah /var/carbondata/data/store
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We'll see that there are two folders, &lt;code&gt;default&lt;/code&gt; and &lt;code&gt;_system&lt;/code&gt;, where the first one is used to store the default database; since we didn't create a new database, our tables will be a &lt;code&gt;lineitem&lt;/code&gt; and a &lt;code&gt;lineitem_sorted&lt;/code&gt; directories within &lt;code&gt;default&lt;/code&gt;. If we have &lt;code&gt;tree&lt;/code&gt; installed (and, if not, we can simply install it with &lt;code&gt;sudo yum install tree&lt;/code&gt;), we can see for instance the structure of &lt;code&gt;lineitem&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ tree /var/carbondata/data/store/default/lineitem
+
+:::text
+/var/carbondata/data/store/default/lineitem
+├── Fact
+│   └── Part0
+│       └── Segment_0
+│           ├── 0_1569876396402.carbonindexmerge
+│           └── part-0-0_batchno0-0-0-1569876355317.carbondata
+├── LockFiles
+│   ├── Segment_0.lock
+│   └── tablestatus.lock
+└── Metadata
+    ├── schema
+    ├── segments
+    │   └── 0_1569876355317.segment
+    └── tablestatus
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The file names will most likely be different, but we are interested in the directory structure; for more details on CarbonData file format, take a look at the &lt;a href="https://carbondata.apache.org/file-structure-of-carbondata.html"&gt;documentation&lt;/a&gt;. If we look at the size of the &lt;code&gt;Fact&lt;/code&gt; directory, we will see that it is approximately 222 MB:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ du -sh /var/carbondata/data/store/default/lineitem/Fact
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If we look at the size of the same directory for the &lt;code&gt;lineitem_sorted&lt;/code&gt; directory, instead, we will see that it's 190 MB! So, MDKs are convenient from the storage point of view as well.&lt;/p&gt;
+&lt;h2&gt;Update and Delete operations&lt;/h2&gt;
+&lt;p&gt;Update operations are very simple in CarbonData. The format is the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;UPDATE&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="k"&gt;table_name&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; 
+&lt;span class="k"&gt;SET&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;column_name_1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;column_name_2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;...&lt;/span&gt; &lt;span class="n"&gt;column_name_n&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;column_1_expression&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;column_2_expression&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;...&lt;/span&gt; &lt;span class="n"&gt;column_n_expression&lt;/span&gt; &lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt; &lt;span class="k"&gt;WHERE&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;filter_condition&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="err"&gt;}&lt;/span&gt; &lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;for simple updates where the column expressions are calculated from the same table, or the following for more generic updates:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;UPDATE&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="k"&gt;table_name&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="k"&gt;SET&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;column_name_1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;column_name_2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;SELECT&lt;/span&gt; &lt;span class="n"&gt;sourceColumn_1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;sourceColumn_2&lt;/span&gt; &lt;span class="k"&gt;FROM&lt;/span&gt; &lt;span class="n"&gt;sourceTable&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt; &lt;span class="k"&gt;WHERE&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;filter_condition&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="err"&gt;}&lt;/span&gt; &lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt; &lt;span class="k"&gt;WHERE&lt;/span&gt; &lt;span class="err"&gt;{&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;filter_condition&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="err"&gt;}&lt;/span&gt; &lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Let's see an example. First of all, let's check the total number of records and the number of records for a specific &lt;code&gt;l_shipdate&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT COUNT(*) FROM lineitem_sorted&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+
+&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT COUNT(*) FROM lineitem_sorted WHERE l_shipdate = &amp;#39;1996-06-06&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We get 6,001,215 and 2,454 results respectively. Let's update the &lt;code&gt;l_shipdate&lt;/code&gt; for those same records:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;UPDATE lineitem_sorted SET (l_shipdate) = (&amp;#39;2016-06-06&amp;#39;) WHERE l_shipdate = &amp;#39;1996-06-06&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now, running the second &lt;code&gt;COUNT&lt;/code&gt; query will not return any results, while we'll get 2,454 results by running this query instead:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT COUNT(*) FROM lineitem_sorted WHERE l_shipdate = &amp;#39;2016-06-06&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The Delete operation is even simpler. Let's run the following query:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;DELETE FROM lineitem_sorted WHERE l_shipdate = &amp;#39;2016-06-06&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now the last &lt;code&gt;COUNT&lt;/code&gt; query will return zero results.&lt;/p&gt;
+&lt;h2&gt;Datamaps&lt;/h2&gt;
+&lt;p&gt;The concept of datamap is quite interesting: basically, a new data structure is added on top of the existing data in order to improve the performance of some specific queries. Let's look for instance at the &lt;em&gt;Lucene&lt;/em&gt; datamap, which adds a Lucene-based full-text index to a give column. &lt;/p&gt;
+&lt;h3&gt;Lucene datamap&lt;/h3&gt;
+&lt;p&gt;In order to create a Lucene full-text datamap, we run the following query:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE DATAMAP comment ON TABLE lineitem_sorted USING &amp;#39;lucene&amp;#39; DMPROPERTIES(&amp;#39;INDEX_COLUMNS&amp;#39; = &amp;#39;l_comment&amp;#39;, &amp;#39;SPLIT_BLOCKLET&amp;#39; = &amp;#39;false&amp;#39;)&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We have just created a Lucene index on the &lt;code&gt;l_comment&lt;/code&gt; column which stores the BlockletIds as well (it is not very clear to me why but, if this property is not present, the full-text queries throw exceptions). When the index is ready we can run queries such as the following, where we ask for comments containing words that start with &lt;code&gt;quick&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT l_comment FROM lineitem_sorted WHERE TEXT_MATCH_WITH_LIMIT(&amp;#39;l_comment:quick*&amp;#39;, 10)&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;which will return a result like this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;+------------------------------------------+
+|l_comment                                 |
++------------------------------------------+
+|fix. quickly ironic instruct              |
+| packages detect furiously quick          |
+|ely ironic deposits sleep quickly un      |
+|ffily regular ideas haggle quick          |
+|y ironic instructions among the quick     |
+|ts wake quickly after the u               |
+|e quickly along the express ideas-- slyly |
+|ctions. quickly even                      |
+|about the quickly express pl              |
+|s nag quick                               |
+|ly regular deposits. even deposits kindle |
+|ly. furiously                             |
+|ajole slyly after the blithely re         |
+|aggle blithely slyly even inst            |
+|ithe pinto beans. special, iron           |
+|silent foxes. slyly                       |
+|sts sleep af                              |
+|. daring pinto beans wake                 |
+|slyly after the furio                     |
+| ironic requests. final, ironic depo      |
++------------------------------------------+
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;or like the following, where we ask for comments containing words that start with &lt;code&gt;quick&lt;/code&gt; but no words that start with &lt;code&gt;ironic&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT l_comment FROM lineitem_sorted WHERE TEXT_MATCH_WITH_LIMIT(&amp;#39;l_comment:quick* -l_comment:ironic*&amp;#39;, 10)&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;which will result in something like this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;+------------------------------------------+
+|l_comment                                 |
++------------------------------------------+
+| packages detect furiously quick          |
+|ffily regular ideas haggle quick          |
+|ts wake quickly after the u               |
+|e quickly along the express ideas-- slyly |
+|ctions. quickly even                      |
+|about the quickly express pl              |
+|s nag quick                               |
+|gle slowly. quickly regular theodo        |
+|t quickly blithely                        |
+|unts affix quickly! regu                  |
+|ly. furiously                             |
+|aggle blithely slyly even inst            |
+|silent foxes. slyly                       |
+|sts sleep af                              |
+|. daring pinto beans wake                 |
+|slyly after the furio                     |
+| ironic requests. final, ironic depo      |
+| orbits. blithely unusual ideas above th  |
+|ost after the furiously express           |
+|kly final accounts wake b                 |
++------------------------------------------+
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Another thing which is not clearly specified is why more than 10 results are returned even though, starting with the 11th, they seem irrelevant; until this is clarified, I would recommend to add a &lt;code&gt;LIMIT 10&lt;/code&gt; to the query.&lt;/p&gt;
+&lt;h3&gt;Time Series datamap&lt;/h3&gt;
+&lt;p&gt;Another useful datamap is the Time Series datamap, which creates a separate table to optimize queries on time series. We can run queries like the following without a datamap:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT TIMESERIES(l_shipdate, &amp;#39;year&amp;#39;) t, AVG(l_quantity) FROM lineitem_sorted GROUP BY t ORDER BY t DESC&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;where we calculate the average &lt;code&gt;l_quantity&lt;/code&gt; for every year, but the performance would not be great (it takes about 4.2 seconds on my machine). We can instead create a Time Series datamap, but we first need to convert the &lt;code&gt;l_shipdate&lt;/code&gt; to a &lt;code&gt;timestamp&lt;/code&gt; field, and since we already created a datamap on our table we cannot run any &lt;code&gt;ALTER TABLE&lt;/code&gt; statements; we can anyway create a new table with a &lt;em&gt;CTAS&lt;/em&gt; (&lt;em&gt;create table as&lt;/em&gt;) statement adding a &lt;code&gt;l_shipdate_t&lt;/code&gt; field of type &lt;code&gt;timestamp&lt;/code&gt; from the existing &lt;code&gt;l_shipdate&lt;/code&gt; field:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE TABLE lineitem_t STORED AS carbondata AS SELECT *, timestamp(l_shipdate) l_shipdate_t FROM lineitem&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and then create a datamap on top of the newly-created table:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE DATAMAP agg_qty_year ON TABLE lineitem_t USING &amp;#39;timeseries&amp;#39; DMPROPERTIES(&amp;#39;EVENT_TIME&amp;#39; = &amp;#39;l_shipdate_t&amp;#39;, &amp;#39;YEAR_GRANULARITY&amp;#39; = &amp;#39;1&amp;#39;) AS SELECT l_shipdate_t, AVG(l_quantity) qty FROM lineitem_t GROUP BY l_shipdate_t&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now, the previous query (rewritten just to use the new table and the added field) will run much faster:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT TIMESERIES(l_shipdate_t, &amp;#39;year&amp;#39;) t, AVG(l_quantity) FROM lineitem_t GROUP BY t ORDER BY t DESC&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;(it takes less than 1 second on my machine).&lt;/p&gt;
+&lt;p&gt;The query and the datamap we have created work on a year granularity, but we can create as many datamaps as we need to support finer granularities (down to the minute).&lt;/p&gt;
+&lt;h3&gt;Multivalue datamap&lt;/h3&gt;
+&lt;p&gt;The last datamap we will see (as we are not going to cover the Bloom datamap) is the Multivalued (MV) datamap, which generalizes the deprecated Pre-Aggregate datamap. This type of datamap is very useful for aggregation queries such as the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT l_partkey, AVG(l_quantity) avg_q, AVG(l_extendedprice) avg_p FROM lineitem_sorted GROUP BY l_partkey ORDER BY avg_q DESC LIMIT 10&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;where we calculate several aggregated quantities after grouping by the &lt;code&gt;l_partkey&lt;/code&gt; field, whose cardinality is relatively high. This query takes about 2.8 seconds on my machine.&lt;/p&gt;
+&lt;p&gt;Let's create an MV datamap:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE DATAMAP avg_qty_price ON TABLE lineitem_sorted USING &amp;#39;MV&amp;#39; AS SELECT l_partkey, AVG(l_quantity) avg_q, AVG(l_extendedprice) avg_p FROM lineitem_sorted GROUP BY l_partkey&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now the previous query takes less than half a second. It is worth noting that, now that the datamap is in place, every time that new data are added (for instance via the &lt;code&gt;INSERT&lt;/code&gt; statement) the datamap will reflect the changes.&lt;/p&gt;
+&lt;p&gt;We can also make sure that the query actually makes use of the datamap by using the &lt;code&gt;explain&lt;/code&gt; method:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;carbon.sql&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;SELECT l_partkey, AVG(l_quantity) avg_q, AVG(l_extendedprice) avg_p FROM lineitem_sorted GROUP BY l_partkey ORDER BY avg_q DESC LIMIT 10&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;.explain
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The resulting plan is the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;== Physical Plan ==
+TakeOrderedAndProject(limit=10, orderBy=[avg_q#2573 DESC NULLS LAST], output=[l_partkey#2689,avg_q#2573,avg_p#2574])
++- *(1) Project [lineitem_sorted_l_partkey#2572 AS l_partkey#2689, avg_q#2573, avg_p#2574]
+   +- *(1) FileScan carbondata default.avg_qty_price_table[lineitem_sorted_l_partkey#2572,avg_q#2573,avg_p#2574] ReadSchema: struct&amp;lt;avg_p:double,avg_q:double,lineitem_sorted_l_partkey:int&amp;gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;where we can see a &lt;code&gt;FileScan&lt;/code&gt; on the &lt;code&gt;avg_qty_price_table&lt;/code&gt; table (the MV datamap is backed by a table).&lt;/p&gt;
+&lt;h2&gt;Conclusions&lt;/h2&gt;
+&lt;p&gt;We have seen some of the best features that CarbonData offers, although we haven't looked in too much detail at the performance and at the structure of the data, and we haven't explored the streaming capabilities and other integrations. The documentation is quite good even though some changes are not well described (for instance, after the &lt;code&gt;SORT_COLUMNS&lt;/code&gt; option has been introduced, do we still need the &lt;code&gt;DICTIONARY_INCLUDE&lt;/code&gt; option? what is the difference?), but the project is still alive and has a fairly large community to support it. I definitely want to find out more and to follow it closely.&lt;/p&gt;</content><category term="Big Data"></category><category term="data storage format"></category></entry><entry><title>Apache Rya</title><link href="https://apothem.blog/apache-rya.html" rel="alternate"></link><published>2019-08-31T00:00:00+01:00</published><updated>2019-08-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-08-31:/apache-rya.html</id><summary type="html">&lt;p&gt;Since I have been working with Semantic Web technologies for quite some time, I was looking forward to explore new Apache projects within the area. &lt;a href="https://rya.incubator.apache.org/"&gt;Apache Rya&lt;/a&gt; fit the purpose perfectly, as it is a SPARQL-enabled triplestore for Big Data, promising to scale to billions of triples across multiple nodes …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Since I have been working with Semantic Web technologies for quite some time, I was looking forward to explore new Apache projects within the area. &lt;a href="https://rya.incubator.apache.org/"&gt;Apache Rya&lt;/a&gt; fit the purpose perfectly, as it is a SPARQL-enabled triplestore for Big Data, promising to scale to billions of triples across multiple nodes. If you are completely lost after this terminology, you can take a look at the &lt;a href="https://en.wikipedia.org/wiki/Semantic_Web"&gt;Wikipedia article&lt;/a&gt; and the &lt;a href="https://www.w3.org/2009/Talks/0615-SanJose-tutorial-IH/Slides.pdf"&gt;W3C presentation&lt;/a&gt; to get an idea of the subject.&lt;/p&gt;
 &lt;p&gt;Rya runs on top of another Apache project, &lt;a href="https://accumulo.apache.org/"&gt;Accumulo&lt;/a&gt; (a distributed key/value store), and is deployed as a Web service. Since Accumulo by itself requires a fairly complex installation procedure as it is based on &lt;a href="https://hadoop.apache.org/"&gt;Apache Hadoop&lt;/a&gt; and &lt;a href="https://zookeeper.apache.org/"&gt;Apache Zookeeper&lt;/a&gt;, we will use yet another great Apache project, &lt;a href="http://fluo.apache.org/"&gt;Apache Fluo&lt;/a&gt; (or, more specifically, its subproject &lt;a href="https://github.com/apache/fluo-uno"&gt;Fluo Uno&lt;/a&gt;), to simplify the whole procedure; we will then use a well-known server, &lt;a href="http://tomcat.apache.org/"&gt;Apache Tomcat&lt;/a&gt;, to run it.&lt;/p&gt;
 &lt;p&gt;In this article we will see how to get a single-machine Rya instance up and running and how to perform basic operations; scalability, management, and more complex operations will be covered in another article. As usual, the reference operating system will be CentOS 7 (if possible, an empty/fresh instance).&lt;/p&gt;
 &lt;h2&gt;Preparing the environment&lt;/h2&gt;
