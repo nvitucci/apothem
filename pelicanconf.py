@@ -35,8 +35,16 @@ DEFAULT_PAGINATION = 4
 
 THEME_TEMPLATES_OVERRIDES = ['templates']
 
-STATIC_PATHS = ['images', 'extra/CNAME']
-EXTRA_PATH_METADATA = {'extra/CNAME': {'path': 'CNAME'},}
+STATIC_PATHS = ['images', 'extra/CNAME', 'extra/robots.txt', 'extra/favicon.ico']
+EXTRA_PATH_METADATA = {
+    'extra/CNAME': {'path': 'CNAME'},
+    'extra/robots.txt': {'path': 'robots.txt'},
+    'extra/favicon.ico': {'path': 'favicon.ico'},
+}
+
+# Default value is ['index', 'tags', 'categories', 'authors', 'archives']
+DIRECT_TEMPLATES = ['index', 'tags', 'categories', 'authors', 'archives', 'sitemap']
+SITEMAP_SAVE_AS = 'sitemap.xml'
 
 # Theme-related settings
 THEME = 'alchemy'
