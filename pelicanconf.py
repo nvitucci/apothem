@@ -55,3 +55,6 @@ MAIN_MENU = True
 
 SITEIMAGE = '/images/profile.svg width=180'
 HIDE_AUTHORS = True
+
+# Description meta tag
+DESCRIPTION = 'Learning about, experimenting with, and blogging on an Apache project every month'
