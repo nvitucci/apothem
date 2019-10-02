@@ -53,7 +53,8 @@ USE_FOLDER_AS_CATEGORY = True
 DISPLAY_PAGES_ON_MENU = True
 MAIN_MENU = True
 
-SITEIMAGE = '/images/profile.svg width=180'
+MAIN_IMAGE = '/images/profile.svg'
+SITEIMAGE = ' '.join([MAIN_IMAGE, 'width=180'])
 HIDE_AUTHORS = True
 
 # Description meta tag
