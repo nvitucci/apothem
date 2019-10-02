@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+      <loc>https://apothem.blog/apache-carbondata.html</loc>
+      <priority>0.8</priority>
+    </url>
+    <url>
+      <loc>https://apothem.blog/apache-rya.html</loc>
+      <priority>0.8</priority>
+    </url>
+    <url>
+      <loc>https://apothem.blog/apache-atlas-part-2.html</loc>
+      <priority>0.8</priority>
+    </url>
+    <url>
+      <loc>https://apothem.blog/apache-atlas.html</loc>
+      <priority>0.8</priority>
+    </url>
+    <url>
+      <loc>https://apothem.blog/apache-metamodel.html</loc>
+      <priority>0.8</priority>
+    </url>
+    <url>
+      <loc>https://apothem.blog/apache-daffodil.html</loc>
+      <priority>0.8</priority>
+    </url>
+    <url>
+      <loc>https://apothem.blog/pages/about.html</loc>
+      <priority>1.0</priority>
+    </url>
+    <url>
+      <loc>https://apothem.blog/pages/faq.html</loc>
+      <priority>1.0</priority>
+    </url>
+</urlset>
