@@ -31,7 +31,7 @@ We need to create a source table that CarbonData will use to interpret the forma
             'delimiter' = ',')
        """)
 
-The table properties should be self-explanatory; they are basically Spark Structured Streaming [DataStreamReader]'s(https://spark.apache.org/docs/2.3.4/structured-streaming-programming-guide.html#creating-streaming-dataframes-and-streaming-datasets) options. Once the source table is created, we need to create a sink table as well:
+The table properties should be self-explanatory; they are basically Spark Structured Streaming [DataStreamReader](https://spark.apache.org/docs/2.3.4/structured-streaming-programming-guide.html#creating-streaming-dataframes-and-streaming-datasets)'s options. Once the source table is created, we need to create a sink table as well:
 
     :::scala
     > carbon.sql(s"""
