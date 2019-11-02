@@ -1,5 +1,519 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/all.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2019-09-30T00:00:00+01:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache CarbonData</title><link href="https://apothem.blog/apache-carbondata.html" rel="alternate"></link><published>2019-09-30T00:00:00+01:00</published><updated>2019-09-30T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-09-30:/apache-carbondata.html</id><summary type="html">&lt;p&gt;In the last few years I have been working quite extensively with Apache Spark, and I have come to realize that a good storage format goes a long way toward efficiency and speed. For instance, when dealing with large CSV or JSON files, adding an &lt;a href="https://parquet.apache.org/"&gt;Apache Parquet&lt;/a&gt; writing step would …&lt;/p&gt;</summary><content type="html">&lt;p&gt;In the last few years I have been working quite extensively with Apache Spark, and I have come to realize that a good storage format goes a long way toward efficiency and speed. For instance, when dealing with large CSV or JSON files, adding an &lt;a href="https://parquet.apache.org/"&gt;Apache Parquet&lt;/a&gt; writing step would improve performance in virtually every subsequent task, or at least in all tasks that would profit from a columnar storage. I have briefly dabbled with &lt;a href="https://orc.apache.org/"&gt;Apache ORC&lt;/a&gt; and, then, I found out a rather new format which I haven't really explored until last month, which is what we will see in this article: enter &lt;a href="https://carbondata.apache.org/"&gt;Apache CarbonData&lt;/a&gt;.&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/all.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2019-10-31T00:00:00+00:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache CarbonData (part 2)</title><link href="https://apothem.blog/apache-carbondata-part-2.html" rel="alternate"></link><published>2019-10-31T00:00:00+00:00</published><updated>2019-10-31T00:00:00+00:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-10-31:/apache-carbondata-part-2.html</id><summary type="html">&lt;p&gt;In the &lt;a href="https://apothem.blog/apache-carbondata.html"&gt;previous article&lt;/a&gt; we have seen many exciting features that CarbonData offers, but we haven't explored them all; in this article we will try out the streaming capabilities and we will delve a bit deeper into the data layout, looking at concept like compaction and partitioning, and the way …&lt;/p&gt;</summary><content type="html">&lt;p&gt;In the &lt;a href="https://apothem.blog/apache-carbondata.html"&gt;previous article&lt;/a&gt; we have seen many exciting features that CarbonData offers, but we haven't explored them all; in this article we will try out the streaming capabilities and we will delve a bit deeper into the data layout, looking at concept like compaction and partitioning, and the way the different files are managed.&lt;/p&gt;
+&lt;h2&gt;Streaming&lt;/h2&gt;
+&lt;p&gt;Another feature that sets CarbonData apart from other Hadoop data formats is the support for streaming data. Rather than writing many small files or waiting until a larger file can be written, CarbonData uses a slightly different format where single rows can be added as they arrive; such files can later be converted to the standard columnar format (via compaction) in order to support all the features we have already discussed. Every task, including the creation of the sink table and the management of the streaming job, can be performed using SQL commands. Let's see how.&lt;/p&gt;
+&lt;p&gt;First of all, we need to create a streaming source. An easy way to do this is to use &lt;a href="https://en.wikipedia.org/wiki/Netcat"&gt;netcat&lt;/a&gt;, a Linux utility that, among many other things, can be used to send data through a socket, thus simulating a process streaming data over the network. We need to open a new terminal (or to use another utility like &lt;a href="https://en.wikipedia.org/wiki/GNU_Screen"&gt;screen&lt;/a&gt; or &lt;a href="https://en.wikipedia.org/wiki/Tmux"&gt;tmux&lt;/a&gt;) in order to keep &lt;em&gt;netcat&lt;/em&gt; running while we use the Spark shell; on the new terminal we need to run the following command:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ nc -lk &lt;span class="m"&gt;9099&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;which will seem to be "hanging up", while it will actually be waiting for our input. Let's leave it for now and switch to our running Spark shell with a CarbonData session active.&lt;/p&gt;
+&lt;p&gt;We need to create a source table that CarbonData will use to interpret the format of the incoming data. For instance, if we want to stream data in CSV format where the first field is an integer and the second is a string, we can create the table like the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;s&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;    CREATE TABLE source(col1 INT, col2 STRING)&lt;/span&gt;
+&lt;span class="s"&gt;    STORED AS carbondata&lt;/span&gt;
+&lt;span class="s"&gt;    TBLPROPERTIES(&lt;/span&gt;
+&lt;span class="s"&gt;        &amp;#39;streaming&amp;#39; = &amp;#39;source&amp;#39;,&lt;/span&gt;
+&lt;span class="s"&gt;        &amp;#39;format&amp;#39; = &amp;#39;socket&amp;#39;,&lt;/span&gt;
+&lt;span class="s"&gt;        &amp;#39;host&amp;#39; = &amp;#39;localhost’,&lt;/span&gt;
+&lt;span class="s"&gt;        &amp;#39;port&amp;#39; = &amp;#39;9099&amp;#39;,&lt;/span&gt;
+&lt;span class="s"&gt;        &amp;#39;record_format&amp;#39; = &amp;#39;csv&amp;#39;,&lt;/span&gt;
+&lt;span class="s"&gt;        &amp;#39;delimiter&amp;#39; = &amp;#39;,&amp;#39;)&lt;/span&gt;
+&lt;span class="s"&gt;   &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The table properties should be self-explanatory; they are basically Spark Structured Streaming [DataStreamReader]'s(https://spark.apache.org/docs/2.3.4/structured-streaming-programming-guide.html#creating-streaming-dataframes-and-streaming-datasets) options. Once the source table is created, we need to create a sink table as well:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;s&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;    CREATE TABLE sink(col1 INT, col2 STRING)&lt;/span&gt;
+&lt;span class="s"&gt;    STORED AS carbondata&lt;/span&gt;
+&lt;span class="s"&gt;    TBLPROPERTIES(&amp;#39;streaming&amp;#39; = &amp;#39;true&amp;#39;)&lt;/span&gt;
+&lt;span class="s"&gt;  &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;In this case our sink table mimics the source table exactly, but this is not mandatory. Now we are ready to create the actual streaming job:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;s&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;    CREATE STREAM job1 ON TABLE sink&lt;/span&gt;
+&lt;span class="s"&gt;    STMPROPERTIES(&lt;/span&gt;
+&lt;span class="s"&gt;        &amp;#39;trigger&amp;#39; = &amp;#39;ProcessingTime&amp;#39;,&lt;/span&gt;
+&lt;span class="s"&gt;        &amp;#39;interval&amp;#39; = &amp;#39;1 seconds&amp;#39;)&lt;/span&gt;
+&lt;span class="s"&gt;    AS&lt;/span&gt;
+&lt;span class="s"&gt;        SELECT *&lt;/span&gt;
+&lt;span class="s"&gt;        FROM source&lt;/span&gt;
+&lt;span class="s"&gt;  &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;which is translated as a Spark &lt;a href="https://spark.apache.org/docs/2.3.4/structured-streaming-programming-guide.html#starting-streaming-queries"&gt;Streaming Query&lt;/a&gt;. That's all the setup we need.&lt;/p&gt;
+&lt;p&gt;If we run a &lt;code&gt;SELECT&lt;/code&gt; query on the sink table, we will not see any results; this is normal because we haven't streamed any data yet. Let's switch to the terminal where &lt;em&gt;netcat&lt;/em&gt; is running and add a few lines like the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;1,value1
+2,value2
+10,value10
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;then switch back to the Spark shell and run a &lt;code&gt;SELECT&lt;/code&gt; query on the sink table again:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT * FROM sink&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now we should see the rows we have just inserted!&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;+----+-------+
+|col1|   col2|
++----+-------+
+|   1| value1|
+|   2| value2|
+|  10|value10|
++----+-------+
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;While the streaming job is running, we can see some information on the job itself by running the following command:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SHOW STREAMS&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;To terminate the streaming job we need to run a &lt;code&gt;DROP&lt;/code&gt; command using the stream name:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;DROP STREAM job1&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;After closing the stream, we could decide to &lt;em&gt;compact&lt;/em&gt; the sink table and convert its files to the standard CarbonData column-based format. Let's check the table's &lt;em&gt;segments&lt;/em&gt; first:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SHOW SEGMENTS FOR TABLE sink&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;which should output something like the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;+-----------------+---------+--------------------+-------------+---------+-----------+---------+----------+
+|SegmentSequenceId|   Status|     Load Start Time|Load End Time|Merged To|File Format|Data Size|Index Size|
++-----------------+---------+--------------------+-------------+---------+-----------+---------+----------+
+|                0|Streaming|2019-10-31 22:46:...|           NA|       NA|     ROW_V1|   634.0B|    174.0B|
++-----------------+---------+--------------------+-------------+---------+-----------+---------+----------+
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Let's now compact the table:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;ALTER TABLE sink COMPACT &amp;#39;CLOSE_STREAMING&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and check the segments again:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;+-----------------+---------+--------------------+--------------------+---------+-----------+---------+----------+
+|SegmentSequenceId|   Status|     Load Start Time|       Load End Time|Merged To|File Format|Data Size|Index Size|
++-----------------+---------+--------------------+--------------------+---------+-----------+---------+----------+
+|                1|  Success|2019-10-31 23:04:...|2019-10-31 23:04:...|       NA|COLUMNAR_V3|   1,22KB|    744.0B|
+|                0|Compacted|2019-10-31 22:46:...|2019-10-31 23:04:...|        1|     ROW_V1|   634.0B|    174.0B|
++-----------------+---------+--------------------+--------------------+---------+-----------+---------+----------+
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The format of the data has actually changed, and it cannot be changed back to &lt;code&gt;ROW_V1&lt;/code&gt;. We'll see compaction into more detail in the next section.&lt;/p&gt;
+&lt;h2&gt;Compaction&lt;/h2&gt;
+&lt;p&gt;Whenever we load data into CarbonData, a new folder called &lt;em&gt;segment&lt;/em&gt; is created; this makes dealing with transactions easier and helps maintaining consistency. In the long run, anyway, the growing number of segments degrades the query performance; &lt;em&gt;compaction&lt;/em&gt; can then be used to merge multiple segments into one.&lt;/p&gt;
+&lt;p&gt;CarbonData supports two main types of compaction besides the &lt;code&gt;CLOSE_STREAMING&lt;/code&gt; that we've seen in the previous section, namely &lt;em&gt;minor&lt;/em&gt; (based on the number of new segments) and &lt;em&gt;major&lt;/em&gt; (based on the size of the new segments). We'll see how they work using another table from the TPCH benchmark.&lt;/p&gt;
+&lt;p&gt;Let's create the &lt;code&gt;order&lt;/code&gt; table:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;s&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;    CREATE TABLE IF NOT EXISTS orders(&lt;/span&gt;
+&lt;span class="s"&gt;        o_orderdate DATE,&lt;/span&gt;
+&lt;span class="s"&gt;        o_orderpriority STRING,&lt;/span&gt;
+&lt;span class="s"&gt;        o_orderstatus STRING,&lt;/span&gt;
+&lt;span class="s"&gt;        o_orderkey INT,&lt;/span&gt;
+&lt;span class="s"&gt;        o_custkey STRING,&lt;/span&gt;
+&lt;span class="s"&gt;        o_totalprice DOUBLE,&lt;/span&gt;
+&lt;span class="s"&gt;        o_clerk STRING,&lt;/span&gt;
+&lt;span class="s"&gt;        o_shippriority INT,&lt;/span&gt;
+&lt;span class="s"&gt;        o_comment STRING)&lt;/span&gt;
+&lt;span class="s"&gt;    STORED AS carbondata&lt;/span&gt;
+&lt;span class="s"&gt;    TBLPROPERTIES(&lt;/span&gt;
+&lt;span class="s"&gt;        &amp;#39;SORT_COLUMNS&amp;#39; = &amp;#39;o_orderdate&amp;#39;)&lt;/span&gt;
+&lt;span class="s"&gt;  &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and the load some data:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;s&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;    LOAD DATA INPATH &amp;#39;/tmp/tpch-dbgen/orders.tbl&amp;#39;&lt;/span&gt;
+&lt;span class="s"&gt;    INTO TABLE orders&lt;/span&gt;
+&lt;span class="s"&gt;    OPTIONS(&lt;/span&gt;
+&lt;span class="s"&gt;        &amp;#39;DELIMITER&amp;#39; = &amp;#39;|&amp;#39;,&lt;/span&gt;
+&lt;span class="s"&gt;        &amp;#39;FILEHEADER&amp;#39; = &amp;#39;o_orderkey,o_custkey,o_orderstatus,o_totalprice,o_orderdate,o_orderpriority,o_clerk,o_shippriority,o_comment&amp;#39;)&lt;/span&gt;
+&lt;span class="s"&gt;  &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We can now look at the segment information for this table:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&amp;gt; carbon.sql(&amp;quot;SHOW SEGMENTS FOR TABLE orders&amp;quot;).show
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;which returns:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;+-----------------+-------+--------------------+--------------------+---------+-----------+---------+----------+
+|SegmentSequenceId| Status|     Load Start Time|       Load End Time|Merged To|File Format|Data Size|Index Size|
++-----------------+-------+--------------------+--------------------+---------+-----------+---------+----------+
+|                0|Success|2019-11-02 12:41:...|2019-11-02 12:41:...|       NA|COLUMNAR_V3|  51,20MB|    1,59KB|
++-----------------+-------+--------------------+--------------------+---------+-----------+---------+----------+
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and, if we look at the content of the CarbonData store directory containing the &lt;code&gt;order&lt;/code&gt; table, we will see something like this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ tree /var/carbondata/data/store/default/orders
+
+/var/carbondata/data/store/default/orders
+├── Fact
+│   └── Part0
+│       └── Segment_0
+│           ├── 0_1572694894322.carbonindexmerge
+│           └── part-0-0_batchno0-0-0-1572694887333.carbondata
+├── LockFiles
+│   ├── Segment_0.lock
+│   └── tablestatus.lock
+└── Metadata
+    ├── schema
+    ├── segments
+    │   └── 0_1572694887333.segment
+    └── tablestatus
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Let's now load some more data running the same &lt;code&gt;LOAD&lt;/code&gt; command as before for three more times (there will be duplicate rows, but it does not matter), then check again the segments:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SHOW SEGMENTS FOR TABLE orders&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;which look like this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;+-----------------+-------+--------------------+--------------------+---------+-----------+---------+----------+
+|SegmentSequenceId| Status|     Load Start Time|       Load End Time|Merged To|File Format|Data Size|Index Size|
++-----------------+-------+--------------------+--------------------+---------+-----------+---------+----------+
+|                3|Success|2019-11-02 12:50:...|2019-11-02 12:50:...|       NA|COLUMNAR_V3|  51,20MB|    1,59KB|
+|                2|Success|2019-11-02 12:41:...|2019-11-02 12:41:...|       NA|COLUMNAR_V3|  51,20MB|    1,59KB|
+|                1|Success|2019-11-02 12:41:...|2019-11-02 12:41:...|       NA|COLUMNAR_V3|  51,21MB|    1,59KB|
+|                0|Success|2019-11-02 12:41:...|2019-11-02 12:41:...|       NA|COLUMNAR_V3|  51,20MB|    1,59KB|
++-----------------+-------+--------------------+--------------------+---------+-----------+---------+----------+
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and the directory:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ tree /var/carbondata/data/store/default/orders
+
+/var/carbondata/data/store/default/orders
+├── Fact
+│   └── Part0
+│       ├── Segment_0
+│       │   ├── 0_1572694894322.carbonindexmerge
+│       │   └── part-0-0_batchno0-0-0-1572694887333.carbondata
+│       ├── Segment_1
+│       │   ├── 1_1572694906502.carbonindexmerge
+│       │   └── part-0-0_batchno0-0-1-1572694899093.carbondata
+│       ├── Segment_2
+│       │   ├── 2_1572694914891.carbonindexmerge
+│       │   └── part-0-0_batchno0-0-2-1572694907902.carbondata
+│       └── Segment_3
+│           ├── 3_1572695453562.carbonindexmerge
+│           └── part-0-0_batchno0-0-3-1572695446456.carbondata
+├── LockFiles
+│   ├── compaction.lock
+│   ├── Segment_0.lock
+│   ├── Segment_1.lock
+│   ├── Segment_2.lock
+│   ├── Segment_3.lock
+│   ├── tablestatus.lock
+│   └── update.lock
+└── Metadata
+    ├── schema
+    ├── segments
+    │   ├── 0_1572694887333.segment
+    │   ├── 1_1572694899093.segment
+    │   ├── 2_1572694907902.segment
+    │   └── 3_1572695446456.segment
+    └── tablestatus
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now we can run a minor compaction:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;ALTER TABLE orders COMPACT &amp;#39;MINOR&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and see what changed in the segments:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SHOW SEGMENTS FOR TABLE orders&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;which look like this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;+-----------------+---------+--------------------+--------------------+---------+-----------+---------+----------+
+|SegmentSequenceId|   Status|     Load Start Time|       Load End Time|Merged To|File Format|Data Size|Index Size|
++-----------------+---------+--------------------+--------------------+---------+-----------+---------+----------+
+|                3|Compacted|2019-11-02 12:50:...|2019-11-02 12:50:...|      0.1|COLUMNAR_V3|  51,20MB|    1,59KB|
+|                2|Compacted|2019-11-02 12:41:...|2019-11-02 12:41:...|      0.1|COLUMNAR_V3|  51,20MB|    1,59KB|
+|                1|Compacted|2019-11-02 12:41:...|2019-11-02 12:41:...|      0.1|COLUMNAR_V3|  51,21MB|    1,59KB|
+|              0.1|  Success|2019-11-02 12:51:...|2019-11-02 12:51:...|       NA|COLUMNAR_V3| 146,33MB|    2,81KB|
+|                0|Compacted|2019-11-02 12:41:...|2019-11-02 12:41:...|      0.1|COLUMNAR_V3|  51,20MB|    1,59KB|
++-----------------+---------+--------------------+--------------------+---------+-----------+---------+----------+
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and in the directory:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ tree /var/carbondata/data/store/default/orders
+
+/var/carbondata/data/store/default/orders
+├── Fact
+│   └── Part0
+│       ├── Segment_0
+│       │   ├── 0_1572694894322.carbonindexmerge
+│       │   └── part-0-0_batchno0-0-0-1572694887333.carbondata
+│       ├── Segment_0.1
+│       │   ├── &lt;span class="m"&gt;0&lt;/span&gt;.1_1572695514980.carbonindexmerge
+│       │   └── part-0-0_batchno0-0-0.1-1572695501043.carbondata
+│       ├── Segment_1
+│       │   ├── 1_1572694906502.carbonindexmerge
+│       │   └── part-0-0_batchno0-0-1-1572694899093.carbondata
+│       ├── Segment_2
+│       │   ├── 2_1572694914891.carbonindexmerge
+│       │   └── part-0-0_batchno0-0-2-1572694907902.carbondata
+│       └── Segment_3
+│           ├── 3_1572695453562.carbonindexmerge
+│           └── part-0-0_batchno0-0-3-1572695446456.carbondata
+├── LockFiles
+│   ├── compaction.lock
+│   ├── Segment_0.lock
+│   ├── Segment_1.lock
+│   ├── Segment_2.lock
+│   ├── Segment_3.lock
+│   ├── tablestatus.lock
+│   └── update.lock
+└── Metadata
+    ├── schema
+    ├── segments
+    │   ├── &lt;span class="m"&gt;0&lt;/span&gt;.1_1572695501043.segment
+    │   ├── 0_1572694887333.segment
+    │   ├── 1_1572694899093.segment
+    │   ├── 2_1572694907902.segment
+    │   └── 3_1572695446456.segment
+    └── tablestatus
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;A new segment with ID &lt;code&gt;0.1&lt;/code&gt; has been created, while the other segments are marked as compacted. We had to create 4 segments because the default setting for the parameter &lt;code&gt;carbon.compaction.level.threshold&lt;/code&gt;, which controls the way minor compactions are performed, is &lt;code&gt;(4,3)&lt;/code&gt;; it means that 4 segments will be compacted in a "level 1" new segment, and 3 "level 1" segments (when present) will be compacted to a single "level 2" segment. More information on the other configuration parameters can be found on the &lt;a href="https://carbondata.apache.org/configuration-parameters.html"&gt;website&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;After compaction, the segments which have been compacted are still present; if we want to delete them and free up the space, we can use the following SQL command:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CLEAN FILES FOR TABLE orders&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;which will give the following segments:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;+-----------------+-------+--------------------+--------------------+---------+-----------+---------+----------+
+|SegmentSequenceId| Status|     Load Start Time|       Load End Time|Merged To|File Format|Data Size|Index Size|
++-----------------+-------+--------------------+--------------------+---------+-----------+---------+----------+
+|              0.1|Success|2019-11-02 12:51:...|2019-11-02 12:51:...|       NA|COLUMNAR_V3| 146,33MB|    2,81KB|
++-----------------+-------+--------------------+--------------------+---------+-----------+---------+----------+
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and the following directory structure:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ tree /var/carbondata/data/store/default/orders
+
+/var/carbondata/data/store/default/orders
+├── Fact
+│   └── Part0
+│       └── Segment_0.1
+│           ├── &lt;span class="m"&gt;0&lt;/span&gt;.1_1572695514980.carbonindexmerge
+│           └── part-0-0_batchno0-0-0.1-1572695501043.carbondata
+├── LockFiles
+│   ├── clean_files.lock
+│   ├── compaction.lock
+│   ├── Segment_0.lock
+│   ├── Segment_1.lock
+│   ├── Segment_2.lock
+│   ├── Segment_3.lock
+│   ├── tablestatus.lock
+│   └── update.lock
+└── Metadata
+    ├── schema
+    ├── segments
+    │   └── &lt;span class="m"&gt;0&lt;/span&gt;.1_1572695501043.segment
+    ├── tablestatus
+    └── tablestatus.history
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The major compaction works in a similar way and it is performed by running the following command:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;ALTER TABLE orders COMPACT &amp;#39;MAJOR&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;By default (parameter &lt;code&gt;carbon.major.compaction.size&lt;/code&gt;) the compaction will only take place on the segments whose sum of the sizes is below 1024 MB. You can try this out as well by loading data once more and running the SQL command.&lt;/p&gt;
+&lt;h3&gt;Update and Delete operations&lt;/h3&gt;
+&lt;p&gt;There is another type of compaction, called &lt;em&gt;horizontal compaction&lt;/em&gt;, that takes place on delta files created by Update and Delete operations. Whenever an Update is performed, two files are created:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;an &lt;em&gt;Insert Delta&lt;/em&gt; file which stores newly added rows in the CarbonData columnar format;&lt;/li&gt;
+&lt;li&gt;a &lt;em&gt;Delete Delta&lt;/em&gt; file which only stores the IDs of the rows that are deleted in a Bitmap file format.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;For instance, if we start from this directory structure (clean table, one load):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;├── Fact
+│   └── Part0
+│       └── Segment_0
+│           ├── 0_1572700087590.carbonindexmerge
+│           └── part-0-0_batchno0-0-0-1572700080525.carbondata
+├── LockFiles
+│   ├── Segment_0.lock
+│   └── tablestatus.lock
+└── Metadata
+    ├── schema
+    ├── segments
+    │   └── 0_1572700080525.segment
+    └── tablestatus
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and run this update:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;s&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;    UPDATE orders&lt;/span&gt;
+&lt;span class="s"&gt;    SET (o_orderdate) = (&amp;#39;2016-06-06&amp;#39;)&lt;/span&gt;
+&lt;span class="s"&gt;    WHERE o_orderdate = &amp;#39;1996-06-06&amp;#39;&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;the directory will be updated like so:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;├── Fact
+│   └── Part0
+│       └── Segment_0
+│           ├── 0_1572700087590.carbonindexmerge
+│           ├── 1_batchno0-0-0-1572700111168.carbonindex
+│           ├── part-0-0_batchno0-0-0-1572700080525.carbondata
+│           ├── part-0-0_batchno0-0-0-1572700111168.deletedelta
+│           └── part-0-1_batchno0-0-0-1572700111168.carbondata
+├── LockFiles
+│   ├── compaction.lock
+│   ├── meta.lock
+│   ├── Segment_0.lock
+│   ├── Segment_.lock
+│   ├── tablestatus.lock
+│   ├── tableupdatestatus.lock
+│   └── update.lock
+└── Metadata
+    ├── schema
+    ├── segments
+    │   ├── 0_1572700080525.segment
+    │   └── 0_1572700111168.segment
+    ├── tablestatus
+└── tableupdatestatus-1572700111168
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;basically creating:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a &lt;code&gt;.carbonindex&lt;/code&gt; file;&lt;/li&gt;
+&lt;li&gt;a &lt;code&gt;.deletedelta&lt;/code&gt; file;&lt;/li&gt;
+&lt;li&gt;a new &lt;code&gt;.carbondata&lt;/code&gt; file;&lt;/li&gt;
+&lt;li&gt;a new &lt;code&gt;.segment&lt;/code&gt; file;&lt;/li&gt;
+&lt;li&gt;a &lt;code&gt;tableupdatestatus-&lt;/code&gt; file.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;A Delete operation, instead, creates the &lt;em&gt;Delete Delta&lt;/em&gt; file only. Let's run another update:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;s&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;    UPDATE orders&lt;/span&gt;
+&lt;span class="s"&gt;    SET (o_orderdate) = (&amp;#39;2016-06-05&amp;#39;)&lt;/span&gt;
+&lt;span class="s"&gt;    WHERE o_orderdate = &amp;#39;1996-06-05&amp;#39;&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If we run the &lt;code&gt;tree&lt;/code&gt; command we'll see that there will be one or more files for each of the 4 types in the list. Now, if we run the &lt;code&gt;CLEAN&lt;/code&gt; command again:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CLEAN FILES FOR TABLE orders&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;we will see that there is again only one file per type (except for the &lt;code&gt;.segment&lt;/code&gt; files). This behaviour is controlled by the following parameters:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;carbon.horizontal.compaction.enable&lt;/code&gt;: enables this kind of compaction (default is &lt;code&gt;true&lt;/code&gt;);&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;carbon.horizontal.update.compaction.threshold&lt;/code&gt;: number of &lt;em&gt;Update delta&lt;/em&gt; files above which the compaction will take place (default is 1);&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;carbon.horizontal.delete.compaction.threshold&lt;/code&gt;: number of &lt;em&gt;Delete delta&lt;/em&gt; files above which the compaction will take place (default is 1).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;Partitioning&lt;/h2&gt;
+&lt;p&gt;Partitioning is a data organization strategy used to increase performance and isolation. CarbonData offers two kinds of partitions, a "standard" one (similar to &lt;a href="https://spark.apache.org/docs/2.3.4/sql-programming-guide.html#partition-discovery"&gt;Spark&lt;/a&gt; and Hive partitions) and a "CarbonData" one (that supports several partitioning schemes such as ranges, hashes, and lists, but no Update/Delete); since the latter is still experimental, we will only focus on the former.&lt;/p&gt;
+&lt;p&gt;A partitioned table can be created with the usual Spark/Hive &lt;code&gt;PARTITIONED BY&lt;/code&gt; syntax:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;s&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;    CREATE TABLE IF NOT EXISTS orders_part(&lt;/span&gt;
+&lt;span class="s"&gt;        o_orderdate DATE,&lt;/span&gt;
+&lt;span class="s"&gt;        o_orderpriority STRING,&lt;/span&gt;
+&lt;span class="s"&gt;        o_orderkey INT,&lt;/span&gt;
+&lt;span class="s"&gt;        o_custkey STRING,&lt;/span&gt;
+&lt;span class="s"&gt;        o_totalprice DOUBLE,&lt;/span&gt;
+&lt;span class="s"&gt;        o_clerk STRING,&lt;/span&gt;
+&lt;span class="s"&gt;        o_shippriority INT,&lt;/span&gt;
+&lt;span class="s"&gt;        o_comment STRING)&lt;/span&gt;
+&lt;span class="s"&gt;    PARTITIONED BY(o_orderstatus STRING)&lt;/span&gt;
+&lt;span class="s"&gt;    STORED AS carbondata&lt;/span&gt;
+&lt;span class="s"&gt;    TBLPROPERTIES(&amp;#39;SORT_COLUMNS&amp;#39; = &amp;#39;o_orderdate&amp;#39;)&lt;/span&gt;
+&lt;span class="s"&gt;  &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;paying attention to exclude the partitioning column from both the list of columns and from the &lt;code&gt;SORT_COLUMNS&lt;/code&gt; table property (if present).&lt;/p&gt;
+&lt;p&gt;The data can be loaded in the usual way when using &lt;em&gt;dynamic partitioning&lt;/em&gt;, i.e. without specifying the partition to write to:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;s&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;    LOAD DATA INPATH &amp;#39;/tmp/tpch-dbgen/orders.tbl&amp;#39;&lt;/span&gt;
+&lt;span class="s"&gt;    INTO TABLE orders_part&lt;/span&gt;
+&lt;span class="s"&gt;    OPTIONS(&lt;/span&gt;
+&lt;span class="s"&gt;        &amp;#39;DELIMITER&amp;#39; = &amp;#39;|&amp;#39;,&lt;/span&gt;
+&lt;span class="s"&gt;        &amp;#39;FILEHEADER&amp;#39; = &amp;#39;o_orderkey,o_custkey,o_orderstatus,o_totalprice,o_orderdate,o_orderpriority,o_clerk,o_shippriority,o_comment&amp;#39;)&lt;/span&gt;
+&lt;span class="s"&gt;  &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and the partitioned column can be used to quickly filter data:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT COUNT(*) FROM orders_part WHERE o_orderstatus = &amp;#39;F&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The partitions can be shown using the following command:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SHOW PARTITIONS orders_part&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and we can see their layout using the &lt;code&gt;tree&lt;/code&gt; command on the new directory:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ tree /var/carbondata/data/store/default/orders_part
+
+/var/carbondata/data/store/default/orders_part
+├── LockFiles
+│   ├── Segment_0.lock
+│   └── tablestatus.lock
+├── Metadata
+│   ├── schema
+│   ├── segments
+│   │   └── 0_1572701993390.segment
+│   └── tablestatus
+├── &lt;span class="nv"&gt;o_orderstatus&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;F
+│   ├── 0_1572702007421.carbonindexmerge
+│   ├── part-0-100100000100001_batchno0-0-0-1572701993390.carbondata
+│   ├── part-0-100100001100001_batchno0-0-0-1572701993390.carbondata
+│   ├── part-0-100100002100001_batchno0-0-0-1572701993390.carbondata
+│   ├── part-0-100100003100001_batchno0-0-0-1572701993390.carbondata
+│   ├── part-0-100100004100001_batchno0-0-0-1572701993390.carbondata
+│   └── part-0-100100005100001_batchno0-0-0-1572701993390.carbondata
+├── &lt;span class="nv"&gt;o_orderstatus&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;O
+│   ├── 0_1572702007422.carbonindexmerge
+│   ├── part-0-100100000100002_batchno0-0-0-1572701993390.carbondata
+│   ├── part-0-100100001100002_batchno0-0-0-1572701993390.carbondata
+│   ├── part-0-100100002100002_batchno0-0-0-1572701993390.carbondata
+│   ├── part-0-100100003100002_batchno0-0-0-1572701993390.carbondata
+│   ├── part-0-100100004100002_batchno0-0-0-1572701993390.carbondata
+│   └── part-0-100100005100002_batchno0-0-0-1572701993390.carbondata
+├── &lt;span class="nv"&gt;o_orderstatus&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;P
+│   ├── 0_1572702007422.carbonindexmerge
+│   ├── part-0-100100000100003_batchno0-0-0-1572701993390.carbondata
+│   ├── part-0-100100001100003_batchno0-0-0-1572701993390.carbondata
+│   ├── part-0-100100002100003_batchno0-0-0-1572701993390.carbondata
+│   ├── part-0-100100003100003_batchno0-0-0-1572701993390.carbondata
+│   ├── part-0-100100004100003_batchno0-0-0-1572701993390.carbondata
+│   └── part-0-100100005100003_batchno0-0-0-1572701993390.carbondata
+└── _SUCCESS
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;where we can see that, instead of the usual &lt;code&gt;Fact/Part0/Segment_0&lt;/code&gt; structure, we have one directory per partition. With this structure, Update Delta and Delete Delta files are created within each folder. Whether partitions can make queries more efficient as opposed to MDKs and dictionaries will likely depend on the use case.&lt;/p&gt;
+&lt;h2&gt;Conclusions&lt;/h2&gt;
+&lt;p&gt;As we have been digging deeper into the internals of CarbonData, we have discovered that there are not only many interesting features to cover different use cases, but also many tools to increase the performance. I would suggest to take a look at the list of &lt;a href="https://carbondata.apache.org/configuration-parameters.html"&gt;configuration parameters&lt;/a&gt; as well as at the list of &lt;a href="https://carbondata.apache.org/usecases.html"&gt;use cases&lt;/a&gt;, since they can provide some guidance in the (daunting) task getting the better out of CarbonData. Have fun!&lt;/p&gt;</content><category term="Big Data"></category><category term="data storage format"></category></entry><entry><title>Apache CarbonData</title><link href="https://apothem.blog/apache-carbondata.html" rel="alternate"></link><published>2019-09-30T00:00:00+01:00</published><updated>2019-09-30T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-09-30:/apache-carbondata.html</id><summary type="html">&lt;p&gt;In the last few years I have been working quite extensively with Apache Spark, and I have come to realize that a good storage format goes a long way toward efficiency and speed. For instance, when dealing with large CSV or JSON files, adding an &lt;a href="https://parquet.apache.org/"&gt;Apache Parquet&lt;/a&gt; writing step would …&lt;/p&gt;</summary><content type="html">&lt;p&gt;In the last few years I have been working quite extensively with Apache Spark, and I have come to realize that a good storage format goes a long way toward efficiency and speed. For instance, when dealing with large CSV or JSON files, adding an &lt;a href="https://parquet.apache.org/"&gt;Apache Parquet&lt;/a&gt; writing step would improve performance in virtually every subsequent task, or at least in all tasks that would profit from a columnar storage. I have briefly dabbled with &lt;a href="https://orc.apache.org/"&gt;Apache ORC&lt;/a&gt; and, then, I found out a rather new format which I haven't really explored until last month, which is what we will see in this article: enter &lt;a href="https://carbondata.apache.org/"&gt;Apache CarbonData&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Developed by Huawei and launched as an Apache Incubator project in 2016, CarbonData is now is at version 1.6.0. The reasons why it caught my interest are several:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;the promise to cover different use cases (full scan queries, small scan queries, multi-dimensional OLAP queries) at the same time;&lt;/li&gt;
