@@ -1,5 +1,380 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM - projects</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/projects.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2019-10-31T00:00:00+00:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache CarbonData (part 2)</title><link href="https://apothem.blog/apache-carbondata-part-2.html" rel="alternate"></link><published>2019-10-31T00:00:00+00:00</published><updated>2019-10-31T00:00:00+00:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-10-31:/apache-carbondata-part-2.html</id><summary type="html">&lt;p&gt;In the &lt;a href="https://apothem.blog/apache-carbondata.html"&gt;previous article&lt;/a&gt; we have seen many exciting features that CarbonData offers, but we haven't explored them all; in this article we will try out the streaming capabilities and we will delve a bit deeper into the data layout, looking at concept like compaction and partitioning, and the way …&lt;/p&gt;</summary><content type="html">&lt;p&gt;In the &lt;a href="https://apothem.blog/apache-carbondata.html"&gt;previous article&lt;/a&gt; we have seen many exciting features that CarbonData offers, but we haven't explored them all; in this article we will try out the streaming capabilities and we will delve a bit deeper into the data layout, looking at concept like compaction and partitioning, and the way the different files are managed.&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM - projects</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/projects.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2020-03-01T00:00:00+00:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache Hivemall (part 2)</title><link href="https://apothem.blog/apache-hivemall-part-2.html" rel="alternate"></link><published>2020-03-01T00:00:00+00:00</published><updated>2020-03-01T00:00:00+00:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2020-03-01:/apache-hivemall-part-2.html</id><summary type="html">&lt;h3&gt;Regression&lt;/h3&gt;
+&lt;p&gt;&lt;a href="https://en.wikipedia.org/wiki/Regression_analysis"&gt;Regression analysis&lt;/a&gt; (or, in short, &lt;em&gt;regression&lt;/em&gt;) is the task of estimating a model that can predict the value of a (dependent) variable given the values of other (independent) variables usually called &lt;em&gt;features&lt;/em&gt;. For example, if we know the size and the number of bathrooms of a house in a …&lt;/p&gt;</summary><content type="html">&lt;h3&gt;Regression&lt;/h3&gt;
+&lt;p&gt;&lt;a href="https://en.wikipedia.org/wiki/Regression_analysis"&gt;Regression analysis&lt;/a&gt; (or, in short, &lt;em&gt;regression&lt;/em&gt;) is the task of estimating a model that can predict the value of a (dependent) variable given the values of other (independent) variables usually called &lt;em&gt;features&lt;/em&gt;. For example, if we know the size and the number of bathrooms of a house in a neighbourhood, we might be able to predict its price if we have these data for a few other houses in the same neighbourhood. There are many algorithms to create regression models; as we will see, Hivemall offers a very convenient "general" regressor (along with other ones) that can be easily customized and used for prediction.&lt;/p&gt;
+&lt;h4&gt;Data preprocessing&lt;/h4&gt;
+&lt;p&gt;Let's download some data. We will use an extract of the &lt;a href="https://www.cs.cmu.edu/~ark/10K/"&gt;"10-K Corpus"&lt;/a&gt;, a collection of 10-K filings where &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Download https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/regression/E2006.train.bz2 and https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/regression/E2006.test.bz2&lt;/li&gt;
+&lt;li&gt;bunzip2 both&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Launch Spark shell&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE TEMPORARY FUNCTION extract_feature as &amp;#39;hivemall.ftvec.ExtractFeatureUDF&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE TEMPORARY FUNCTION extract_weight as &amp;#39;hivemall.ftvec.ExtractWeightUDF&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE TEMPORARY FUNCTION add_bias as &amp;#39;hivemall.ftvec.AddBiasUDF&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+
+&lt;span class="o"&gt;:::&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;val&lt;/span&gt; &lt;span class="n"&gt;e2006Train&lt;/span&gt; &lt;span class="k"&gt;=&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;option&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;delimiter&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot; &amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;csv&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;E2006.train&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;val&lt;/span&gt; &lt;span class="n"&gt;e2006TrainTable&lt;/span&gt; &lt;span class="k"&gt;=&lt;/span&gt; &lt;span class="n"&gt;e2006Train&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;select&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;monotonically_increasing_id&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;as&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;rowid&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;),&lt;/span&gt; &lt;span class="n"&gt;col&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;e2006Train&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;)).&lt;/span&gt;&lt;span class="n"&gt;cast&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Float&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;as&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;target&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;),&lt;/span&gt; &lt;span class="n"&gt;array_except&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;e2006Train&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="o"&gt;),&lt;/span&gt; &lt;span class="n"&gt;e2006Train&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;drop&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="k"&gt;:&lt;/span&gt; &lt;span class="k"&gt;_&lt;/span&gt;&lt;span class="kt"&gt;*&lt;/span&gt;&lt;span class="o"&gt;),&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;lit&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;))).&lt;/span&gt;&lt;span class="n"&gt;as&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;features&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;))&lt;/span&gt; &lt;span class="c1"&gt;// cannot use array_remove with null&lt;/span&gt;
+        &lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;o&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;libsvm&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;???&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;val&lt;/span&gt; &lt;span class="n"&gt;e2006Test&lt;/span&gt; &lt;span class="k"&gt;=&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;option&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;delimiter&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot; &amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;csv&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;E2006.test&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;val&lt;/span&gt; &lt;span class="n"&gt;e2006TestTable&lt;/span&gt; &lt;span class="k"&gt;=&lt;/span&gt; &lt;span class="n"&gt;e2006Test&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;select&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;monotonically_increasing_id&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;as&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;rowid&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;),&lt;/span&gt; &lt;span class="n"&gt;col&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;e2006Test&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;)).&lt;/span&gt;&lt;span class="n"&gt;as&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;target&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;),&lt;/span&gt; &lt;span class="n"&gt;array_except&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;e2006Test&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="o"&gt;),&lt;/span&gt; &lt;span class="n"&gt;e2006Test&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;columns&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;drop&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="k"&gt;:&lt;/span&gt; &lt;span class="k"&gt;_&lt;/span&gt;&lt;span class="kt"&gt;*&lt;/span&gt;&lt;span class="o"&gt;),&lt;/span&gt; &lt;span class="n"&gt;array&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;lit&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;))).&lt;/span&gt;&lt;span class="n"&gt;as&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;features&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;))&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;e2006TrainTable&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;createOrReplaceTempView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;e2006_train_table&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;e2006TestTable&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;createOrReplaceTempView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;e2006_test_table&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+
+&lt;span class="o"&gt;:::&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;val&lt;/span&gt; &lt;span class="n"&gt;trained&lt;/span&gt; &lt;span class="k"&gt;=&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT feature, avg(weight) as weight FROM (SELECT train_regressor(features, target, &amp;#39;-loss squared -opt AdaGrad -reg No -iters 20&amp;#39;) AS (feature, weight) FROM e2006_train_table) t GROUP BY feature&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+
+&lt;span class="o"&gt;:::&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;val&lt;/span&gt; &lt;span class="n"&gt;pred&lt;/span&gt; &lt;span class="k"&gt;=&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT t.rowid, sum(m.weight * t.value) as predicted FROM e2006_test_table_exploded t LEFT OUTER JOIN regr_model m USING (feature) GROUP BY t.rowid&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;pred&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;createOrReplaceTempView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;pred&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+
+&lt;span class="o"&gt;:::&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;val&lt;/span&gt; &lt;span class="n"&gt;eval&lt;/span&gt; &lt;span class="k"&gt;=&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT rmse(predicted, actual) as RMSE, mse(predicted, actual) as MSE, mae(predicted, actual) as MAE, r2(predicted, actual) as R2 FROM (SELECT t.target actual, p.predicted predicted FROM e2006_test_table t JOIN pred p USING (rowid))&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</content><category term="Big Data"></category><category term="Machine Learning"></category></entry><entry><title>Apache Hivemall</title><link href="https://apothem.blog/apache-hivemall.html" rel="alternate"></link><published>2020-02-02T00:00:00+00:00</published><updated>2020-02-02T00:00:00+00:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2020-02-02:/apache-hivemall.html</id><summary type="html">&lt;p&gt;With this article we will move a little bit out of the data engineering space and delve into another subject I love: we will explore the world of distributed machine learning with &lt;a href="https://hivemall.incubator.apache.org/"&gt;Apache Hivemall&lt;/a&gt;. From the project's homepage:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Hivemall is a scalable machine learning library that runs on Apache Hive …&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;With this article we will move a little bit out of the data engineering space and delve into another subject I love: we will explore the world of distributed machine learning with &lt;a href="https://hivemall.incubator.apache.org/"&gt;Apache Hivemall&lt;/a&gt;. From the project's homepage:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Hivemall is a scalable machine learning library that runs on Apache Hive, Spark and Pig.
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;In short, Hivemall is a collection of Hive UDFs (User-Defined Functions) to create, train, and evaluate machine learning models using any of the supported engines. Since Hive provides a SQL-like query language, Hivemall is basically &lt;strong&gt;machine learning in SQL&lt;/strong&gt;; it is then well suited to users who are already fluent in SQL or who need an additional abstraction layer on top of machine learning libraries.&lt;/p&gt;
+&lt;p&gt;We will explore some of the many capabilities that Hivemall provides by tackling one of the most common machine learning tasks: classification. Let's start by setting up the environment.&lt;/p&gt;
+&lt;h3&gt;Setting up Hivemall and Spark&lt;/h3&gt;
+&lt;p&gt;Like for other Java-based Apache projects, we will need to install git, Java 8, and Maven 3.5+ (check &lt;a href="https://apothem.blog/apache-atlas.html"&gt;the article on Apache Atlas&lt;/a&gt; if you need a detailed walkthrough). Once we have installed everything, we need to build Hivemall:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ git clone https://github.com/apache/incubator-hivemall.git
+$ &lt;span class="nb"&gt;cd&lt;/span&gt; incubator-hivemall
+$ bin/build.sh
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Since Hive is a bit cumbersome to install and configure, and we will need to do a bit of data preprocessing as well, we will run Hive queries from Spark instead. We therefore need to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;download Spark 2.4.4 from &lt;a href="https://spark.apache.org/downloads.html"&gt;this page&lt;/a&gt; (choosing the 2.4.4 release pre-built for Hadoop 2.7);&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;extract the content of the .tgz file into a directory, possibly alongside the directory where we cloned the Hivemall repository:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ tar zxvf spark-2.4.4-bin-hadoop2.7.tgz
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;launch the Spark shell with the Hivemall JAR file (release &lt;code&gt;0.6.2-SNAPSHOT&lt;/code&gt; as of now) built before:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ spark-2.4.4-bin-hadoop2.7/bin/spark-shell &lt;span class="se"&gt;\&lt;/span&gt;
+  --jars incubator-hivemall/target/hivemall-all-0.6.2-incubating-SNAPSHOT.jar
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Once the Spark shell is running, we need to load all the Hivemall functions:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;:&lt;/span&gt;&lt;span class="kt"&gt;load&lt;/span&gt; &lt;span class="kt"&gt;incubator-hivemall/resources/ddl/define-all.spark&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We will likely see some errors because some Hivemall functions already exist in Spark 2.4.4, but there is no need to worry because the Spark functions will not be overridden. We are now ready to start using Hivemall!&lt;/p&gt;
+&lt;h3&gt;Classification&lt;/h3&gt;
+&lt;p&gt;&lt;a href="https://en.wikipedia.org/wiki/Classification_(machine_learning)"&gt;Classification&lt;/a&gt; is the task of assigning a category to an &lt;em&gt;observation&lt;/em&gt; based on the value of its &lt;em&gt;features&lt;/em&gt;. For example, we may have some emails that we want to classify as "spam" or "non-spam" based on the presence of one or more keywords; this is called &lt;em&gt;binary classification&lt;/em&gt; because we only have two categories, or one category that an instance belongs to or not. Another example, which is a sort of "Hello world" for machine learning and classification, is the categorization of a specific variant of the &lt;a href="https://en.wikipedia.org/wiki/Iris_(plant)"&gt;iris&lt;/a&gt; plant depending on features such as the length and width of its sepals and petals; this is called &lt;em&gt;multiclass classification&lt;/em&gt; because there are more than two different classes. We will use the &lt;a href="https://archive.ics.uci.edu/ml/datasets/Iris"&gt;Iris Data Set&lt;/a&gt; in this section.&lt;/p&gt;
+&lt;p&gt;The algorithm we will use is called &lt;a href="https://xgboost.readthedocs.io/en/latest/"&gt;XGBoost&lt;/a&gt;. There are several reasons behind this choice:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;I like its conceptual simplicity and its &lt;em&gt;interpretability&lt;/em&gt;, which is an important feature of modern machine learning algorithms;&lt;/li&gt;
+&lt;li&gt;it is designed for efficiency and has already proved itself;&lt;/li&gt;
+&lt;li&gt;it does not require a lot of preprocessing (for instance, it does not require feature scaling);&lt;/li&gt;
+&lt;li&gt;it is now supported in Hivemall starting with version 0.6.0 (the supported XGBoost version being 0.90).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If you are interested in the theoretical and technical details, do take a look at the excellent documentation &lt;a href="https://xgboost.readthedocs.io/en/latest/tutorials/model.html"&gt;here&lt;/a&gt;. For our purposes, we need to keep in mind just one thing: simplifying a lot, XGBoost will basically give us a group of decision trees.&lt;/p&gt;
+&lt;h4&gt;Data preprocessing&lt;/h4&gt;
+&lt;p&gt;First of all, we need to download our dataset from &lt;a href="https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"&gt;here&lt;/a&gt; and put it alongside the previous directories. The data will look like the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;5.1,3.5,1.4,0.2,Iris-setosa
+4.9,3.0,1.4,0.2,Iris-setosa
+4.7,3.2,1.3,0.2,Iris-setosa
+4.6,3.1,1.5,0.2,Iris-setosa
+5.0,3.6,1.4,0.2,Iris-setosa
+...
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Let's go back to our Spark shell and run the following command:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;val&lt;/span&gt; &lt;span class="n"&gt;iris&lt;/span&gt; &lt;span class="k"&gt;=&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;option&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;inferSchema&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;csv&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;iris.data&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;toDF&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;quot;sepal_length&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;sepal_width&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;petal_length&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;petal_width&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;class&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This command will read the dataset file interpreting it as a CSV file, automatically creating a schema and assigning the provided names to the columns. We can check both the schema and the first 5 rows of the dataset:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;iris&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;printSchema&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;iris&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Now we can create a temporary view of our Spark Dataframe so that we can use it like a Hive table:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;iris&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;createOrReplaceTempView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;iris&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and then we can run a SQL query as a check:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT * FROM iris&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;!-- This is commented out. --&gt;
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;+------------+-----------+------------+-----------+-----------+
+|sepal_length|sepal_width|petal_length|petal_width|      class|
++------------+-----------+------------+-----------+-----------+
+|         5.1|        3.5|         1.4|        0.2|Iris-setosa|
+|         4.9|        3.0|         1.4|        0.2|Iris-setosa|
+|         4.7|        3.2|         1.3|        0.2|Iris-setosa|
+|         4.6|        3.1|         1.5|        0.2|Iris-setosa|
+|         5.0|        3.6|         1.4|        0.2|Iris-setosa|
++------------+-----------+------------+-----------+-----------+
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We have our raw data table, but in order to run any Hivemall algorithm we need to tweak it a little. More specifically, we need to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;assign a unique ID to each row;&lt;/li&gt;
+&lt;li&gt;create a &lt;em&gt;feature vector&lt;/em&gt; such as &lt;code&gt;[1:5.1, 2:3.5, 3:1.4, 4:0.2]&lt;/code&gt;, that is a string array where each element is of the form &lt;code&gt;feature:value&lt;/code&gt;, from the feature columns;&lt;/li&gt;
+&lt;li&gt;transform the iris "class" from a string to an integer value.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;These steps are part of a very important phase of a machine learning pipeline called &lt;em&gt;feature engineering&lt;/em&gt;. We can create a new table with all these transformations with the following command:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;    CREATE TABLE iris_processed AS&lt;/span&gt;
+&lt;span class="s"&gt;    SELECT monotonically_increasing_id() rowid,&lt;/span&gt;
+&lt;span class="s"&gt;    indexed_features(sepal_length, sepal_width, petal_length, petal_width) features,&lt;/span&gt;
+&lt;span class="s"&gt;    quantify(true, class) label&lt;/span&gt;
+&lt;span class="s"&gt;    FROM iris&lt;/span&gt;
+&lt;span class="s"&gt;    ORDER BY class&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;While &lt;code&gt;monotonically_increasing_id&lt;/code&gt; is a Spark function, &lt;code&gt;indexed_features&lt;/code&gt; and &lt;code&gt;quantify&lt;/code&gt; are both Hivemall UDFs:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;indexed_features&lt;/code&gt; will create an array from the values passed as parameters, prepending each value with its position in the array (starting from 1, not 0, since 0 is reserved for the &lt;a href="https://hivemall.incubator.apache.org/userguide/tips/addbias.html"&gt;bias feature&lt;/a&gt;);&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;quantify&lt;/code&gt; can be used to convert a categorical variable into a numerical variable (the &lt;code&gt;ORDER BY&lt;/code&gt; is used to make sure that it is applied on one reducer only, thus consistently associating the same number to the same non-numerical variable).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;There are &lt;a href="https://hivemall.incubator.apache.org/userguide/tips/rowid.html"&gt;other ways&lt;/a&gt; to create a unique ID for each row; Hivemall provides a function called &lt;code&gt;rowid&lt;/code&gt;, but it does not work in Spark (it would throw a &lt;code&gt;java.lang.IllegalStateException: MapredContext is not set&lt;/code&gt; exception).&lt;/p&gt;
+&lt;p&gt;Let's see how the new table looks like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT * FROM iris_processed&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;!-- This is commented out. --&gt;
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;+-----+----------------------------+-----+
+|rowid|features                    |label|
++-----+----------------------------+-----+
+|0    |[1:5.1, 2:3.5, 3:1.4, 4:0.2]|0    |
+|1    |[1:4.9, 2:3.0, 3:1.4, 4:0.2]|0    |
+|2    |[1:4.7, 2:3.2, 3:1.3, 4:0.2]|0    |
+|3    |[1:4.6, 2:3.1, 3:1.5, 4:0.2]|0    |
+|4    |[1:5.0, 2:3.6, 3:1.4, 4:0.2]|0    |
++-----+----------------------------+-----+
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The table is ready to be used for training.&lt;/p&gt;
+&lt;h4&gt;Training&lt;/h4&gt;
+&lt;p&gt;We need to add one more function first (which should be included in the &lt;code&gt;define-all.spark&lt;/code&gt; file now, but are not at the moment):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE TEMPORARY FUNCTION train_xgboost AS &amp;#39;hivemall.xgboost.XGBoostTrainUDTF&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We also need to set the &lt;code&gt;spark.sql.shuffle.partitions&lt;/code&gt; (or &lt;code&gt;mapred.reduce.tasks&lt;/code&gt; if we use Hive directly, not through Spark) configuration parameter to a "low" number, for instance to 10 (instead of the default 200).&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SET spark.sql.shuffle.partitions=10&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If we don't do this and the dataset is small (as in our case, with only 150 rows), we will have some empty partitions which will cause an error like the following during the training phase:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;...
+Caused by: ml.dmlc.xgboost4j.java.XGBoostError: [01:14:14] /home/travis/build/myui/build-xgboost-jvm/xgboost/src/learner.cc:723: Check failed: mparam_.num_feature != 0 (0 vs. 0) : 0 feature is supplied.  Are you using raw Booster interface?
+...
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Let's check that there are no empty partitions by running this command, which should give no output:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT * FROM iris_processed CLUSTER BY rand(0)&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;foreachPartition&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;
+    &lt;span class="n"&gt;part&lt;/span&gt; &lt;span class="k"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;part&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;length&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;println&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;s&amp;quot;Zero-length partition&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Another way to check is to run the following command, which should return the same number of partitions as the value of the &lt;code&gt;spark.sql.shuffle.partitions&lt;/code&gt; parameter:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT DISTINCT spark_partition_id() FROM (SELECT * FROM iris_processed CLUSTER BY rand(0))&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;count&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;(Try to set &lt;code&gt;spark.sql.shuffle.partitions&lt;/code&gt; to 50 or 100 and run the previous commands to see a different behaviour.)&lt;/p&gt;
+&lt;p&gt;Finally we can create the model:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;    CREATE TABLE iris_model_softmax AS&lt;/span&gt;
+&lt;span class="s"&gt;    SELECT train_xgboost(features, label, &amp;#39;-objective multi:softmax -num_class 3&amp;#39;) AS (model_id, model)&lt;/span&gt;
+&lt;span class="s"&gt;    FROM (SELECT features, label FROM iris_processed CLUSTER BY rand(0))&lt;/span&gt;
+&lt;span class="s"&gt;    &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;When performing a multiclass classification task, we have to explicitly specify the &lt;code&gt;-num_class&lt;/code&gt; parameter; we have 3 classes in our dataset, therefore we set it to 3. The other parameter is the objective function: &lt;code&gt;multi:softmax&lt;/code&gt; will use the &lt;code&gt;softmax&lt;/code&gt; objective and return only the predicted class, while &lt;code&gt;multi:softprob&lt;/code&gt; will use the &lt;code&gt;softprob&lt;/code&gt; objective and return the probability associated to each class (see &lt;a href="https://xgboost.readthedocs.io/en/release_0.90/parameter.html#learning-task-parameters"&gt;the XGBoost docs&lt;/a&gt; for more information, and for the other parameters). A model using the &lt;code&gt;softprob&lt;/code&gt; objective can be created as follows:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;scala&amp;gt; spark.sql(&amp;quot;&amp;quot;&amp;quot;
+    CREATE TABLE iris_model_softprob AS
+    SELECT train_xgboost(features, label, &amp;#39;-objective multi:softprob -num_class 3&amp;#39;) AS (model_id, model)
+    FROM (SELECT features, label FROM iris_processed CLUSTER BY rand(0))
+    &amp;quot;&amp;quot;&amp;quot;).show
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Another important consideration is the use of &lt;code&gt;CLUSTER BY rand(0)&lt;/code&gt;, which is used to shuffle the dataset in order to prevent any bias. Please note that, for simplicity, we didn't split the dataset into a training and a test set; in real-world applications this should always be done.&lt;/p&gt;
+&lt;p&gt;Now that the model is trained, we can read it:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;val&lt;/span&gt; &lt;span class="n"&gt;modelArray&lt;/span&gt;&lt;span class="k"&gt;:&lt;/span&gt; &lt;span class="kt"&gt;String&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT * FROM iris_model_softprob&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;take&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;head&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;toString&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and then visualize it:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;org.apache.hadoop.io.Text&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;hivemall.xgboost.utils.XGBoostUtils.deserializeBooster&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;val&lt;/span&gt; &lt;span class="n"&gt;booster&lt;/span&gt; &lt;span class="k"&gt;=&lt;/span&gt; &lt;span class="n"&gt;deserializeBooster&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="nc"&gt;Text&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;modelArray&lt;/span&gt;&lt;span class="o"&gt;))&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;println&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;booster&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getModelDump&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="nc"&gt;Array&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="kt"&gt;String&lt;/span&gt;&lt;span class="o"&gt;](),&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;json&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;mkString&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;\n&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The parameters of the &lt;code&gt;getModelDump&lt;/code&gt; method are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;an array of feature names (potentially empty, to map the default &lt;code&gt;f0...fn&lt;/code&gt; names to user-defined names);&lt;/li&gt;
+&lt;li&gt;a boolean to include/exclude the split statistics;&lt;/li&gt;
+&lt;li&gt;the output format (at the moment only &lt;code&gt;"text"&lt;/code&gt; or &lt;code&gt;"json"&lt;/code&gt;).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We can also get the importance of each feature:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;println&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;booster&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getFeatureScore&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="nc"&gt;Array&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="kt"&gt;String&lt;/span&gt;&lt;span class="o"&gt;]()))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;!-- Empty --&gt;
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;{f1=18, f2=2, f3=17}
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and the feature importances for several measures (one of &lt;code&gt;"weight"&lt;/code&gt;, &lt;code&gt;"gain"&lt;/code&gt;, &lt;code&gt;"cover"&lt;/code&gt;, &lt;code&gt;"total_gain"&lt;/code&gt;, &lt;code&gt;"total_cover"&lt;/code&gt;):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;booster&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getScore&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="nc"&gt;Array&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="kt"&gt;String&lt;/span&gt;&lt;span class="o"&gt;](),&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;gain&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;!-- Empty --&gt;
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;{f1=1.4596930238833332, f2=0.0668432191, f3=1.5014036119411764}
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We can customize the feature names in both methods:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;val&lt;/span&gt; &lt;span class="n"&gt;featureNames&lt;/span&gt; &lt;span class="k"&gt;=&lt;/span&gt; &lt;span class="nc"&gt;Array&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;bias&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;sepal_length&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;sepal_width&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;petal_length&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;petal_width&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;println&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;booster&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getFeatureScore&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;featureNames&lt;/span&gt;&lt;span class="o"&gt;))&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;booster&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;getScore&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;featureNames&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;gain&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;!-- Empty --&gt;
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;{sepal_width=2, sepal_length=18, petal_length=17}
+{sepal_width=0.0668432191, sepal_length=1.4596930238833332, petal_length=1.5014036119411764}
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;Prediction&lt;/h4&gt;
+&lt;p&gt;Now that the model is ready, we can use it to classify some data. It is important to note that the way Hivemall makes XGBoost parallel is somewhat different from the parallel implementation of the official library; in fact, instead of using the &lt;a href="https://xgboost.readthedocs.io/en/latest/jvm/xgboost4j_spark_tutorial.html"&gt;AllReduce paradigm&lt;/a&gt; where all the parallel workers have to communicate, Hivemall uses a &lt;a href="https://scikit-learn.org/stable/modules/ensemble.html#voting-classifier"&gt;voting classifier&lt;/a&gt; on top of many &lt;em&gt;independent&lt;/em&gt; XGBoost learners. In this way every worker can train its own local model based on its partition of data (possibly overlapping with other partitions if the &lt;code&gt;amplify&lt;/code&gt; or &lt;code&gt;rand_amplify&lt;/code&gt; functions are used), and the actual prediction happens via a majority vote (if the objective function is &lt;code&gt;softmax&lt;/code&gt;, since its output is a class label) or by averaging (if the objective function is &lt;code&gt;softprob&lt;/code&gt;, since its output is a list of probabilities). We will see both examples.&lt;/p&gt;
+&lt;p&gt;Like we did for training, we need first of all to include a few more functions:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE TEMPORARY FUNCTION xgboost_predict_one AS &amp;#39;hivemall.xgboost.XGBoostPredictOneUDTF&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE TEMPORARY FUNCTION xgboost_predict_triple AS &amp;#39;hivemall.xgboost.XGBoostPredictTripleUDTF&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE TEMPORARY FUNCTION majority_vote AS &amp;#39;hivemall.tools.aggr.MajorityVoteUDAF&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and to set another configuration option:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SET spark.sql.crossJoin.enabled=true&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This is necessary because Hivemall uses a left join without condition (basically a cross join) between the model and the data to make predictions, and cross joins are disabled by default for performance reasons.&lt;/p&gt;
+&lt;p&gt;Let's now create a table containing our predictions:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;    CREATE TABLE iris_pred_softmax AS&lt;/span&gt;
+&lt;span class="s"&gt;    SELECT rowid, majority_vote(CAST(predicted AS INT)) AS label&lt;/span&gt;
+&lt;span class="s"&gt;    FROM (&lt;/span&gt;
+&lt;span class="s"&gt;        SELECT xgboost_predict_one(rowid, features, model_id, model) AS (rowid, predicted)&lt;/span&gt;
+&lt;span class="s"&gt;        FROM iris_model_softmax l LEFT JOIN iris_processed r) t&lt;/span&gt;
+&lt;span class="s"&gt;    GROUP BY rowid&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We use the &lt;code&gt;xgboost_predict_one&lt;/code&gt; function to predict the class of each row of the &lt;code&gt;iris_processed&lt;/code&gt; table with the model stored in the &lt;code&gt;model&lt;/code&gt; column of the &lt;code&gt;iris_model_softmax&lt;/code&gt; table; the &lt;code&gt;rowid&lt;/code&gt; is stored as well to make the model evaluation easier later on. In this case we use the &lt;code&gt;majority_vote&lt;/code&gt; function to "vote" for the most frequent prediction, which will become the actual prediction. We can check the predicted values from the new table:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT * FROM iris_pred_softmax ORDER BY rowid&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Once again, keep in mind that for this example we didn't split the dataset into a training set and a test set. If we want to get the probability of each class assignment, instead, we can use the &lt;code&gt;xgboost_predict_triple&lt;/code&gt; function as follows:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;    SELECT rowid, argmax(collect_list(avg_proba)) label, collect_list(avg_proba) proba&lt;/span&gt;
+&lt;span class="s"&gt;    FROM (&lt;/span&gt;
+&lt;span class="s"&gt;        CREATE TABLE iris_pred_softprob AS&lt;/span&gt;
+&lt;span class="s"&gt;        SELECT rowid, label, avg(proba) avg_proba&lt;/span&gt;
+&lt;span class="s"&gt;        FROM (&lt;/span&gt;
+&lt;span class="s"&gt;            SELECT xgboost_predict_triple(rowid, features, model_id, model) AS (rowid, label, proba)&lt;/span&gt;
+&lt;span class="s"&gt;            FROM iris_model_softprob l LEFT JOIN iris_processed r)&lt;/span&gt;
+&lt;span class="s"&gt;        GROUP BY rowid, label ORDER BY rowid, label)&lt;/span&gt;
+&lt;span class="s"&gt;    GROUP BY rowid ORDER BY rowid&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The prediction works in the same way as before, with three important differences:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the prediction function now returns three values instead of two, including the probability as well;&lt;/li&gt;
+&lt;li&gt;we do not "vote" for the most frequent class, but rather we average the probabilities of each class and select the class with the maximum average probability;&lt;/li&gt;
+&lt;li&gt;the model we run the prediction against has to be created with the &lt;code&gt;multi:softprob&lt;/code&gt; objective, otherwise the &lt;code&gt;xgboost_predict_triple&lt;/code&gt; will return the wrong results.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We can also use two simpler functions, &lt;code&gt;xgboost_predict&lt;/code&gt; and &lt;code&gt;xgboost_batch_predict&lt;/code&gt;, to obtain the same result (look at the &lt;a href="https://hivemall.incubator.apache.org/userguide/binaryclass/news20b_xgboost.html"&gt;examples&lt;/a&gt; for more details):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE TEMPORARY FUNCTION xgboost_predict AS &amp;#39;hivemall.xgboost.XGBoostOnlinePredictUDTF&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE TEMPORARY FUNCTION xgboost_batch_predict AS &amp;#39;hivemall.xgboost.XGBoostBatchPredictUDTF&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;    CREATE TABLE iris_pred_softprob AS&lt;/span&gt;
+&lt;span class="s"&gt;    SELECT rowid, argmax(array_avg(predicted)), array_avg(predicted) as prob&lt;/span&gt;
+&lt;span class="s"&gt;    FROM (&lt;/span&gt;
+&lt;span class="s"&gt;        SELECT xgboost_predict(rowid, features, model_id, model) AS (rowid, predicted)&lt;/span&gt;
+&lt;span class="s"&gt;        FROM iris_model_softprob l LEFT JOIN iris_processed r)&lt;/span&gt;
+&lt;span class="s"&gt;    GROUP BY rowid ORDER BY rowid&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;    CREATE TABLE iris_pred_softprob AS&lt;/span&gt;
+&lt;span class="s"&gt;    SELECT rowid, argmax(array_avg(predicted)), array_avg(predicted) as prob&lt;/span&gt;
+&lt;span class="s"&gt;    FROM (&lt;/span&gt;
+&lt;span class="s"&gt;        SELECT xgboost_batch_predict(rowid, features, model_id, model) AS (rowid, predicted)&lt;/span&gt;
+&lt;span class="s"&gt;        FROM iris_model_softprob l LEFT JOIN iris_processed r)&lt;/span&gt;
+&lt;span class="s"&gt;    GROUP BY rowid ORDER BY rowid&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The &lt;code&gt;array_avg&lt;/code&gt; function is used to calculate the average of an array column. Again, we can check the predicted values:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT * FROM iris_pred_softprob ORDER BY rowid&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;Evaluation&lt;/h4&gt;
+&lt;p&gt;It is time now to evaluate our models. Since we performed our predictions on the same dataset that we used for training, we would expect the models to perform really good. Let's start with the &lt;code&gt;softmax&lt;/code&gt; model:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;    SELECT sum(if(actual=predicted, 1.0, 0.0))/count(1)&lt;/span&gt;
+&lt;span class="s"&gt;    FROM (&lt;/span&gt;
+&lt;span class="s"&gt;        SELECT source.label actual, pred.label predicted&lt;/span&gt;
+&lt;span class="s"&gt;        FROM iris_processed source JOIN iris_pred_softmax pred USING (rowid))&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Here we are simply counting all the instances where the actual value corresponds to the predicted value (using the &lt;code&gt;rowid&lt;/code&gt; column to join the training dataset and the predicted dataset), then we divide that number by the number of all the instances to get a ratio. As expected, the ratio is really high (even though not exactly 1.0); we can also run exactly the same query by just swapping &lt;code&gt;iris_pred_softmax&lt;/code&gt; with &lt;code&gt;iris_pred_softprob&lt;/code&gt; to evaluate the second model. If we do not find very close values, the reason can be parallelization (since each partition calculates its own model); in order to get very close results we would need to reduce the &lt;code&gt;spark.sql.shuffle.partitions&lt;/code&gt; value to one, effectively making the whole computation happen in only one partition by creating a single XGBoost model, which will contain the full dataset (obviously not recommended for large datasets).&lt;/p&gt;
+&lt;h3&gt;Conclusions&lt;/h3&gt;
+&lt;p&gt;We have seen how Hivemall makes the XGBoost algorithm (and the classification task in general) very easy to implement and to understand. Of course there is much more to it, for instance:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;XGBoost can be configured with many different parameters, so it's worth reading its &lt;a href="https://hivemall.incubator.apache.org/userguide/binaryclass/news20b_xgboost.html"&gt;Hivemall usage guide&lt;/a&gt; and its &lt;a href="https://xgboost.readthedocs.io/en/release_0.90/parameter.html"&gt;configuration docs&lt;/a&gt;;&lt;/li&gt;
+&lt;li&gt;XGBoost can be used also for &lt;a href="https://hivemall.incubator.apache.org/userguide/binaryclass/news20b_xgboost.html"&gt;binary classification&lt;/a&gt; and for &lt;a href="https://hivemall.incubator.apache.org/userguide/regression/e2006_xgboost.html"&gt;regression&lt;/a&gt; tasks;&lt;/li&gt;
+&lt;li&gt;Hivemall features other algorithms for classification, including a &lt;a href="https://hivemall.incubator.apache.org/userguide/binaryclass/a9a_generic.html"&gt;general and highly customizable classifier&lt;/a&gt;, &lt;a href="https://hivemall.incubator.apache.org/userguide/binaryclass/a9a_lr.html"&gt;logistic regression&lt;/a&gt;, and &lt;a href="https://hivemall.incubator.apache.org/userguide/binaryclass/a9a_minibatch.html"&gt;mini-batch gradient descent&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;There are many other machine learning tasks to cover, such as &lt;a href="https://en.wikipedia.org/wiki/Regression_analysis"&gt;regression&lt;/a&gt; and &lt;a href="https://en.wikipedia.org/wiki/Cluster_analysis"&gt;clustering&lt;/a&gt;, and we have just barely touched on feature engineering. So, stay tuned for another article on this very interesting project!&lt;/p&gt;</content><category term="Big Data"></category><category term="Machine Learning"></category></entry><entry><title>Apache CarbonData (part 2)</title><link href="https://apothem.blog/apache-carbondata-part-2.html" rel="alternate"></link><published>2019-10-31T00:00:00+00:00</published><updated>2019-10-31T00:00:00+00:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-10-31:/apache-carbondata-part-2.html</id><summary type="html">&lt;p&gt;In the &lt;a href="https://apothem.blog/apache-carbondata.html"&gt;previous article&lt;/a&gt; we have seen many exciting features that CarbonData offers, but we haven't explored them all; in this article we will try out the streaming capabilities and we will delve a bit deeper into the data layout, looking at concept like compaction and partitioning, and the way …&lt;/p&gt;</summary><content type="html">&lt;p&gt;In the &lt;a href="https://apothem.blog/apache-carbondata.html"&gt;previous article&lt;/a&gt; we have seen many exciting features that CarbonData offers, but we haven't explored them all; in this article we will try out the streaming capabilities and we will delve a bit deeper into the data layout, looking at concept like compaction and partitioning, and the way the different files are managed.&lt;/p&gt;
 &lt;h2&gt;Streaming&lt;/h2&gt;
 &lt;p&gt;Another feature that sets CarbonData apart from other Hadoop data formats is the support for streaming data. Rather than writing many small files or waiting until a larger file can be written, CarbonData uses a slightly different format where single rows can be added as they arrive; such files can later be converted to the standard columnar format (via compaction) in order to support all the features we have already discussed. Every task, including the creation of the sink table and the management of the streaming job, can be performed using SQL commands. Let's see how.&lt;/p&gt;
 &lt;p&gt;First of all, we need to create a streaming source. An easy way to do this is to use &lt;a href="https://en.wikipedia.org/wiki/Netcat"&gt;netcat&lt;/a&gt;, a Linux utility that, among many other things, can be used to send data through a socket, thus simulating a process streaming data over the network. We need to open a new terminal (or to use another utility like &lt;a href="https://en.wikipedia.org/wiki/GNU_Screen"&gt;screen&lt;/a&gt; or &lt;a href="https://en.wikipedia.org/wiki/Tmux"&gt;tmux&lt;/a&gt;) in order to keep &lt;em&gt;netcat&lt;/em&gt; running while we use the Spark shell; on the new terminal we need to run the following command:&lt;/p&gt;

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>  Apache Hivemall (part 2) | APOTHEM
+</title>
+  <link rel="canonical" href="https://apothem.blog/apache-hivemall-part-2.html">
+
+    <link rel="icon" type="image/x-icon" href="https://apothem.blog/favicon.ico">
+
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/pygments/default.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/theme.css">
+
+  <link rel="alternate" type="application/atom+xml" title="Full Atom Feed"
+        href="https://apothem.blog/feeds/all.atom.xml">
+  <link rel="alternate" type="application/atom+xml" title="Categories Atom Feed"
+        href="https://apothem.blog/feeds/{slug}.atom.xml">  
+  <meta name="description" content="Regression Regression analysis (or, in short, regression) is the task of estimating a model that can predict the value of a (dependent) variable given the values of other (independent) variables usually called features. For example, if we know the size and the number of bathrooms of a house in a …">
+
+
+</head>
+
+<body>
+  <header class="header">
+    <div class="container">
+<div class="row">
+    <div class="col-sm-4">
+      <a href="https://apothem.blog/">
+        <img class="img-fluid rounded" src=https://apothem.blog/images/profile.svg width=180 alt="APOTHEM">
+      </a>
+    </div>
+  <div class="col-sm-8">
+    <h1 class="title"><a href="https://apothem.blog/">APOTHEM</a></h1>
+      <p class="text-muted">Apache Project(s) of the month</p>
+      <ul class="list-inline">
+          <li class="list-inline-item"><a href="https://projects.apache.org" target="_blank">projects.apache.org</a></li>
+              <li class="list-inline-item text-muted">|</li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/about.html">About</a></li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/faq.html">FAQ</a></li>
+            <li class=" list-inline-item text-muted">|</li>
+          <li class="list-inline-item"><a class="fa fa-github" href="https://github.com/nvitucci/apothem" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-twitter" href="https://twitter.com/nvitucci" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-rss" href="feeds/all.atom.xml" target="_blank"></a></li>
+      </ul>
+  </div>
+</div>    </div>
+  </header>
+
+  <div class="main">
+    <div class="container">
+      <h2>  Apache Hivemall (part 2)
+</h2>
+      <hr>
+  <article class="article">
+    <header>
+      <ul class="list-inline">
+        <li class="list-inline-item text-muted" title="2020-03-01T00:00:00+00:00">
+          <i class="fa fa-clock-o"></i>
+          Sun 01 March 2020
+        </li>
+        <li class="list-inline-item">
+          <i class="fa fa-folder-open-o"></i>
+          <a href="https://apothem.blog/category/projects.html">projects</a>
+        </li>
+          <li class="list-inline-item">
+            <i class="fa fa-files-o"></i>
+              <a href="https://apothem.blog/tag/big-data.html">#Big Data</a>,               <a href="https://apothem.blog/tag/machine-learning.html">#Machine Learning</a>          </li>
+      </ul>
+    </header>
+    <div class="content">
+      <h3>Regression</h3>
+<p><a href="https://en.wikipedia.org/wiki/Regression_analysis">Regression analysis</a> (or, in short, <em>regression</em>) is the task of estimating a model that can predict the value of a (dependent) variable given the values of other (independent) variables usually called <em>features</em>. For example, if we know the size and the number of bathrooms of a house in a neighbourhood, we might be able to predict its price if we have these data for a few other houses in the same neighbourhood. There are many algorithms to create regression models; as we will see, Hivemall offers a very convenient "general" regressor (along with other ones) that can be easily customized and used for prediction.</p>
+<h4>Data preprocessing</h4>
+<p>Let's download some data. We will use an extract of the <a href="https://www.cs.cmu.edu/~ark/10K/">"10-K Corpus"</a>, a collection of 10-K filings where </p>
+<ul>
+<li>Download https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/regression/E2006.train.bz2 and https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/regression/E2006.test.bz2</li>
+<li>bunzip2 both</li>
+</ul>
+<p>Launch Spark shell</p>
+<div class="highlight"><pre><span></span><span class="n">scala</span><span class="o">&gt;</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;CREATE TEMPORARY FUNCTION extract_feature as &#39;hivemall.ftvec.ExtractFeatureUDF&#39;&quot;</span><span class="o">)</span>
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;CREATE TEMPORARY FUNCTION extract_weight as &#39;hivemall.ftvec.ExtractWeightUDF&#39;&quot;</span><span class="o">)</span>
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;CREATE TEMPORARY FUNCTION add_bias as &#39;hivemall.ftvec.AddBiasUDF&#39;&quot;</span><span class="o">)</span>
+
+<span class="o">:::</span><span class="n">scala</span>
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">e2006Train</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="s">&quot;delimiter&quot;</span><span class="o">,</span> <span class="s">&quot; &quot;</span><span class="o">).</span><span class="n">csv</span><span class="o">(</span><span class="s">&quot;E2006.train&quot;</span><span class="o">)</span>
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">e2006TrainTable</span> <span class="k">=</span> <span class="n">e2006Train</span><span class="o">.</span><span class="n">select</span><span class="o">(</span><span class="n">monotonically_increasing_id</span><span class="o">.</span><span class="n">as</span><span class="o">(</span><span class="s">&quot;rowid&quot;</span><span class="o">),</span> <span class="n">col</span><span class="o">(</span><span class="n">e2006Train</span><span class="o">.</span><span class="n">columns</span><span class="o">(</span><span class="mi">0</span><span class="o">)).</span><span class="n">cast</span><span class="o">(</span><span class="s">&quot;Float&quot;</span><span class="o">).</span><span class="n">as</span><span class="o">(</span><span class="s">&quot;target&quot;</span><span class="o">),</span> <span class="n">array_except</span><span class="o">(</span><span class="n">array</span><span class="o">(</span><span class="n">e2006Train</span><span class="o">.</span><span class="n">columns</span><span class="o">(</span><span class="mi">1</span><span class="o">),</span> <span class="n">e2006Train</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">drop</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span><span class="k">:</span> <span class="k">_</span><span class="kt">*</span><span class="o">),</span> <span class="n">array</span><span class="o">(</span><span class="n">lit</span><span class="o">(</span><span class="kc">null</span><span class="o">))).</span><span class="n">as</span><span class="o">(</span><span class="s">&quot;features&quot;</span><span class="o">))</span> <span class="c1">// cannot use array_remove with null</span>
+        <span class="n">scala</span><span class="o">&gt;</span> <span class="n">o</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="o">(</span><span class="s">&quot;libsvm&quot;</span><span class="o">)</span> <span class="o">???</span>
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">e2006Test</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">option</span><span class="o">(</span><span class="s">&quot;delimiter&quot;</span><span class="o">,</span> <span class="s">&quot; &quot;</span><span class="o">).</span><span class="n">csv</span><span class="o">(</span><span class="s">&quot;E2006.test&quot;</span><span class="o">)</span>
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">e2006TestTable</span> <span class="k">=</span> <span class="n">e2006Test</span><span class="o">.</span><span class="n">select</span><span class="o">(</span><span class="n">monotonically_increasing_id</span><span class="o">.</span><span class="n">as</span><span class="o">(</span><span class="s">&quot;rowid&quot;</span><span class="o">),</span> <span class="n">col</span><span class="o">(</span><span class="n">e2006Test</span><span class="o">.</span><span class="n">columns</span><span class="o">(</span><span class="mi">0</span><span class="o">)).</span><span class="n">as</span><span class="o">(</span><span class="s">&quot;target&quot;</span><span class="o">),</span> <span class="n">array_except</span><span class="o">(</span><span class="n">array</span><span class="o">(</span><span class="n">e2006Test</span><span class="o">.</span><span class="n">columns</span><span class="o">(</span><span class="mi">1</span><span class="o">),</span> <span class="n">e2006Test</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">drop</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span><span class="k">:</span> <span class="k">_</span><span class="kt">*</span><span class="o">),</span> <span class="n">array</span><span class="o">(</span><span class="n">lit</span><span class="o">(</span><span class="kc">null</span><span class="o">))).</span><span class="n">as</span><span class="o">(</span><span class="s">&quot;features&quot;</span><span class="o">))</span>
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">e2006TrainTable</span><span class="o">.</span><span class="n">createOrReplaceTempView</span><span class="o">(</span><span class="s">&quot;e2006_train_table&quot;</span><span class="o">)</span>
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">e2006TestTable</span><span class="o">.</span><span class="n">createOrReplaceTempView</span><span class="o">(</span><span class="s">&quot;e2006_test_table&quot;</span><span class="o">)</span>
+
+<span class="o">:::</span><span class="n">scala</span>
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">trained</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;SELECT feature, avg(weight) as weight FROM (SELECT train_regressor(features, target, &#39;-loss squared -opt AdaGrad -reg No -iters 20&#39;) AS (feature, weight) FROM e2006_train_table) t GROUP BY feature&quot;</span><span class="o">)</span>
+
+<span class="o">:::</span><span class="n">scala</span>
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">pred</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;SELECT t.rowid, sum(m.weight * t.value) as predicted FROM e2006_test_table_exploded t LEFT OUTER JOIN regr_model m USING (feature) GROUP BY t.rowid&quot;</span><span class="o">)</span>
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">pred</span><span class="o">.</span><span class="n">createOrReplaceTempView</span><span class="o">(</span><span class="s">&quot;pred&quot;</span><span class="o">)</span>
+
+<span class="o">:::</span><span class="n">scala</span>
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">eval</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;SELECT rmse(predicted, actual) as RMSE, mse(predicted, actual) as MSE, mae(predicted, actual) as MAE, r2(predicted, actual) as R2 FROM (SELECT t.target actual, p.predicted predicted FROM e2006_test_table t JOIN pred p USING (rowid))&quot;</span><span class="o">)</span>
+</pre></div>
+    </div>
+  </article>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+<div class="row">
+  <ul class="col-sm-6 list-inline">
+    <li class="list-inline-item"><a href="https://apothem.blog/archives.html">Archives</a></li>
+    <li class="list-inline-item"><a href="https://apothem.blog/categories.html">Categories</a></li>
+      <li class="list-inline-item"><a href="https://apothem.blog/tags.html">Tags</a></li>
+  </ul>
+  <p class="col-sm-6 text-sm-right text-muted">
+    Generated by <a href="https://github.com/getpelican/pelican" target="_blank">Pelican</a>
+    / <a href="https://github.com/nairobilug/pelican-alchemy" target="_blank">&#x2728;</a>
+  </p>
+</div>    </div>
+  </footer>
+</body>
+
+</html>

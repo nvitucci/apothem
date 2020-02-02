@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
+      <loc>https://apothem.blog/apache-hivemall-part-2.html</loc>
+      <priority>0.8</priority>
+    </url>
+    <url>
+      <loc>https://apothem.blog/apache-hivemall.html</loc>
+      <priority>0.8</priority>
+    </url>
+    <url>
       <loc>https://apothem.blog/apache-carbondata-part-2.html</loc>
       <priority>0.8</priority>
     </url>
