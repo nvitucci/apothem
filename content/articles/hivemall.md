@@ -304,7 +304,7 @@ The prediction works in the same way as before, with three important differences
 - we do not "vote" for the most frequent class, but rather we average the probabilities of each class and select the class with the maximum average probability;
 - the model we run the prediction against has to be created with the `multi:softprob` objective, otherwise the `xgboost_predict_triple` will return the wrong results.
 
-We can also use two simpler functions, `xgboost_predict` and `xgboost_batch_predict`, to obtain the same result (look at the [examples](https://hivemall.incubator.apache.org/userguide/binaryclass/news20b_xgboost.html) for more details):
+We can also use two simpler functions, `xgboost_predict` and `xgboost_batch_predict`, to obtain the same result. The difference between the two is that `xgboost-predict` uses [xgboost-predictor-java](https://github.com/komiya-atsushi/xgboost-predictor-java) while `xgboost_batch_predict` uses [xgboost4j](https://github.com/dmlc/xgboost/tree/master/java/xgboost4j); the former runs on a per-row basis and is faster, but does not support all the models and objectives that the latter (which runs on batches) supports. Here is an example on how to use both; you can take a look at the [Hivemall examples](https://hivemall.incubator.apache.org/userguide/binaryclass/news20b_xgboost.html) for more details.
 
     :::scala
     scala> spark.sql("CREATE TEMPORARY FUNCTION xgboost_predict AS 'hivemall.xgboost.XGBoostOnlinePredictUDTF'")
