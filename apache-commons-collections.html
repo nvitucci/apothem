@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>  Apache Commons Collections | APOTHEM
+</title>
+  <link rel="canonical" href="https://apothem.blog/apache-commons-collections.html">
+
+    <link rel="icon" type="image/x-icon" href="https://apothem.blog/favicon.ico">
+
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/pygments/default.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/theme.css">
+
+  <link rel="alternate" type="application/atom+xml" title="Full Atom Feed"
+        href="https://apothem.blog/feeds/all.atom.xml">
+  <link rel="alternate" type="application/atom+xml" title="Categories Atom Feed"
+        href="https://apothem.blog/feeds/{slug}.atom.xml">  
+  <meta name="description" content="With this article I'll take a break from large Apache projects to focus again on a single, easy-to-integrate library. Apache Commons Collections is part of the larger Apache Commons project, a fantastic collection of libraries that cover very specific domains or use cases such as CSV files processing, command line …">
+
+
+</head>
+
+<body>
+  <header class="header">
+    <div class="container">
+<div class="row">
+    <div class="col-sm-4">
+      <a href="https://apothem.blog/">
+        <img class="img-fluid rounded" src=https://apothem.blog/images/profile.svg width=180 alt="APOTHEM">
+      </a>
+    </div>
+  <div class="col-sm-8">
+    <h1 class="title"><a href="https://apothem.blog/">APOTHEM</a></h1>
+      <p class="text-muted">Apache Project(s) of the month</p>
+      <ul class="list-inline">
+          <li class="list-inline-item"><a href="https://projects.apache.org" target="_blank">projects.apache.org</a></li>
+              <li class="list-inline-item text-muted">|</li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/about.html">About</a></li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/faq.html">FAQ</a></li>
+            <li class=" list-inline-item text-muted">|</li>
+          <li class="list-inline-item"><a class="fa fa-github" href="https://github.com/nvitucci/apothem" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-twitter" href="https://twitter.com/nvitucci" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-rss" href="feeds/all.atom.xml" target="_blank"></a></li>
+      </ul>
+  </div>
+</div>    </div>
+  </header>
+
+  <div class="main">
+    <div class="container">
+      <h2>  Apache Commons Collections
+</h2>
+      <hr>
+  <article class="article">
+    <header>
+      <ul class="list-inline">
+        <li class="list-inline-item text-muted" title="2020-03-31T00:00:00+01:00">
+          <i class="fa fa-clock-o"></i>
+          Tue 31 March 2020
+        </li>
+        <li class="list-inline-item">
+          <i class="fa fa-folder-open-o"></i>
+          <a href="https://apothem.blog/category/projects.html">projects</a>
+        </li>
+          <li class="list-inline-item">
+            <i class="fa fa-files-o"></i>
+              <a href="https://apothem.blog/tag/library.html">#library</a>,               <a href="https://apothem.blog/tag/apache-commons.html">#Apache Commons</a>          </li>
+      </ul>
+    </header>
+    <div class="content">
+      <p>With this article I'll take a break from large Apache projects to focus again on a single, easy-to-integrate library. <a href="https://commons.apache.org/proper/commons-collections/">Apache Commons Collections</a> is part of the larger <a href="https://commons.apache.org/">Apache Commons</a> project, a fantastic collection of libraries that cover very specific domains or use cases such as <a href="https://commons.apache.org/proper/commons-csv/">CSV files processing</a>, <a href="https://commons.apache.org/proper/commons-cli/">command line arguments parsing</a>, <a href="https://commons.apache.org/proper/commons-text/">string processing</a>, and many more.</p>
+<p>The Collections component was created to add more collections and to expand on the existing Java collections' capabilities at a time when functional programming (especially in Java) was not yet widespread. Some solutions have actually been included in the most recent versions of Java itself (the <a href="https://commons.apache.org/proper/commons-collections/javadocs/api-4.4/index.html">FluentIterable</a>, for instance, has been "replaced" by Java 8's <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html">Stream</a>), while many other still provide useful additions and good alternatives to other widespread libraries such as <a href="https://github.com/google/guava/wiki/NewCollectionTypesExplained">Guava</a>. The collection types that first brought me to Apache Commons Collections are the <code>MultiSet</code> and the <code>MultiMap</code>, also because they have a native counterpart in Python, and the <code>LRUMap</code> as a simple cache; I also found the <code>SetUtils</code> extremely useful, since they added some mathematical (and functional) foundation to operations between sets. Let's go through some examples and see!</p>
+<h3>Setting up</h3>
+<p>The latest version of Commons Collections is 4.4, which is based on Java 8; therefore, I will use Java 8 in the following. Although there are newer Java versions, the 8 is the oldest long-term support (LTS) version and is still prevalent in the Big Data world; it makes then for a good balance between "legacy" versions and the newest versions. I will not make use of lambdas in most examples, in order to make the code more readable and all the involved types explicit.</p>
+<p>I find that the easiest way to get started with a Java library is by creating a Maven project. All the major IDEs support the creation of Maven projects, so that all you need to do is to give a name to your project and edit the <code>pom.xml</code> file to include lines like the following:</p>
+<div class="highlight"><pre><span></span><span class="nt">&lt;groupId&gt;</span>blog.apothem<span class="nt">&lt;/groupId&gt;</span>
+<span class="nt">&lt;artifactId&gt;</span>apache-commons-collection-example<span class="nt">&lt;/artifactId&gt;</span>
+<span class="nt">&lt;version&gt;</span>0.0.1-SNAPSHOT<span class="nt">&lt;/version&gt;</span>
+
+<span class="nt">&lt;dependencies&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>org.apache.commons<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>commons-collections4<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>4.4<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+<span class="nt">&lt;/dependencies&gt;</span>
+</pre></div>
+
+
+<p>You are then ready to build the project and start tinkering with the examples. For a very easy start, I would just create a class with a <code>main</code> method and write all the code there; otherwise, another very good approach is to make the examples as test classes by using a testing framework such as <a href="https://junit.org/junit5/">JUnit</a>, but since this would require a bit more setup and some knowledge of testing, I would leave this as an "exercise for the reader". If you just want to grab a ready project with all the examples and run it, check out the <a href="https://github.com/nvitucci/apothem-resources/tree/master/apache-commons-collections">Apothem resources repository</a>!</p>
+<h3>Collection types</h3>
+<p>Let's now see what types of collection are available. First of all, a general remark that the project makes on its user guide: most collections are not thread-safe unless said otherwise, so they should be <code>synchronized</code> accordingly when thread safety is needed.</p>
+<h4><em>Bag</em></h4>
+<p><code>Bag</code>s are collections where each element can appear many times. We will skip them because the <code>MultiSet</code> type is set to replace them (see the <a href="https://commons.apache.org/proper/commons-collections/release_4_1.html">release notes</a> of version 4.1).</p>
+<h4><em>BidiMap</em></h4>
+<p>A <code>BidiMap</code> is a bidirectional map, namely a map where the key-to-value relation can be inverted, and the values effectively be used as keys in the <em>inverted map</em>. This collection type enables, among the other things, the creation of mappings between IDs as in the following example:</p>
+<div class="highlight"><pre><span></span><span class="n">BidiMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">bidiMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">DualHashBidiMap</span><span class="o">&lt;&gt;();</span>
+
+<span class="n">bidiMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;string-id-1&quot;</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+<span class="n">bidiMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;string-id-3&quot;</span><span class="o">,</span> <span class="mi">3</span><span class="o">);</span>
+<span class="n">bidiMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;string-id-2&quot;</span><span class="o">,</span> <span class="mi">2</span><span class="o">);</span>
+
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+    <span class="s">&quot;Using key &#39;%s&#39; to retrieve value %d&quot;</span><span class="o">,</span> <span class="s">&quot;string-id-1&quot;</span><span class="o">,</span> <span class="n">bidiMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">&quot;string-id-1&quot;</span><span class="o">)));</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+    <span class="s">&quot;Using value %d to retrieve key &#39;%s&#39;&quot;</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span> <span class="n">bidiMap</span><span class="o">.</span><span class="na">getKey</span><span class="o">(</span><span class="mi">1</span><span class="o">)));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Using key &#39;string-id-1&#39; to retrieve value 1
+Using value 1 to retrieve key &#39;string-id-1&#39;
+</pre></div>
+
+
+<p>Here we have used a <code>DualHashBidiMap</code>, namely a <code>BidiMap</code> backed by two <code>HashMap</code>s, but like for the standard <code>Map</code> we have three different implementations:</p>
+<div class="highlight"><pre><span></span><span class="n">BidiMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">bidiMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">DualHashBidiMap</span><span class="o">&lt;&gt;();</span>
+<span class="n">BidiMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">bidiMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">DualLinkedHashBidiMap</span><span class="o">&lt;&gt;();</span>
+<span class="n">BidiMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">bidiMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">DualTreeBidiMap</span><span class="o">&lt;&gt;();</span>
+</pre></div>
+
+
+<p>If we need to use <code>TreeMap</code>s, there is actually a fourth implementation which is especially optimized for this use case:</p>
+<div class="highlight"><pre><span></span><span class="n">BidiMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">bidiMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TreeBidiMap</span><span class="o">&lt;&gt;();</span>
+</pre></div>
+
+
+<p>All the implementations offer the same methods, notably:</p>
+<ul>
+<li>
+<p><code>get</code> to get a value by its key (as in the standard <code>Map</code>);</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Using key &#39;%s&#39; to retrieve value %d&quot;</span><span class="o">,</span> <span class="s">&quot;string-id-1&quot;</span><span class="o">,</span> <span class="n">bidiMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">&quot;string-id-1&quot;</span><span class="o">)));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Using key &#39;string-id-1&#39; to retrieve value 1
+</pre></div>
+
+
+</li>
+<li>
+<p><code>getKey</code> to get a key by its value, in "reverse" with respect to the common usage;</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Using value %d to retrieve key &#39;%s&#39;&quot;</span><span class="o">,</span> <span class="mi">1</span><span class="o">,</span> <span class="n">bidiMap</span><span class="o">.</span><span class="na">getKey</span><span class="o">(</span><span class="mi">1</span><span class="o">)));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Using value 1 to retrieve key &#39;string-id-1&#39;
+</pre></div>
+
+
+</li>
+<li>
+<p><code>entrySet</code> to get all the <code>Map.Entry</code> key-value pairs (note: here <code>getKey</code> is the usual method of <code>Map.Entry</code>):</p>
+<div class="highlight"><pre><span></span><span class="k">for</span> <span class="o">(</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">entry</span> <span class="o">:</span> <span class="n">bidiMap</span><span class="o">.</span><span class="na">entrySet</span><span class="o">())</span>
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+            <span class="s">&quot;Key: &#39;%s&#39;, value: %d&quot;</span><span class="o">,</span> <span class="n">entry</span><span class="o">.</span><span class="na">getKey</span><span class="o">(),</span> <span class="n">entry</span><span class="o">.</span><span class="na">getValue</span><span class="o">()));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Key: &#39;string-id-2&#39;, value: 2
+Key: &#39;string-id-3&#39;, value: 3
+Key: &#39;string-id-1&#39;, value: 1
+</pre></div>
+
+
+</li>
+<li>
+<p><code>inverseBidiMap</code> to get the inverted map, as in the following example:</p>
+<div class="highlight"><pre><span></span><span class="k">for</span> <span class="o">(</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">entry</span> <span class="o">:</span> <span class="n">bidiMap</span><span class="o">.</span><span class="na">inverseBidiMap</span><span class="o">().</span><span class="na">entrySet</span><span class="o">())</span>
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+            <span class="s">&quot;Key: %d, value: &#39;%s&#39;&quot;</span><span class="o">,</span> <span class="n">entry</span><span class="o">.</span><span class="na">getKey</span><span class="o">(),</span> <span class="n">entry</span><span class="o">.</span><span class="na">getValue</span><span class="o">()));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Key: 1, value: &#39;string-id-1&#39;
+Key: 2, value: &#39;string-id-2&#39;
+Key: 3, value: &#39;string-id-3&#39;
+</pre></div>
+
+
+</li>
+</ul>
+<p>One thing to be careful about is that <code>BidiMap</code>s do not strictly check for value uniqueness, so inverting a <code>BidiMap</code> with repeated values can lead to unexpected behaviour (see a "bad BidiMap" example on the repo).</p>
+<h4><em>MultiMap</em></h4>
+<p>A <code>MultiMap</code> is a <code>Map</code> whose values are collections (lists or sets) of values, similar to Python's <a href="https://docs.python.org/2/library/collections.html#collections.defaultdict">defaultdict</a>. When instantiated with the default constructor, the map is initialized with a capacity of 16 and each list or set with a capacity of 3:</p>
+<div class="highlight"><pre><span></span><span class="n">ArrayListValuedHashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">multiMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayListValuedHashMap</span><span class="o">&lt;&gt;();</span>
+</pre></div>
+
+
+<p>Other constructors are available to manually set both capacities:</p>
+<div class="highlight"><pre><span></span><span class="kt">int</span> <span class="n">initialMapCapacity</span> <span class="o">=</span> <span class="mi">32</span><span class="o">;</span>
+<span class="kt">int</span> <span class="n">initialListCapacity</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span>
+
+<span class="n">ArrayListValuedHashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">multiMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayListValuedHashMap</span><span class="o">&lt;&gt;(</span><span class="n">initialListCapacity</span><span class="o">);</span>
+<span class="n">ArrayListValuedHashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">multiMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayListValuedHashMap</span><span class="o">&lt;&gt;(</span><span class="n">initialMapCapacity</span><span class="o">,</span> <span class="n">initialListCapacity</span><span class="o">);</span>
+</pre></div>
+
+
+<p>The elements can be inserted in the usual way, but inserting more than one element with the same key does not result in overwriting:</p>
+<div class="highlight"><pre><span></span><span class="n">multiMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;language&quot;</span><span class="o">,</span> <span class="s">&quot;Java&quot;</span><span class="o">);</span>
+<span class="n">multiMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;language&quot;</span><span class="o">,</span> <span class="s">&quot;Python&quot;</span><span class="o">);</span>
+<span class="n">multiMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;language&quot;</span><span class="o">,</span> <span class="s">&quot;C++&quot;</span><span class="o">);</span>
+<span class="n">multiMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;skill&quot;</span><span class="o">,</span> <span class="s">&quot;Good&quot;</span><span class="o">);</span>
+<span class="n">multiMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;skill&quot;</span><span class="o">,</span> <span class="s">&quot;Excellent&quot;</span><span class="o">);</span>
+
+<span class="k">for</span> <span class="o">(</span><span class="n">String</span> <span class="n">key</span> <span class="o">:</span> <span class="n">multiMap</span><span class="o">.</span><span class="na">keySet</span><span class="o">())</span>
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+            <span class="s">&quot;Key &#39;%s&#39; contains values: %s&quot;</span><span class="o">,</span> <span class="n">key</span><span class="o">,</span> <span class="n">String</span><span class="o">.</span><span class="na">join</span><span class="o">(</span><span class="s">&quot;, &quot;</span><span class="o">,</span> <span class="n">multiMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">key</span><span class="o">))));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Key &#39;skill&#39; contains values: Good, Excellent
+Key &#39;language&#39; contains values: Java, Python, C++
+</pre></div>
+
+
+<p>The <code>keySet</code> method here is used to obtain the unique keys, whereas the <code>keys</code> method is used to obtain all the keys as a <code>MultiSet</code> (with counts):</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Keys in the map (with counts): %s&quot;</span><span class="o">,</span> <span class="n">multiMap</span><span class="o">.</span><span class="na">keys</span><span class="o">()));</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Unique keys in the map: %s&quot;</span><span class="o">,</span> <span class="n">multiMap</span><span class="o">.</span><span class="na">keySet</span><span class="o">()));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Keys in the map (with counts): [skill:2, language:3]
+Unique keys in the map: [skill, language]
+</pre></div>
+
+
+<p>Since there are actually five "pairs", the map size is <code>5</code>:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;The map has %s elements&quot;</span><span class="o">,</span> <span class="n">multiMap</span><span class="o">.</span><span class="na">size</span><span class="o">()));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>The map has 5 elements
+</pre></div>
+
+
+<p>This is also reflected by listing all the values in the map using the <code>values</code> method:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Values in the map: %s&quot;</span><span class="o">,</span> <span class="n">multiMap</span><span class="o">.</span><span class="na">values</span><span class="o">()));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Values in the map: [Good, Excellent, Java, Python, C++]
+</pre></div>
+
+
+<p>The examples we have seen so far make use of the <code>ArrayListValuedHashMap</code> implementation, which arranges the values corresponding to each key in an <code>ArrayList</code>. The <code>HashSetValuedHashMap</code> can be used to arrange the values in <code>HashSet</code>s instead.</p>
+<h4><em>MultiSet</em></h4>
+<p>A <code>MultiSet</code> is a <code>Set</code> that allows for multiple occurrences of each element, keeping track of their count. It is similar to Python's <a href="https://docs.python.org/2/library/collections.html#collections.Counter">Counter</a> and can be very useful when a count of the occurrences of an object in a set is needed, for instance in text processing applications.</p>
+<p>The initialization and the insertion of elements are straightforward:</p>
+<div class="highlight"><pre><span></span><span class="n">MultiSet</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">multiSet</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMultiSet</span><span class="o">&lt;&gt;();</span>
+
+<span class="n">multiSet</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">&quot;Java&quot;</span><span class="o">);</span>
+<span class="n">multiSet</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">&quot;programming&quot;</span><span class="o">);</span>
+<span class="n">multiSet</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">&quot;Python&quot;</span><span class="o">);</span>
+<span class="n">multiSet</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">&quot;programming&quot;</span><span class="o">);</span>
+</pre></div>
+
+
+<p>Let's start with counting the objects in the map:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;There are %d elements in the multiset&quot;</span><span class="o">,</span> <span class="n">multiSet</span><span class="o">.</span><span class="na">size</span><span class="o">()));</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;There are %d unique elements in the multiset&quot;</span><span class="o">,</span> <span class="n">multiSet</span><span class="o">.</span><span class="na">uniqueSet</span><span class="o">().</span><span class="na">size</span><span class="o">()));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>There are 4 elements in the multiset
+There are 3 unique elements in the multiset
+</pre></div>
+
+
+<p>Since we have inserted four elements, the total count will be <code>4</code>; the unique elements instead are three, since <code>"Python"</code> is repeated twice. We can iterate through the elements of the set in two different ways:</p>
+<ul>
+<li>
+<p>by iterating through the "pairs", getting the element itself and its count from each pair:</p>
+<div class="highlight"><pre><span></span><span class="k">for</span> <span class="o">(</span><span class="n">MultiSet</span><span class="o">.</span><span class="na">Entry</span> <span class="n">s</span> <span class="o">:</span> <span class="n">multiSet</span><span class="o">.</span><span class="na">entrySet</span><span class="o">())</span>
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">&quot;\t&#39;%s&#39; appears %d time(s)&quot;</span><span class="o">,</span> <span class="n">s</span><span class="o">.</span><span class="na">getElement</span><span class="o">(),</span> <span class="n">s</span><span class="o">.</span><span class="na">getCount</span><span class="o">()));</span>
+</pre></div>
+
+
+</li>
+<li>
+<p>by iterating through the unique elements, getting the count using each element as a key:</p>
+<div class="highlight"><pre><span></span><span class="k">for</span> <span class="o">(</span><span class="n">String</span> <span class="n">s</span> <span class="o">:</span> <span class="n">multiSet</span><span class="o">.</span><span class="na">uniqueSet</span><span class="o">())</span>
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">&quot;\t&#39;%s&#39; appears %d time(s)&quot;</span><span class="o">,</span> <span class="n">s</span><span class="o">,</span> <span class="n">multiSet</span><span class="o">.</span><span class="na">getCount</span><span class="o">(</span><span class="n">s</span><span class="o">)));</span>
+</pre></div>
+
+
+</li>
+</ul>
+<p>In both cases we obtain the following result:</p>
+<div class="highlight"><pre><span></span>&#39;Java&#39; appears 1 time(s)
+&#39;programming&#39; appears 2 time(s)
+&#39;Python&#39; appears 1 time(s)
+</pre></div>
+
+
+<h4><em>CircularFifoQueue</em></h4>
+<p>The <code>Queue</code> type is already present in Java, so the main addition from Commons Collection is a circular FIFO queue, a fixed size queue where the oldest elements are replaced by the newer elements when it reaches capacity. A <code>CircularFifoQueue</code> is created with the size as a parameter for the constructor:</p>
+<div class="highlight"><pre><span></span><span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
+<span class="n">CircularFifoQueue</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">queue</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CircularFifoQueue</span><span class="o">&lt;&gt;(</span><span class="n">size</span><span class="o">);</span>
+</pre></div>
+
+
+<p>Let's add one element and check 1) how many elements are there in the queue and 2) whether the queue is at full capacity:</p>
+<div class="highlight"><pre><span></span><span class="n">queue</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">&quot;A&quot;</span><span class="o">);</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Elements: %d out of %d, queue at full capacity?: %b&quot;</span><span class="o">,</span>
+        <span class="n">queue</span><span class="o">.</span><span class="na">size</span><span class="o">(),</span> <span class="n">queue</span><span class="o">.</span><span class="na">maxSize</span><span class="o">(),</span> <span class="n">queue</span><span class="o">.</span><span class="na">isAtFullCapacity</span><span class="o">()));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Elements: 1 out of 2, queue at full capacity?: false
+</pre></div>
+
+
+<p>Now let's insert one more element and check again:</p>
+<div class="highlight"><pre><span></span><span class="n">queue</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">&quot;B&quot;</span><span class="o">);</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Elements: %d out of %d, queue at full capacity?: %b&quot;</span><span class="o">,</span>
+        <span class="n">queue</span><span class="o">.</span><span class="na">size</span><span class="o">(),</span> <span class="n">queue</span><span class="o">.</span><span class="na">maxSize</span><span class="o">(),</span> <span class="n">queue</span><span class="o">.</span><span class="na">isAtFullCapacity</span><span class="o">()));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Elements: 2 out of 2, queue at full capacity?: true
+</pre></div>
+
+
+<p>Since the capacity is set to <code>2</code>, with two elements the queue is at full capacity. Let's check what the elements are:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;(</span><span class="n">queue</span><span class="o">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>[A, B]
+</pre></div>
+
+
+<p>What if we now add one more element?</p>
+<div class="highlight"><pre><span></span><span class="n">queue</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="s">&quot;C&quot;</span><span class="o">);</span>
+
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;(</span><span class="n">queue</span><span class="o">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>[B, C]
+</pre></div>
+
+
+<p>Obviously the queue is still at full capacity, but the first element <code>"A"</code> has been dropped to make room for the new element <code>"C"</code>.</p>
+<p>Besides the methods just shown, <code>CircularFifoQueue</code> has the same methods of a standard <code>Queue</code> (including <code>poll</code> and <code>remove</code> to remove and return the head of the queue, and <code>element</code> and <code>peek</code> to return the head of the queue without removing it); there is also an <code>isFull</code> method to determine whether the queue is full, which always returns <code>false</code> since a circular queue can never be full.</p>
+<h4><em>Trie</em></h4>
+<p>A <code>Trie</code> implements a rather interesting data structure called <a href="https://en.wikipedia.org/wiki/Trie">trie</a> (from re<strong>trie</strong>val), which is mostly used for search using prefixes. A trie is similar to a tree with an important difference: a node of the trie does not contain the value that is being searched, but the <em>path</em> to the node does; as such, tries are very good at prefix search. The trie implementation that Commons Collections offers is called <code>PatriciaTree</code> (from the acronym PATRICIA, "Practical Algorithm to Retrieve Information Coded in Alphanumeric"), a type of compressed trie. Let's see an example.</p>
+<div class="highlight"><pre><span></span><span class="n">Trie</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">trie</span> <span class="o">=</span> <span class="k">new</span> <span class="n">PatriciaTrie</span><span class="o">&lt;&gt;();</span>
+
+<span class="n">trie</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;car&quot;</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+<span class="n">trie</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;cart&quot;</span><span class="o">,</span> <span class="mi">2</span><span class="o">);</span>
+<span class="n">trie</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;carton&quot;</span><span class="o">,</span> <span class="mi">3</span><span class="o">);</span>
+<span class="n">trie</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;cartridge&quot;</span><span class="o">,</span> <span class="mi">4</span><span class="o">);</span>
+<span class="n">trie</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;cartography&quot;</span><span class="o">,</span> <span class="mi">5</span><span class="o">);</span>
+<span class="n">trie</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;caravan&quot;</span><span class="o">,</span> <span class="mi">6</span><span class="o">);</span>
+<span class="n">trie</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;carbon&quot;</span><span class="o">,</span> <span class="mi">7</span><span class="o">);</span>
+<span class="n">trie</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;castle&quot;</span><span class="o">,</span> <span class="mi">8</span><span class="o">);</span>
+<span class="n">trie</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;coal&quot;</span><span class="o">,</span> <span class="mi">9</span><span class="o">);</span>
+</pre></div>
+
+
+<p>Here we just created a <code>PatriciaTree</code> and put several keys that share common prefixes; it is important to note that the type of the keys of a <code>PatriciaTree</code> should extend <code>String</code>. Let's suppose we want to find the values associated to all the keys starting with <code>"car"</code>; we can use the <code>prefixMap</code> method:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+    <span class="s">&quot;Values for prefix &#39;%s&#39;: %s&quot;</span><span class="o">,</span> <span class="n">prefix</span><span class="o">,</span> <span class="n">trie</span><span class="o">.</span><span class="na">prefixMap</span><span class="o">(</span><span class="s">&quot;car&quot;</span><span class="o">)));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Values for prefix &#39;car&#39;: {car=1, caravan=6, carbon=7, cart=2, cartography=5, carton=3, cartridge=4}
+</pre></div>
+
+
+<p>If we want to see the keys preceding or following a specific key, we can use the <code>headMap</code> and <code>tailMap</code> methods:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Keys before &#39;cart&#39;: %s&quot;</span><span class="o">,</span> <span class="n">trie</span><span class="o">.</span><span class="na">headMap</span><span class="o">(</span><span class="s">&quot;cart&quot;</span><span class="o">)));</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Keys after &#39;cart&#39;: %s&quot;</span><span class="o">,</span> <span class="n">trie</span><span class="o">.</span><span class="na">tailMap</span><span class="o">(</span><span class="s">&quot;cart&quot;</span><span class="o">)));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Keys before for &#39;cart&#39;: {car=1, caravan=6, carbon=7}
+Keys after &#39;cart&#39;: {cart=2, cartography=5, carton=3, cartridge=4, castle=8, coal=9}
+</pre></div>
+
+
+<p>Furthermore, if we want to see the keys between any two entries, we can use the <code>subMap</code> method:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Keys between &#39;cart&#39; and &#39;carton&#39;: %s&quot;</span><span class="o">,</span> <span class="n">trie</span><span class="o">.</span><span class="na">subMap</span><span class="o">(</span><span class="s">&quot;cart&quot;</span><span class="o">,</span> <span class="s">&quot;carton&quot;</span><span class="o">)));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Keys between &#39;cart&#39; and &#39;carton&#39;: {cart=2, cartography=5}
+</pre></div>
+
+
+<h4><em>LRUMap</em></h4>
+<p>A <code>LRUMap</code> is basically a limited-size cache where the least recently used (LRU) elements are evicted to leave room for new elements when the cache is full. The LRU policy is quite popular in caches; the concept of "least recently used" may vary, and for instance in Commons Collections it refers to <code>get</code> and <code>put</code> operations only: if two elements are inserted one after the other and the former is retrieved once, the latter will become "least recently used". The <code>LRUMap</code> is initialized with a <code>maxSize</code> parameter:</p>
+<div class="highlight"><pre><span></span><span class="kt">int</span> <span class="n">maxSize</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
+<span class="n">LRUMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">lruMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LRUMap</span><span class="o">&lt;&gt;(</span><span class="n">maxSize</span><span class="o">);</span>
+</pre></div>
+
+
+<p>Elements are inserted as in a standard <code>Map</code>:</p>
+<div class="highlight"><pre><span></span><span class="n">lruMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;value1&quot;</span><span class="o">,</span> <span class="mi">1</span><span class="o">);</span>
+<span class="n">lruMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;value2&quot;</span><span class="o">,</span> <span class="mi">2</span><span class="o">);</span>
+</pre></div>
+
+
+<p>and can be iterated through with the usual <code>entrySet</code> method:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Elements in the map: %s&quot;</span><span class="o">,</span> <span class="n">lruMap</span><span class="o">.</span><span class="na">entrySet</span><span class="o">()));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Elements in the map: [value1=1, value2=2]
+</pre></div>
+
+
+<p>If we insert a new element, the "oldest" one (in this case the first inserted, <code>"value1"</code>) will be removed:</p>
+<div class="highlight"><pre><span></span><span class="n">lruMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;value3&quot;</span><span class="o">,</span> <span class="mi">3</span><span class="o">);</span>
+
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Elements in the map: %s&quot;</span><span class="o">,</span> <span class="n">lruMap</span><span class="o">.</span><span class="na">entrySet</span><span class="o">()));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Elements in the map: [value2=2, value3=3]
+</pre></div>
+
+
+<p>If we insert one more element but we read <code>"value2"</code> first, the "oldest" one to be removed will be now <code>"value3"</code>:</p>
+<div class="highlight"><pre><span></span><span class="n">lruMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">&quot;value2&quot;</span><span class="o">);</span>
+<span class="n">lruMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;value4&quot;</span><span class="o">,</span> <span class="mi">4</span><span class="o">);</span>
+
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Elements in the map: %s&quot;</span><span class="o">,</span> <span class="n">lruMap</span><span class="o">.</span><span class="na">entrySet</span><span class="o">()));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Elements in the map: [value2=2, value4=4]
+</pre></div>
+
+
+<p>It's important to note that, in order to use <code>LRUMap</code> as a cache in a real multithreaded environment, we should make it thread-safe; an easy way is by wrapping it with the <code>Collections.synchronizedMap</code> method.</p>
+<h4><em>MultiKeyMap</em></h4>
+<p>A <code>MultiKeyMap</code> is a <code>Map</code> where the keys are composite, such as <code>firstName</code> and <code>lastName</code> in a map that associates persons to document IDs. It can be instantiated like a standard <code>Map</code>:</p>
+<div class="highlight"><pre><span></span><span class="n">MultiKeyMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">multiKeyMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MultiKeyMap</span><span class="o">&lt;&gt;();</span>
+</pre></div>
+
+
+<p>with the important difference that the key can be actually made of up to 5 fields of the same type (<code>String</code> in the example). New elements can be added with <code>put</code> by just inserting all the key components one after the other and before the value:</p>
+<div class="highlight"><pre><span></span><span class="n">multiKeyMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;John&quot;</span><span class="o">,</span> <span class="s">&quot;Doe&quot;</span><span class="o">,</span> <span class="s">&quot;id1&quot;</span><span class="o">);</span>
+<span class="n">multiKeyMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;Jane&quot;</span><span class="o">,</span> <span class="s">&quot;Doe&quot;</span><span class="o">,</span> <span class="s">&quot;id2&quot;</span><span class="o">);</span>
+</pre></div>
+
+
+<p>and then they can be read with <code>get</code> in a similar fashion:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Using key &#39;%s&#39;: %s&quot;</span><span class="o">,</span> <span class="s">&quot;(\&quot;John\&quot;, \&quot;Doe\&quot;)&quot;</span><span class="o">,</span> <span class="n">multiKeyMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">&quot;John&quot;</span><span class="o">,</span> <span class="s">&quot;Doe&quot;</span><span class="o">)));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Using key &#39;(&quot;John&quot;, &quot;Doe&quot;)&#39;: id1
+</pre></div>
+
+
+<p>This class can be very useful when implementing a structure such as a database table, as it makes it simple to use complex keys. It cannot be used, though, if a key must have components of different types.</p>
+<h3>Utils</h3>
+<p>Besides new or refined collection types, Commons Collections offers several utility classes. A few examples:</p>
+<ul>
+<li>
+<p><code>FluentIterator</code>: a <code>Stream</code> precursor to enable some functional programming capabilities;</p>
+</li>
+<li>
+<p><code>IteratorUtils</code> and <code>IterableUtils</code>: similar to Python's <a href="https://docs.python.org/2/library/itertools.html">itertools</a> module, they add many methods to use <code>Iterator</code>s and <code>Iterable</code>s more efficiently; for instance, given two lists:</p>
+<div class="highlight"><pre><span></span><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">list1</span> <span class="o">=</span> <span class="n">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="s">&quot;one&quot;</span><span class="o">,</span> <span class="s">&quot;two&quot;</span><span class="o">,</span> <span class="s">&quot;three&quot;</span><span class="o">);</span>
+<span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">list2</span> <span class="o">=</span> <span class="n">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="s">&quot;A&quot;</span><span class="o">,</span> <span class="s">&quot;B&quot;</span><span class="o">,</span> <span class="s">&quot;C&quot;</span><span class="o">);</span>
+</pre></div>
+
+
+<p>we can concatenate them with the <code>chainedIterable</code> method (or its iterator-based counterpart <code>chainedIterator</code>) or interleave them with the <code>zippingIterable</code> method (or its iterator-based counterpart <code>zippingIterator</code>):</p>
+<div class="highlight"><pre><span></span><span class="k">for</span> <span class="o">(</span><span class="n">String</span> <span class="n">s</span><span class="o">:</span> <span class="n">IterableUtils</span><span class="o">.</span><span class="na">chainedIterable</span><span class="o">(</span><span class="n">list1</span><span class="o">,</span> <span class="n">list2</span><span class="o">))</span>
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="n">s</span> <span class="o">+</span> <span class="s">&quot; &quot;</span><span class="o">);</span>
+
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">();</span>
+
+<span class="k">for</span> <span class="o">(</span><span class="n">String</span> <span class="n">s</span><span class="o">:</span> <span class="n">IterableUtils</span><span class="o">.</span><span class="na">zippingIterable</span><span class="o">(</span><span class="n">list1</span><span class="o">,</span> <span class="n">list2</span><span class="o">))</span>
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="n">s</span> <span class="o">+</span> <span class="s">&quot; &quot;</span><span class="o">);</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>one two three A B C
+one A two B three C
+</pre></div>
+
+
+</li>
+<li>
+<p><code>ListUtils</code>: list-specific utilities that enable some set-like operations (e.g. union, intersection, sum, subtraction) on lists:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Union: %s&quot;</span><span class="o">,</span> <span class="n">ListUtils</span><span class="o">.</span><span class="na">union</span><span class="o">(</span><span class="n">list1</span><span class="o">,</span> <span class="n">list2</span><span class="o">)));</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Intersection: %s&quot;</span><span class="o">,</span> <span class="n">ListUtils</span><span class="o">.</span><span class="na">intersection</span><span class="o">(</span><span class="n">list1</span><span class="o">,</span> <span class="n">list2</span><span class="o">)));</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Sum: %s&quot;</span><span class="o">,</span> <span class="n">ListUtils</span><span class="o">.</span><span class="na">sum</span><span class="o">(</span><span class="n">list1</span><span class="o">,</span> <span class="n">list2</span><span class="o">)));</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Subtract: %s&quot;</span><span class="o">,</span> <span class="n">ListUtils</span><span class="o">.</span><span class="na">subtract</span><span class="o">(</span><span class="n">list1</span><span class="o">,</span> <span class="n">list2</span><span class="o">)));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Union: [one, two, three, one, two, four]
+Intersection: [one, two]
+Sum: [three, one, two, four]
+Subtract: [three]
+</pre></div>
+
+
+<p>allow to calculate the longest common subsequence between lists:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Longest common subsequence: %s&quot;</span><span class="o">,</span> <span class="n">ListUtils</span><span class="o">.</span><span class="na">longestCommonSubsequence</span><span class="o">(</span><span class="n">list1</span><span class="o">,</span> <span class="n">list2</span><span class="o">)));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Longest common subsequence: [one, two]
+</pre></div>
+
+
+<p>and add the capability to create lazy lists:</p>
+<div class="highlight"><pre><span></span><span class="n">Factory</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">factory</span> <span class="o">=</span> <span class="o">()</span> <span class="o">-&gt;</span> <span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextInt</span><span class="o">();</span>
+
+<span class="n">List</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">lazyList</span> <span class="o">=</span> <span class="n">ListUtils</span><span class="o">.</span><span class="na">lazyList</span><span class="o">(</span><span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;(),</span> <span class="n">factory</span><span class="o">);</span>
+
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Lazy list length: %d&quot;</span><span class="o">,</span> <span class="n">lazyList</span><span class="o">.</span><span class="na">size</span><span class="o">()));</span>
+
+<span class="n">lazyList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Lazy list length: %d&quot;</span><span class="o">,</span> <span class="n">lazyList</span><span class="o">.</span><span class="na">size</span><span class="o">()));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Lazy list length: 0
+Lazy list length: 3
+</pre></div>
+
+
+</li>
+<li>
+<p><code>SetUtils</code>: set-specific utilities that enable some set operations (e.g. union, intersection, disjunction, difference) which, differently from the ones that Java already offers, return new <code>Set</code>s instead of modifying the <code>Set</code>s they are applied to:</p>
+<div class="highlight"><pre><span></span><span class="n">Set</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">set1</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashSet</span><span class="o">&lt;&gt;(</span><span class="n">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="s">&quot;one&quot;</span><span class="o">,</span> <span class="s">&quot;two&quot;</span><span class="o">,</span> <span class="s">&quot;three&quot;</span><span class="o">));</span>
+<span class="n">Set</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">set2</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashSet</span><span class="o">&lt;&gt;(</span><span class="n">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="s">&quot;one&quot;</span><span class="o">,</span> <span class="s">&quot;four&quot;</span><span class="o">));</span>
+
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Union: %s&quot;</span><span class="o">,</span> <span class="n">SetUtils</span><span class="o">.</span><span class="na">union</span><span class="o">(</span><span class="n">set1</span><span class="o">,</span> <span class="n">set2</span><span class="o">)));</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Intersection: %s&quot;</span><span class="o">,</span> <span class="n">SetUtils</span><span class="o">.</span><span class="na">intersection</span><span class="o">(</span><span class="n">set1</span><span class="o">,</span> <span class="n">set2</span><span class="o">)));</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Disjunction: %s&quot;</span><span class="o">,</span> <span class="n">SetUtils</span><span class="o">.</span><span class="na">disjunction</span><span class="o">(</span><span class="n">set1</span><span class="o">,</span> <span class="n">set2</span><span class="o">)));</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span>
+        <span class="s">&quot;Difference: %s&quot;</span><span class="o">,</span> <span class="n">SetUtils</span><span class="o">.</span><span class="na">difference</span><span class="o">(</span><span class="n">set1</span><span class="o">,</span> <span class="n">set2</span><span class="o">)));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Union: [one, two, three, four]
+Intersection: [one]
+Disjunction: [two, three, four]
+Difference: [two, three]
+</pre></div>
+
+
+</li>
+<li>
+<p><code>CollectionUtils</code>: generic methods on <code>Collection</code>s, including decorators to make the underlying <code>Collection</code> synchronized, unmodifiable, filtered or validated by a predicate, etc.</p>
+</li>
+</ul>
+<h3>Conclusions</h3>
+<p>We have seen that the Commons Collections project provides a really vast amount of collection types, utilities, and decorators to use with existing collections. The project is very easy to integrate and the documentation, although a bit lacking in examples, is covered by an extensive and detailed Javadoc. If you find yourself making use of many collections, Commons Collections can help you in many ways.</p>
+    </div>
+  </article>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+<div class="row">
+  <ul class="col-sm-6 list-inline">
+    <li class="list-inline-item"><a href="https://apothem.blog/archives.html">Archives</a></li>
+    <li class="list-inline-item"><a href="https://apothem.blog/categories.html">Categories</a></li>
+      <li class="list-inline-item"><a href="https://apothem.blog/tags.html">Tags</a></li>
+  </ul>
+  <p class="col-sm-6 text-sm-right text-muted">
+    Generated by <a href="https://github.com/getpelican/pelican" target="_blank">Pelican</a>
+    / <a href="https://github.com/nairobilug/pelican-alchemy" target="_blank">&#x2728;</a>
+  </p>
+</div>    </div>
+  </footer>
+</body>
+
+</html>
