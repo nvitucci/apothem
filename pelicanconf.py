@@ -72,3 +72,5 @@ MARKDOWN = {
     },
     'output_format': 'html5',
 }
+
+PLUGINS = ['pelican_alias']
