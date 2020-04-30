@@ -1,10 +1,11 @@
-Title: Apache Fuseki - Adding reasoning and full-text search capabilities to a dataset
+Title: Apache Jena Fuseki - Adding reasoning and full-text search capabilities to a dataset
 Date: 2020-04-30
 Category: howto
 Tags: Semantic Web, full-text search, reasoning, inferencing
+Alias: /apache-fuseki-adding-reasoning-and-full-text-search-capabilities-to-a-dataset.html
 Status: published
 
-With this article I am kicking off a new series called **[howto](/category/howto.html)** where, instead of describing a whole Apache project, I will explore use cases, problems and solutions related to one. I will start with [Apache Fuseki](https://jena.apache.org/documentation/fuseki2/) looking into how to enable both reasoning and full-text search on a given dataset, which took me some time to figure out as the documentation is a bit lacking on the topic. As usual, I will put the relevant files and examples in the [Apothem resources repository](https://github.com/nvitucci/apothem-resources/tree/master/howto/apache-fuseki/reasoning_and_fts/).
+With this article I am kicking off a new series called **[howto](/category/howto.html)** where, instead of describing a whole Apache project, I will explore use cases, problems and solutions related to one. I will start with [Apache Jena Fuseki](https://jena.apache.org/documentation/fuseki2/) looking into how to enable both reasoning and full-text search on a given dataset, which took me some time to figure out as the documentation is a bit lacking on the topic. As usual, I will put the relevant files and examples in the [Apothem resources repository](https://github.com/nvitucci/apothem-resources/tree/master/howto/apache-jena-fuseki/reasoning_and_fts/).
 
 [TOC]
 
