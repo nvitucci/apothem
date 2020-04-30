@@ -1,5 +1,5 @@
 Title: Apache Fuseki - Adding reasoning and full-text search capabilities to a dataset
-Date: 2020-04-27
+Date: 2020-04-30
 Category: howto
 Tags: Semantic Web, full-text search, reasoning, inferencing
 Status: published
