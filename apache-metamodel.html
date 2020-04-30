@@ -76,11 +76,11 @@
     <div class="content">
       <p>It's a few years now since I've got the "<a href="https://martinfowler.com/bliki/PolyglotPersistence.html">polyglot persistence</a>" bug, first out of interest, then out of necessity. Given the abundance of data models and storage technologies available today, it is crucial to be aware of the strengths and weaknesses of each solution; furthermore, more often than not, an architecture that integrates several types of solutions is desirable or needed.</p>
 <p>Leaving architectural questions aside, the main question in this polyglot scenario is: how to read and interpret data from disparate data sources in a reliable and uniform fashion? Is it better to create a data lake out of all the sources, or to take a federated approach where every query is dispatched to its appropriate database? The Apache project we will work with today, <a href="https://metamodel.apache.org/">MetaModel</a>, aims at providing tools to deal with such challenges.</p>
-<h3>Main concepts</h3>
+<h3 id="main-concepts">Main concepts</h3>
 <p>Apache MetaModel provides <em>"a common interface for discovery, exploration of metadata and querying of different types of data sources"</em>, which means that, through the use of concepts such as <em>datasets</em>, <em>tables</em>, and <em>columns</em>, it exposes a basic abstraction common to all the data sources it can connect to; such abstract data model can then be queried using SQL as an "interlanguage". It is important to note that, as stated on the website, <em>"MetaModel <em>isn't</em> a data mapping framework"</em>; in other words its main intended usage is not to integrate different terminologies within the same domain, but rather to make it easy to add new datasources and to maximize the usage of metadata.</p>
 <p>MetaModel is not the only library to provide tools for data integration. A similar approach is offered by other Apache projects such as <a href="https://spark.apache.org/">Spark</a> or <a href="https://drill.apache.org/">Drill</a>, but MetaModel might be better suited than such Big Data tools in scenarios where the main challenge is the diversity in the data and the schema variability rather than the scale; it can be plugged into an existing project with no additional setup and it offers many convenience methods to start using data sources (including plain CSV, JSON and XML files!) right away. Now let's see how to include MetaModel in a project, along with a few examples.</p>
 <p>(Note: in some sections of this article I will make use of Docker for convenience. If you don't want to use Docker at the moment, you can just skip those sections; otherwise, make sure to <a href="https://docs.docker.com/install/">install it</a> in order to follow.)</p>
-<h3>Setup</h3>
+<h3 id="setup">Setup</h3>
 <p>The best way to get started with MetaModel is to include it as a Maven dependency. If you use an IDE such as Eclipse or IntelliJ, all you need to do is to create a new <code>apache-metamodel-example</code> Maven project; otherwise, you can have a look <a href="https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html">here</a> to get an idea of how to install and work with Maven. In any case, as usual you will find a fully working project on the <a href="https://github.com/nvitucci/apothem-resources">associated repository</a> under the <code>apache-metamodel</code> folder.</p>
 <p>The content of the <code>pom.xml</code> file should look like the following:</p>
 <div class="highlight"><pre><span></span><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
@@ -124,9 +124,9 @@
 
 
 <p>If you don't get any errors in the imports, the project is set up correctly.</p>
-<h3>Examples</h3>
+<h3 id="examples">Examples</h3>
 <p>We can now start to add a few different data sources to explore MetaModel's capabilities.</p>
-<h4>CSV files</h4>
+<h4 id="csv-files">CSV files</h4>
 <p>Let's start with a simple CSV file. We can manually create an <code>example.csv</code> file under <code>/tmp</code> with the following content:</p>
 <div class="highlight"><pre><span></span>project,language,completed
 Project1,Java,true
@@ -194,7 +194,7 @@ Project3,Python,true
 
 
 <p>If we run again the previous query, we'll see that the file has been updated and <code>Project2</code> is no longer listed, while <code>Project4</code> is. Neat!</p>
-<h4>XLSX files</h4>
+<h4 id="xlsx-files">XLSX files</h4>
 <p>Now let's look at a slightly more complex example. Spreadsheets can contain more than one table, which makes them closer to a relational database; MetaModel can use XLSX (<a href="https://en.wikipedia.org/wiki/Office_Open_XML">Office Open XML</a> Workbook) files, which can be read and saved with open source tools such as LibreOffice and OpenOffice. You can find an example file on the repo, or create your own one. All we need to do is to add a method such as this one:</p>
 <div class="highlight"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">processSpreadsheet</span><span class="o">(</span><span class="n">String</span> <span class="n">filename</span><span class="o">)</span> <span class="o">{</span>
     <span class="n">DataContext</span> <span class="n">dataContext</span> <span class="o">=</span> <span class="n">DataContextFactory</span><span class="o">.</span><span class="na">createExcelDataContext</span><span class="o">(</span><span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="n">filename</span><span class="o">));</span>
@@ -230,7 +230,7 @@ Project3,Python,true
 
 
 <p>and the output will show the selected columns from the joined table.</p>
-<h4>JSON files</h4>
+<h4 id="json-files">JSON files</h4>
 <p>So far we have looked at tabular data, but what if we have data structured in a different format such as JSON? We may need to make some compromise between the expressivity of a non-relational model and the ease of use of a relational model, so in some cases we will need to "flatten out" some internal fields. Given instead a simple (and quite common) case, where the file is an array containing objects with the same fields like the following:</p>
 <div class="highlight"><pre><span></span><span class="p">[</span>
     <span class="p">{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nt">&quot;value&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
@@ -259,7 +259,7 @@ Project3,Python,true
 </pre></div>
 
 
-<h4>Databases</h4>
+<h4 id="databases">Databases</h4>
 <p>By now we have understood how to "enhance" static files with querying capabilities, but what if we want to connect to a real datastore such as SQLite, PostgreSQL or MongoDB?</p>
 <p>MetaModel provides connectors for a wide variety of databases, including a generic JDBC connector and a specific connector for MongoDB, which support schema creation and inserts/updates as well. Let's see an example with MongoDB:</p>
 <div class="highlight"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">connectToMongo</span><span class="o">()</span> <span class="o">{</span>
@@ -311,7 +311,7 @@ $ docker run -p <span class="m">27017</span>:27017 mongo
 
 <p>If this is not an option, MongoDB can be installed manually following the instructions <a href="https://www.mongodb.com/download-center/community">here</a>.</p>
 <p>Other data sources can be connected to and used in a similar fashion.</p>
-<h3>Apache Membrane</h3>
+<h3 id="apache-membrane">Apache Membrane</h3>
 <p>A fantastic and little known addition to MetaModel is its subproject <a href="https://cwiki.apache.org/confluence/display/METAMODEL/Membrane">Membrane</a>. Membrane is essentially a <a href="https://en.wikipedia.org/wiki/Representational_state_transfer">RESTful</a> Web service that can be used to manage and query different data sources <em>live</em> by adding them to <em>"tenants"</em> (which are basically independent contexts, each with its own connections to any number of data sources).</p>
 <p>In order to run Membrane, we should clone the repository and build it:</p>
 <div class="highlight"><pre><span></span>$ git clone https://github.com/apache/metamodel-membrane
@@ -385,7 +385,7 @@ $ docker run -p <span class="m">8000</span>:80 -e <span class="nv">SPEC_URL</spa
 
 
 <p>to get the whole content of the example CSV file. (Here, <code>-G</code> and <code>--data-urlencode</code> are used in order to URL-encode the <code>sql</code> parameter and still send it as a <code>GET</code> request.)</p>
-<h3>Conclusions</h3>
+<h3 id="conclusions">Conclusions</h3>
 <p>MetaModel is an easy-to-use and extendable tool that makes it easier to integrate multiple data sources programmatically (even at runtime, with its subproject Membrane). I believe it is worth exploring further since it can simplify what is usually a chore, although most likely it cannot easily scale.</p>
 <p>Just a note of caution: since the project is at a very early stage, there are no strict security measures and the Membrane API could expose information that should not be exposed. Take this into account before releasing anything!</p>
     </div>

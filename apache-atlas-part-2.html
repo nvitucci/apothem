@@ -75,7 +75,7 @@
     </header>
     <div class="content">
       <p>Since Atlas is a fairly large and complex project, one article was definitely not enough to explore all of its capabilities. Building on the <a href="https://apothem.blog/apache-atlas.html">previous article</a>, we will explore classifications and glossary, the REST API, and two more sources of lineage information (Spark and Kafka).</p>
-<h2>Classification</h2>
+<h2 id="classification">Classification</h2>
 <p>Let's start with classification. In our previous example we created some Hive tables containing information about people and their documents, and now we'll put ourselves in the shoes of a data steward: How can we describe the data contained in a table, or even in a single column? How can we explain that some data should not be visible to everybody, or that their value is higher, or that they are covered by a SLA?</p>
 <p>Let's take the <code>people</code> table we created before, which looks like the following:</p>
 <div class="highlight"><pre><span></span><span class="o">|</span> <span class="n">name</span> <span class="o">|</span> <span class="n">surname</span> <span class="o">|</span> <span class="n">age</span> <span class="o">|</span> <span class="n">person_id</span> <span class="o">|</span>
@@ -98,7 +98,7 @@
 <p><img src="images/atlas_classification_attr.png" alt="Atlas classification" class="img-fluid" /></p>
 <p>This classification is meant to capture the provenance of a certain dataset, and for this reason it is not to be automatically propagated through the lineage (if a certain group is responsible for a dataset, it is not necessarily responsible for derived data). We can prevent the propagation of a classification by clicking on the "Propagate" checkbox when assigning the classification to an item:</p>
 <p><img src="images/atlas_classification_noprop.png" alt="Atlas classification" class="img-fluid" /></p>
-<h2>Glossary</h2>
+<h2 id="glossary">Glossary</h2>
 <p>We have seen how to classify the metadata and how the classifications take advantage of lineage information. What if we want to attach tags describing data and metadata according to a specific terminology? In pretty much the same way we have created classifications, we can create one or more <em>glossaries</em> to group together <em>terms</em> and <em>categories</em>.</p>
 <p>In the "Glossary" section we need first of all to create a glossary, for instance <code>Identification</code>:</p>
 <p><img src="images/atlas_glossary_add.png" alt="Atlas glossary" class="img-fluid" /></p>
@@ -107,7 +107,7 @@
 <p>Now, in the same way, we switch to "Terms" and create the two terms <code>National ID card</code> and <code>Passport</code>. If we click on any of the terms, we will see the term's detail page where we can assign classifications and categories. We can even create relationships between terms, for instance to say that a <code>National ID card</code> is somewhat related to a <code>Passport</code> via a <code>seeAlso</code> relation. After this, we can finally assign the terms to any metadata item, for instance to the <code>document</code> table, by clicking on the plus sign under the "Term" column in the search view:</p>
 <p><img src="images/atlas_terms_assign.png" alt="Atlas glossary" class="img-fluid" /></p>
 <p>For further information, the <a href="https://atlas.apache.org/Glossary.html">Glossary page</a> on the Atlas website is very detailed and shows some useful examples.</p>
-<h2>The REST API</h2>
+<h2 id="the-rest-api">The REST API</h2>
 <p>Another very strong feature that Atlas offers is its rich REST API. Basically, everything that can be done via the UI can be done via the API as well. A <a href="https://atlas.apache.org/2.0.0/api/v2/ui/index.html">Swagger interactive interface</a> is available on the website for easier exploration; here we will touch on the main sections with a couple examples.</p>
 <p>As usual, the following API calls can be performed with any client (curl, Postman, etc.). In the following, every call is run via <code>curl</code> with JSON as the response content type and with the correct access credentials (which, as a default, are <code>admin / admin</code>); in other words, an API call such as <code>/api/atlas/v2/types/typedefs</code> is performed with:</p>
 <div class="highlight"><pre><span></span>$ curl -u admin:admin -H <span class="s2">&quot;Accept: application/json&quot;</span> http://localhost:21000/api/atlas/v2/types/typedefs
@@ -115,7 +115,7 @@
 
 
 <p>If the client is based on the command line, a tool such as <code>json_pp</code> is recommended in order to pretty-print the JSON response.</p>
-<h4>Types</h4>
+<h4 id="types">Types</h4>
 <p>To list all entity types:</p>
 <div class="highlight"><pre><span></span>/api/atlas/v2/types/typedefs
 </pre></div>
@@ -126,7 +126,7 @@
 </pre></div>
 
 
-<h4>Search</h4>
+<h4 id="search">Search</h4>
 <p>Metadata entities can be searched in multiple ways. The basic search endpoint has to be used with at least one parameter, for instance the type name:</p>
 <div class="highlight"><pre><span></span>/api/atlas/v2/search/basic?typeName=hive_table
 </pre></div>
@@ -148,7 +148,7 @@
 
 
 <p>An advanced search endpoint using Atlas DSL is available as well, but we will not cover it here. Further information on the DSL can be found <a href="https://atlas.apache.org/Search-Advanced.html">here</a>.</p>
-<h4>Single entity</h4>
+<h4 id="single-entity">Single entity</h4>
 <p>The previous endpoints returned a (possibly empty) list of entities as a result. If we want to explore a single entity, we have to extract its <code>guid</code> from any of the previous calls. Let's say we are interested in the entity with <code>"guid": "ad9915a8-fdab-4570-964f-8f636a8da20c"</code>; a rich description of the entity can be obtained by calling this endpoint:</p>
 <div class="highlight"><pre><span></span>/api/atlas/v2/entity/guid/ad9915a8-fdab-4570-964f-8f636a8da20c
 </pre></div>
@@ -187,7 +187,7 @@
 </pre></div>
 
 
-<h4>Glossary</h4>
+<h4 id="glossary_1">Glossary</h4>
 <p>To retrieve all glossaries:</p>
 <div class="highlight"><pre><span></span>/api/atlas/v2/glossary
 </pre></div>
@@ -208,9 +208,9 @@
 </pre></div>
 
 
-<h2>More (meta)data sources</h2>
+<h2 id="more-metadata-sources">More (meta)data sources</h2>
 <p>In order to see how Atlas can be expanded with more sources, we will add a connector to <a href="https://spark.apache.org/">Apache Spark</a> and use it to track the lineage of both standard batch processes and stream processes with <a href="https://kafka.apache.org/">Apache Kafka</a> as a source. As usual, since the focus of the article is not on any of the two sources, the easiest way to get started with them will be used.</p>
-<h4>Preparation</h4>
+<h4 id="preparation">Preparation</h4>
 <p>Let's first of all install Spark. We could use the previously installed Apache Bigtop repository and install Spark via <code>yum</code>, but since the connector needs at least Spark 2.3 to work, we need to <a href="https://spark.apache.org/downloads.html">download it</a> (choosing the package pre-built for Hadoop 2.7) and extract it to a folder of our choice, for instance <code>/opt/spark</code>. When this is done, we need to copy the Atlas configuration file in the Spark configuration folder, for instance (if Atlas was installed in <code>/opt/atlas/apache-atlas-2.0.0/</code>):</p>
 <div class="highlight"><pre><span></span>$ <span class="nb">cd</span> /opt/spark/spark-2.4.3-bin-hadoop2.7
 $ cp /opt/atlas/apache-atlas-2.0.0/conf/atlas-application.properties conf/
@@ -237,7 +237,7 @@ $ ./bin/atlas_start.py
 
 
 <p>If we open Atlas again and look into the "Search By Type" dropdown menu, we should see a few more entity types starting with <code>spark_</code>.</p>
-<h4>Spark batch</h4>
+<h4 id="spark-batch">Spark batch</h4>
 <p>As an example, let's create a test CSV file in <code>/tmp/test.csv</code> with this content:</p>
 <div class="highlight"><pre><span></span>person_id,name,surname
 1,John,Smith
@@ -276,7 +276,7 @@ $ ./bin/atlas_start.py
 <p><img src="images/atlas_spark_batch_2.png" alt="Atlas-Spark connector" class="img-fluid" /></p>
 <p>(If the lineage does not change, try to click on the "Clear" button and search for Spark processes again.)</p>
 <p>The current version of the connector considers everything that is run in a single shell execution as a single process, so the lineage will include all the steps together.</p>
-<h4>Spark streaming</h4>
+<h4 id="spark-streaming">Spark streaming</h4>
 <p>In order to track the lineage of a Spark streaming application, we will use <a href="https://kafka.apache.org/">Apache Kafka</a> as a stream source. Atlas already includes a Kafka server, but we will download the full package in order to create the topics more easily.</p>
 <div class="highlight"><pre><span></span>$ wget http://apache.mirror.anlx.net/kafka/2.2.0/kafka_2.12-2.2.0.tgz
 $ tar zxvf kafka_2.12-2.2.0.tgz
@@ -348,7 +348,7 @@ $ <span class="nb">cd</span> kafka_2.12-2.2.0/
 <p><img src="images/atlas_spark_streaming_2.png" alt="Atlas-Spark connector" class="img-fluid" /></p>
 <p>(In case an exception such as <code>org.I0Itec.zkclient.exception.ZkTimeoutException: Unable to connect to zookeeper server 'localhost:9026' with timeout of 200 ms</code> is thrown, the value of the <code>atlas.kafka.zookeeper.connection.timeout.ms</code> field within the <code>atlas-application.properties</code> configuration file should be increased (e.g. set it to 2000) and Atlas be restarted.)</p>
 <p>As we can see, lineage information from a Spark batch or streaming job can be easily sent to Atlas. Spark ML pipelines are also supported by the connector, but since this would require patching and recompiling Atlas, I decided to skip them for the time being.</p>
-<h2>Conclusions</h2>
+<h2 id="conclusions">Conclusions</h2>
 <p>In this article we have explored Atlas capabilities into more details, understanding what classifications and glossaries are and how to make use of them, then listing a few REST API endpoints along with examples, and finally trying out an external connector to add even more lineage information. Atlas is quite mature as a solution, but documentation is still a bit scattered; even if I haven't touched on everything (especially the underlying datastores and the creation of new entities), I hope to have added a little bit to the coverage of this fantastic tool.</p>
     </div>
   </article>

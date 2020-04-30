@@ -82,10 +82,10 @@
 <p>In short, Atlas is a tool that adds metadata management features (descriptions, classifications, controlled vocabularies, tagging, search, and so on) to a Hadoop-based data environment (such as Hive) through bridges, hooks (for automated updates) and an easy-to-use UI.</p>
 <p>So far, Atlas has mostly been used and deployed with the <a href="https://hortonworks.com/products/data-platforms/hdp/">Hortonworks Data Platform (HDP)</a> and, recently, added to AWS as an <a href="https://aws.amazon.com/blogs/big-data/metadata-classification-lineage-and-discovery-using-apache-atlas-on-amazon-emr/">Amazon EMR template</a>. Since I wanted to look at its latest version and install it <em>vanilla</em>, this article will be different from the previous ones in that I will write about a more widely used project and, being it a bit lacking in documentation, my main focus will be to make it work rather than providing many examples. I will then take the chance to touch on another nice Apache project, <a href="https://bigtop.apache.org/">Bigtop</a>.</p>
 <p>In the following, I will use CentOS 7 as the underlying operating system. If you are not already using it, you can either install it on a <a href="https://wiki.centos.org/HowTos/Virtualization/Introduction">virtual machine</a> using your favourite VM tool, or use a <a href="https://docs.docker.com/install/linux/docker-ce/centos/">Docker image</a>.</p>
-<h3>Installing Bigtop</h3>
+<h3 id="installing-bigtop">Installing Bigtop</h3>
 <p><a href="https://bigtop.apache.org/">Apache Bigtop</a> is a comprehensive Big Data package, offered both as a downloadable archive and as an RPM repository. Its intent is to make the installation and management of Big Data tools easy. Although being actively developed, it is not as up-to-date as other commercially-backed solutions; this means that Bigtop components are often a few versions behind their standalone counterparts. Since this article is about Atlas, this will not be an issue as we do not need the latest version of any of the components.</p>
 <p>In order to use Bigtop and to have Hadoop and Hive available as CentOS RPM packages, we need to install the Bigtop repository by downloading the <a href="http://apache.mirror.anlx.net/bigtop/bigtop-1.4.0/repos/centos7/bigtop.repo">bigtop.repo</a> file into the <code>/etc/yum.repos.d/</code> folder on our CentOS environment.</p>
-<h3>Installing Hadoop and Hive</h3>
+<h3 id="installing-hadoop-and-hive">Installing Hadoop and Hive</h3>
 <p>Our first step will be to have a working Hadoop environment, with Hive on top of it. With the Bigtop repository now available, we can install Hive (and the other components it depends on) with:</p>
 <div class="highlight"><pre><span></span>$ yum install hive hive-metastore hive-server2
 </pre></div>
@@ -135,8 +135,8 @@ $ hdfs dfs -chmod g+w /user/hive/warehouse
 </pre></div>
 
 
-<h3>Installing Atlas</h3>
-<h4>Java environment</h4>
+<h3 id="installing-atlas">Installing Atlas</h3>
+<h4 id="java-environment">Java environment</h4>
 <p>In order to install Atlas, let's first of all make sure that Java 8 is installed:</p>
 <div class="highlight"><pre><span></span>$ java -version
 </pre></div>
@@ -154,7 +154,7 @@ $ hdfs dfs -chmod g+w /user/hive/warehouse
 
 
 <p>using whatever path leads to our Java SDK (<em>not</em> JRE) home folder. It is not needed to add this line to the <code>.bashrc</code> file if all the steps are performed from the same terminal within the same session, although it would be still useful to do so.</p>
-<h4>Installing Maven</h4>
+<h4 id="installing-maven">Installing Maven</h4>
 <p>Let's now install Maven, which is roughly to Java what <code>pip</code> is to Python. The version we will need in order to build Atlas correctly is at least the 3.5, and likely the CentOS 7 distribution we are using only provides an older version. If that is the case (and it can be found out by trying to run <code>sudo yum install maven</code> and looking at the version of the package), we need to:</p>
 <ol>
 <li>
@@ -187,7 +187,7 @@ $ hdfs dfs -chmod g+w /user/hive/warehouse
 </li>
 </ol>
 <p>If everything worked correctly, Maven 3.5 should be available in the new shell. This environment will only be needed to compile and build Atlas, after which it can be closed.</p>
-<h4>Building Atlas</h4>
+<h4 id="building-atlas">Building Atlas</h4>
 <p>Now we can download Atlas from the <a href="https://www.apache.org/dyn/closer.cgi/atlas/2.0.0/apache-atlas-2.0.0-sources.tar.gz">download page</a> and decompress it in a folder of our choice:</p>
 <div class="highlight"><pre><span></span>$ tar zxvf apache-atlas-2.0.0-sources.tar.gz
 $ <span class="nb">cd</span> apache-atlas-sources-2.0.0
@@ -221,7 +221,7 @@ $ <span class="nb">cd</span> apache-atlas-2.0.0
 
 
 <p>and start exploring the tool.</p>
-<h4>Installing the Hive hook</h4>
+<h4 id="installing-the-hive-hook">Installing the Hive hook</h4>
 <p>Now that Atlas is up and running, we need to let Atlas "know" about Hive metadata and listen for changes. First of all, let's make the Hive hook available to Atlas:</p>
 <div class="highlight"><pre><span></span>$ tar zxvf ../apache-atlas-sources-2.0.0/distro/target/apache-atlas-2.0.0-hive-hook.tar.gz
 $ mv apache-atlas-hive-hook-2.0.0/* .
@@ -259,7 +259,7 @@ $ cp ../apache-atlas-sources-2.0.0/webapp/target/atlas-webapp-2.0.0/WEB-INF/lib/
 </pre></div>
 
 
-<h3>Hive-Atlas connection</h3>
+<h3 id="hive-atlas-connection">Hive-Atlas connection</h3>
 <p>We are now ready to check that Hive can actually send information to Atlas. Let's launch the Hive CLI (with <code>sudo</code> if the Derby DB was initialized as root):</p>
 <div class="highlight"><pre><span></span>$ hive
 </pre></div>
@@ -329,7 +329,7 @@ Time taken: 9.918 seconds, Fetched: 3 row(s)
 <p>and their lineage:</p>
 <p><img src="images/atlas_lineage.png" alt="Atlas - Lineage" class="img-fluid" /></p>
 <p>which we will expand upon in another article.</p>
-<h3>Conclusions</h3>
+<h3 id="conclusions">Conclusions</h3>
 <p>In this article we saw how to install Apache Atlas from scratch (a not-so-straightforward process) and how to configure Hive hooks in order to automatically send changes in the Hive metastore to Atlas. In another article we will look a bit deeper into Atlas capabilities and we will see how to configure more data sources.</p>
     </div>
   </article>

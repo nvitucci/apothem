@@ -1,7 +1,523 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/all.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2020-03-31T00:00:00+01:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache Commons Collections</title><link href="https://apothem.blog/apache-commons-collections.html" rel="alternate"></link><published>2020-03-31T00:00:00+01:00</published><updated>2020-03-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2020-03-31:/apache-commons-collections.html</id><summary type="html">&lt;p&gt;With this article I'll take a break from large Apache projects to focus again on a single, easy-to-integrate library. &lt;a href="https://commons.apache.org/proper/commons-collections/"&gt;Apache Commons Collections&lt;/a&gt; is part of the larger &lt;a href="https://commons.apache.org/"&gt;Apache Commons&lt;/a&gt; project, a fantastic collection of libraries that cover very specific domains or use cases such as &lt;a href="https://commons.apache.org/proper/commons-csv/"&gt;CSV files processing&lt;/a&gt;, &lt;a href="https://commons.apache.org/proper/commons-cli/"&gt;command line …&lt;/a&gt;&lt;/p&gt;</summary><content type="html">&lt;p&gt;With this article I'll take a break from large Apache projects to focus again on a single, easy-to-integrate library. &lt;a href="https://commons.apache.org/proper/commons-collections/"&gt;Apache Commons Collections&lt;/a&gt; is part of the larger &lt;a href="https://commons.apache.org/"&gt;Apache Commons&lt;/a&gt; project, a fantastic collection of libraries that cover very specific domains or use cases such as &lt;a href="https://commons.apache.org/proper/commons-csv/"&gt;CSV files processing&lt;/a&gt;, &lt;a href="https://commons.apache.org/proper/commons-cli/"&gt;command line arguments parsing&lt;/a&gt;, &lt;a href="https://commons.apache.org/proper/commons-text/"&gt;string processing&lt;/a&gt;, and many more.&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/all.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2020-04-27T00:00:00+01:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache Fuseki - Adding reasoning and full-text search capabilities to a dataset</title><link href="https://apothem.blog/apache-fuseki-adding-reasoning-and-full-text-search-capabilities-to-a-dataset.html" rel="alternate"></link><published>2020-04-27T00:00:00+01:00</published><updated>2020-04-27T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2020-04-27:/apache-fuseki-adding-reasoning-and-full-text-search-capabilities-to-a-dataset.html</id><summary type="html">&lt;p&gt;With this article I am kicking off a new series called &lt;strong&gt;&lt;a href="/category/howto.html"&gt;howto&lt;/a&gt;&lt;/strong&gt; where, instead of describing a whole Apache project, I will explore use cases, problems and solutions related to one. I will start with &lt;a href="https://jena.apache.org/documentation/fuseki2/"&gt;Apache Fuseki&lt;/a&gt; looking into how to enable both reasoning and full-text search on a given …&lt;/p&gt;</summary><content type="html">&lt;p&gt;With this article I am kicking off a new series called &lt;strong&gt;&lt;a href="/category/howto.html"&gt;howto&lt;/a&gt;&lt;/strong&gt; where, instead of describing a whole Apache project, I will explore use cases, problems and solutions related to one. I will start with &lt;a href="https://jena.apache.org/documentation/fuseki2/"&gt;Apache Fuseki&lt;/a&gt; looking into how to enable both reasoning and full-text search on a given dataset, which took me some time to figure out as the documentation is a bit lacking on the topic. As usual, I will put the relevant files and examples in the &lt;a href="https://github.com/nvitucci/apothem-resources/tree/master/howto/apache-fuseki/reasoning_and_fts/"&gt;Apothem resources repository&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="toc"&gt;&lt;span class="toctitle"&gt;Index:&lt;/span&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#setup"&gt;Setup&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#downloading-and-running-fuseki"&gt;Downloading and running Fuseki&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#creating-a-dataset"&gt;Creating a dataset&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#loading-some-data"&gt;Loading some data&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#adding-a-reasoner"&gt;Adding a reasoner&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#scenario-1-no-named-graphs"&gt;Scenario 1: no named graphs&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#scenario-2-named-graphs-and-no-online-updates"&gt;Scenario 2: named graphs and no online updates&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#scenario-3-named-graphs-and-online-updates"&gt;Scenario 3: named graphs and online updates&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#one-named-graph"&gt;One named graph&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#many-named-graphs"&gt;Many named graphs&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#adding-full-text-search"&gt;Adding full-text search&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#conclusions"&gt;Conclusions&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;h3 id="setup"&gt;Setup&lt;/h3&gt;
+&lt;h4 id="downloading-and-running-fuseki"&gt;Downloading and running Fuseki&lt;/h4&gt;
+&lt;p&gt;First of all, let's download Fuseki from the &lt;a href="https://jena.apache.org/download/"&gt;Jena download page&lt;/a&gt; (at the time of writing, the latest version is the 3.14.0). There are &lt;a href="https://jena.apache.org/documentation/fuseki2/fuseki-run.html"&gt;different ways&lt;/a&gt; to run Fuseki, although my preference is to use it as a Web application by deploying it to Tomcat.&lt;/p&gt;
+&lt;h4 id="creating-a-dataset"&gt;Creating a dataset&lt;/h4&gt;
+&lt;p&gt;Once up and running, let's create a persistent TDB2 dataset called &lt;code&gt;example-inf&lt;/code&gt;; in my case (Linux) the dataset will be created in &lt;code&gt;/etc/fuseki/databases/example-inf&lt;/code&gt; and its configuration file will be stored as &lt;code&gt;/etc/fuseki/configuration/example-inf.ttl&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Creating a dataset is very easy using the Web UI, but nothing besides the storage (in memory, TDB or TDB2) can be configured. One can also create a dataset using the &lt;a href="https://jena.apache.org/documentation/fuseki2/fuseki-server-protocol.html"&gt;HTTP admin protocol&lt;/a&gt; and passing the database type and the dataset name as parameters:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ curl -X POST &lt;span class="s1"&gt;&amp;#39;http://localhost:8080/fuseki/$/datasets&amp;#39;&lt;/span&gt; --data &lt;span class="s1"&gt;&amp;#39;dbType=tdb2&amp;#39;&lt;/span&gt; --data &lt;span class="s1"&gt;&amp;#39;dbName=example-inf&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Assuming to have the configuration specified as a Turtle file (which we skip for now), the HTTP interface makes it even possible to create a dataset as follows:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ curl -X POST &lt;span class="s1"&gt;&amp;#39;http://localhost:8080/fuseki/$/datasets&amp;#39;&lt;/span&gt; --upload-file /tmp/example-inf.ttl --header &lt;span class="s2"&gt;&amp;quot;Content-Type: text/turtle&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4 id="loading-some-data"&gt;Loading some data&lt;/h4&gt;
+&lt;p&gt;In the scenario I am interested in, the reasoner should support at least &lt;code&gt;rdfs:subClassOf&lt;/code&gt;, &lt;code&gt;rdfs:subPropertyOf&lt;/code&gt;, &lt;code&gt;rdf:type&lt;/code&gt;, and &lt;code&gt;owl:sameAs&lt;/code&gt;. A minimal &lt;code&gt;data1.ttl&lt;/code&gt; document that we can use for testing may be:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdfs:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.w3.org/2000/01/rdf-schema#&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;owl:&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.w3.org/2002/07/owl#&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="w"&gt;   &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/id/&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ont:&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/ont#&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;ont:&lt;/span&gt;&lt;span class="nt"&gt;MyType&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdfs:&lt;/span&gt;&lt;span class="nt"&gt;subClassOf&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ont:&lt;/span&gt;&lt;span class="nt"&gt;MySuperType&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="nn"&gt;ont:&lt;/span&gt;&lt;span class="nt"&gt;myProp&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdfs:&lt;/span&gt;&lt;span class="nt"&gt;subPropertyOf&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ont:&lt;/span&gt;&lt;span class="nt"&gt;mySuperProp&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="nt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="nt"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ont:&lt;/span&gt;&lt;span class="nt"&gt;MyType&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="nt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ont:&lt;/span&gt;&lt;span class="nt"&gt;myProp&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="nt"&gt;x&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="nt"&gt;b&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;owl:&lt;/span&gt;&lt;span class="nt"&gt;sameAs&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="nt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Let's load it on the &lt;code&gt;example-inf&lt;/code&gt; dataset and run a simple &lt;em&gt;SPO&lt;/em&gt; query (with an &lt;code&gt;ORDER BY&lt;/code&gt; for visualization convenience):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;SELECT&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+&lt;span class="k"&gt;WHERE&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="nv"&gt;?s&lt;/span&gt; &lt;span class="nv"&gt;?p&lt;/span&gt; &lt;span class="nv"&gt;?o&lt;/span&gt; &lt;span class="p"&gt;.&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="k"&gt;ORDER BY&lt;/span&gt; &lt;span class="nv"&gt;?p&lt;/span&gt; &lt;span class="nv"&gt;?o&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;As a result we should see all and only the 5 triples, while the following query with &lt;code&gt;id:a&lt;/code&gt; as a subject should only return the triples &lt;code&gt;id:a rdf:type ont:MyType&lt;/code&gt; and &lt;code&gt;id:a ont:myProp id:x&lt;/code&gt; :&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;PREFIX&lt;/span&gt; &lt;span class="nn"&gt;id&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nl"&gt;&amp;lt;http://www.example.org/id/&amp;gt;&lt;/span&gt;
+
+&lt;span class="k"&gt;SELECT&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+&lt;span class="k"&gt;WHERE&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="nn"&gt;id&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;a&lt;/span&gt; &lt;span class="nv"&gt;?p&lt;/span&gt; &lt;span class="nv"&gt;?o&lt;/span&gt; &lt;span class="p"&gt;.&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;In the following, I will refer to these two queries as &lt;em&gt;SPO&lt;/em&gt; and &lt;em&gt;id:a&lt;/em&gt; respectively.&lt;/p&gt;
+&lt;h3 id="adding-a-reasoner"&gt;Adding a reasoner&lt;/h3&gt;
+&lt;p&gt;The reasoners that Fuseki can directly use are forward/backward rule-based reasoners, subclasses of &lt;a href="https://jena.apache.org/documentation/javadoc/jena/org/apache/jena/reasoner/rulesys/FBRuleReasoner.html"&gt;FBRuleReasoner&lt;/a&gt; based on this hierarchy:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;FBRuleReasoner
+├── GenericRuleReasoner
+│   ├── OWLMicroReasoner
+│   ├── OWLMiniReasoner
+│   └── RDFSRuleReasoner
+├── OWLFBRuleReasoner
+└── TransitiveReasoner
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Each reasoner class has an associated URI (found in its corresponding &lt;code&gt;Factory&lt;/code&gt; class) which we need to know as it will be used in the dataset configuration file:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;GenericRuleReasoner -&amp;gt; &amp;lt;http://jena.hpl.hp.com/2003/GenericRuleReasoner&amp;gt;
+OWLMicroReasoner    -&amp;gt; &amp;lt;http://jena.hpl.hp.com/2003/OWLMicroFBRuleReasoner&amp;gt;
+OWLMiniReasoner     -&amp;gt; &amp;lt;http://jena.hpl.hp.com/2003/OWLMiniFBRuleReasoner&amp;gt;
+RDFSRuleReasoner    -&amp;gt; &amp;lt;http://jena.hpl.hp.com/2003/RDFSExptRuleReasoner&amp;gt;
+OWLFBRuleReasoner   -&amp;gt; &amp;lt;http://jena.hpl.hp.com/2003/OWLFBRuleReasoner&amp;gt;
+TransitiveReasoner  -&amp;gt; &amp;lt;http://jena.hpl.hp.com/2003/TransitiveReasoner&amp;gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The first thing to evaluate when choosing a reasoner is the desired level of inference, taking into account that the higher the level, the longer the reasoner will take to produce all the inferred triples; &lt;a href="https://jena.apache.org/documentation/inference/index.html"&gt;Jena documentation&lt;/a&gt; provides a good description of each reasoner, and &lt;a href="https://www.slideshare.net/nvitucci/semantic-web-languages-expressivity-vs-scalability"&gt;my (old) presentation&lt;/a&gt; discusses the balance between expressivity and scalability. For our (small) tests, anyway, we will use the "rich" &lt;code&gt;OWLFBRuleReasoner&lt;/code&gt;, taking into account that any of the other reasoners can be used by simply replacing its URL (and, in the case of the &lt;code&gt;GenericRuleReasoner&lt;/code&gt;, by adding a &lt;code&gt;ja:rulesFrom &amp;lt;rulefile&amp;gt;&lt;/code&gt; triple) in the configuration file.&lt;/p&gt;
+&lt;h4 id="scenario-1-no-named-graphs"&gt;Scenario 1: no named graphs&lt;/h4&gt;
+&lt;p&gt;We'll start with the case where we do not need to use named graphs and all the triples are added to the default graph.&lt;/p&gt;
+&lt;p&gt;Let's check the dataset configuration file that has been created in &lt;code&gt;/etc/fuseki/configuration/example-inf.ttl&lt;/code&gt;. It will contain quite a number of triples, but the relevant section for us is the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;service_tdb_all&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="kt"&gt;a&lt;/span&gt;&lt;span class="w"&gt;               &lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;Service&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;rdfs:&lt;/span&gt;&lt;span class="nt"&gt;label&lt;/span&gt;&lt;span class="w"&gt;                    &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;TDB2 example-inf&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;name&lt;/span&gt;&lt;span class="w"&gt;                   &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;example-inf&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;serviceQuery&lt;/span&gt;&lt;span class="w"&gt;           &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;query&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;sparql&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;serviceReadGraphStore&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;get&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;serviceReadQuads&lt;/span&gt;&lt;span class="w"&gt;       &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;serviceReadWriteGraphStore&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;data&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;serviceReadWriteQuads&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;serviceUpdate&lt;/span&gt;&lt;span class="w"&gt;          &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;update&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;serviceUpload&lt;/span&gt;&lt;span class="w"&gt;          &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;upload&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="kt"&gt;a&lt;/span&gt;&lt;span class="w"&gt;              &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;DatasetTDB2&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;location&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/etc/fuseki/databases/example-inf&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;All we need to do is to add the following triples at the end of the file:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="kt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;RDFDataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;defaultGraph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;model_inf&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;model_inf&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="kt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;InfModel&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;baseModel&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;graph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;reasoner&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;         &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;reasonerURL&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://jena.hpl.hp.com/2003/OWLFBRuleReasoner&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;graph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="nt"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;GraphTDB&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and replace this line:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;with the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and then we need to restart Fuseki. (To avoid restarting Fuseki, the alternative would be to produce the configuration file first and then to add the new dataset via the HTTP interface.)&lt;/p&gt;
+&lt;p&gt;Now, if we run the &lt;em&gt;SPO&lt;/em&gt; query, we get a whole lot of triples including the ones related to the OWL schema; the &lt;em&gt;id:a&lt;/em&gt; query, instead, will return the five base triples plus the inferred triples:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ont:myProp id:x
+ont:mySuperProp id:x
+rdf:type ont:MySuperType
+rdf:type ont:MyType
+rdf:type rdfs:Resource
+rdf:type owl:Thing
+owl:sameAs id:a
+owl:sameAs id:b
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;What happens if we add some new triples? Let's create a &lt;code&gt;data2.ttl&lt;/code&gt; file with the following content:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdfs:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.w3.org/2000/01/rdf-schema#&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;owl:&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.w3.org/2002/07/owl#&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="w"&gt;   &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/id/&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ont:&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/ont#&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;ont:&lt;/span&gt;&lt;span class="nt"&gt;MySubType&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdfs:&lt;/span&gt;&lt;span class="nt"&gt;subClassOf&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ont:&lt;/span&gt;&lt;span class="nt"&gt;MyType&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="nt"&gt;d&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="nt"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ont:&lt;/span&gt;&lt;span class="nt"&gt;MySubType&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="nt"&gt;d&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;owl:&lt;/span&gt;&lt;span class="nt"&gt;sameAs&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="nt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and load it. Now the &lt;em&gt;id:a&lt;/em&gt; query returns two more triples:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;rdf:type ont:MySubType
+owl:sameAs id:d
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Reasoning works fine! So let's make it even more interesting: what if we want to put our triples in a named graph?&lt;/p&gt;
+&lt;h4 id="scenario-2-named-graphs-and-no-online-updates"&gt;Scenario 2: named graphs and no online updates&lt;/h4&gt;
+&lt;p&gt;If we don't need online updates (i.e. to have the reasoner run as soon as new triples are inserted), but we are fine with restarting the server for the reasoner to catch up, all we need is to add one triple to the &lt;code&gt;:graph&lt;/code&gt; section of the previous configuration:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;graph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="nt"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;GraphTDB&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="hll"&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;graphName&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;urn:x-arq:UnionGraph&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The triple uses the special &lt;code&gt;&amp;lt;urn:x-arq:UnionGraph&amp;gt;&lt;/code&gt; (as described &lt;a href="https://jena.apache.org/documentation/tdb/datasets.html"&gt;here&lt;/a&gt;) to perform reasoning on &lt;em&gt;all&lt;/em&gt; the graphs. Optionally, if we want to be able to query all the named graphs without having to use the &lt;code&gt;FROM&lt;/code&gt; construct, we can slightly modify the &lt;code&gt;:tdb_dataset_readwrite&lt;/code&gt; section adding another triple:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="kt"&gt;a&lt;/span&gt;&lt;span class="w"&gt;              &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;DatasetTDB2&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;location&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/etc/fuseki/databases/example-inf&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="hll"&gt;&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;unionDefaultGraph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;true&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We need to keep in mind, though, that this will hide the "real" default graph replacing it with the "virtual" special union graph.&lt;/p&gt;
+&lt;h4 id="scenario-3-named-graphs-and-online-updates"&gt;Scenario 3: named graphs and online updates&lt;/h4&gt;
+&lt;p&gt;When using named graph, online updates will only be supported on a per-graph basis. This means that adding triples to a named graph does not "refresh" its corresponding inference model; the reasoner will be triggered only by the addition and deletion of triples to the model itself, but this change will be persisted in the underlying named graph as well.&lt;/p&gt;
+&lt;h5 id="one-named-graph"&gt;One named graph&lt;/h5&gt;
+&lt;p&gt;If we have only one named graph and we are fine with the inferenced triples be inserted in the default graph, the configuration is still pretty easy in that we only need to add the following triples:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="kt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;RDFDataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;defaultGraph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;model_inf&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;namedGraph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;graph&lt;/span&gt;&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;mygraph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;graphName&lt;/span&gt;&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/id/mygraph&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;mygraph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="nt"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;GraphTDB&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;graphName&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/id/mygraph&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;model_inf&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="kt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;InfModel&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;baseModel&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;graph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;reasoner&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;         &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;reasonerURL&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://jena.hpl.hp.com/2003/OWLFBRuleReasoner&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;graph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="nt"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;GraphTDB&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;graphName&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/id/mygraph&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and, again, replace this line:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;with the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Basically, the example &lt;code&gt;&amp;lt;http://www.example.org/id/mygraph&amp;gt;&lt;/code&gt; named graph has to be added explicitly both to the &lt;code&gt;:dataset&lt;/code&gt; (via &lt;code&gt;ja:namedGraph&lt;/code&gt;) and to the &lt;code&gt;:graph&lt;/code&gt; underlying the &lt;code&gt;:model_inf&lt;/code&gt; (via &lt;code&gt;tdb2:graphName&lt;/code&gt;); this will let us query both the original named graph and the inferred model, and updates to the default graph will be reflected in the named graph.&lt;/p&gt;
+&lt;h5 id="many-named-graphs"&gt;Many named graphs&lt;/h5&gt;
+&lt;p&gt;If we have more than one named graph and we want to support cross-graph inference, things get more complicated. One possible solution is to have each named graph be wrapped by a model (updated in real time) and the default graph be the union of &lt;em&gt;all&lt;/em&gt; the graphs (updated upon server restart).&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="kt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;RDFDataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;defaultGraph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;model_inf&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;namedGraph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;graph&lt;/span&gt;&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;mygraph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;graphName&lt;/span&gt;&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/id/mygraph&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;namedGraph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;graph&lt;/span&gt;&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;mygraph2&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;graphName&lt;/span&gt;&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/id/mygraph2&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;namedGraph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;graph&lt;/span&gt;&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;inf&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;graphName&lt;/span&gt;&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/id/inf&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;namedGraph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;graph&lt;/span&gt;&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;inf2&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;graphName&lt;/span&gt;&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/id/inf2&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;mygraph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="nt"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;GraphTDB&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;graphName&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/id/mygraph&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;mygraph2&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="nt"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;GraphTDB&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;graphName&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/id/mygraph2&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;inf&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="kt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;InfModel&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;baseModel&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;graph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;reasoner&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;         &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;reasonerURL&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://jena.hpl.hp.com/2003/OWLFBRuleReasoner&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;inf2&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="kt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;InfModel&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;baseModel&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;graph2&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;reasoner&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;         &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;reasonerURL&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://jena.hpl.hp.com/2003/OWLFBRuleReasoner&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;graph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="nt"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;GraphTDB&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;graphName&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/id/mygraph&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;graph2&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="nt"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;GraphTDB&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;graphName&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/id/mygraph2&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;model_inf&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="kt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;InfModel&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;baseModel&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;union_graph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;reasoner&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;         &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;reasonerURL&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://jena.hpl.hp.com/2003/OWLFBRuleReasoner&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;union_graph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="nt"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;GraphTDB&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;graphName&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;urn:x-arq:UnionGraph&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Let's test this complex configuration. We will:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;create an &lt;code&gt;example-inf-multinamed&lt;/code&gt; dataset, update its configuration file, and restart Fuseki;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;upload the &lt;code&gt;data1.ttl&lt;/code&gt; file under the &lt;code&gt;&amp;lt;http://www.example.org/id/mygraph&amp;gt;&lt;/code&gt; named graph;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;run the following &lt;em&gt;g-id:a&lt;/em&gt; query (similar to the &lt;em&gt;id:a&lt;/em&gt; query but including the graph):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;PREFIX&lt;/span&gt; &lt;span class="nn"&gt;id&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nl"&gt;&amp;lt;http://www.example.org/id/&amp;gt;&lt;/span&gt;
+
+&lt;span class="k"&gt;SELECT&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+&lt;span class="k"&gt;WHERE&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="k"&gt;GRAPH&lt;/span&gt; &lt;span class="nv"&gt;?g&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="nn"&gt;id&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;a&lt;/span&gt; &lt;span class="nv"&gt;?p&lt;/span&gt; &lt;span class="nv"&gt;?o&lt;/span&gt;
+  &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="k"&gt;ORDER BY&lt;/span&gt; &lt;span class="nv"&gt;?g&lt;/span&gt; &lt;span class="nv"&gt;?p&lt;/span&gt; &lt;span class="nv"&gt;?o&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and make sure we get the following triples as a result (to verify that inference is working correctly on the &lt;code&gt;&amp;lt;http://www.example.org/id/inf&amp;gt;&lt;/code&gt; model based on the &lt;code&gt;&amp;lt;http://www.example.org/id/mygraph&amp;gt;&lt;/code&gt; graph):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ont:myProp id:x id:inf
+ont:mySuperProp id:x id:inf
+rdf:type ont:MySuperType id:inf
+rdf:type ont:MyType id:inf
+rdf:type rdfs:Resource id:inf
+rdf:type owl:Thing id:inf
+owl:sameAs id:a id:inf
+owl:sameAs id:b id:inf
+ont:myProp id:x id:mygraph
+rdf:type ont:MyType id:mygraph
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;run the &lt;em&gt;id:a&lt;/em&gt; query and make sure we get the following triples as a result (to verify that the default union graph contains at least the original triples):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ont:myProp id:x
+rdf:type ont:MyType
+rdf:type rdfs:Resource
+rdf:type owl:Thing
+owl:sameAs id:a
+owl:sameAs id:b
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;load &lt;code&gt;data2.ttl&lt;/code&gt; under the same &lt;code&gt;&amp;lt;http://www.example.org/id/mygraph&amp;gt;&lt;/code&gt; graph and rerun both queries (to verify that no change occurs when the base named graph is updated);&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;load &lt;code&gt;data2.ttl&lt;/code&gt; under &lt;code&gt;&amp;lt;http://www.example.org/id/inf&amp;gt;&lt;/code&gt; instead, then run the &lt;em&gt;g-id:a&lt;/em&gt; query and make sure we get the following triples as a result (to verify that adding triples to a model makes inference happen right away):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;rdf:type ont:MySuperType id:inf
+owl:sameAs id:d id:inf
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;run the &lt;em&gt;id:a&lt;/em&gt; query and make sure that the results are the same as before (to verify that no, or limited, inference happens in the default graph without a restart);&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;restart Fuseki and run the &lt;em&gt;id:a&lt;/em&gt; query again to check that all the inferred triples are present;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;create a &lt;code&gt;data3.ttl&lt;/code&gt; file with the following content, then add it to &lt;code&gt;&amp;lt;http://www.example.org/id/inf2&amp;gt;&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdfs:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.w3.org/2000/01/rdf-schema#&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;owl:&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.w3.org/2002/07/owl#&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="w"&gt;   &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/id/&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ont:&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/ont#&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;ont:&lt;/span&gt;&lt;span class="nt"&gt;MyOtherSubType&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdfs:&lt;/span&gt;&lt;span class="nt"&gt;subClassOf&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ont:&lt;/span&gt;&lt;span class="nt"&gt;MyType&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="nt"&gt;XXX&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="nt"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ont:&lt;/span&gt;&lt;span class="nt"&gt;MyOtherSubType&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="nt"&gt;XXX&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;owl:&lt;/span&gt;&lt;span class="nt"&gt;sameAs&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="nt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;run the &lt;em&gt;g-id:a&lt;/em&gt; query and make sure that the following results are included (to verify again that adding triples to a model makes inference happen right away):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;...
+rdf:type ont:MyOtherSubType id:inf2
+rdf:type ont:MyType id:inf2
+rdf:type rdfs:Resource id:inf2
+rdf:type owl:Thing id:inf2
+owl:sameAs id:XXX id:inf2
+owl:sameAs id:a id:inf2
+...
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;run the &lt;em&gt;id:a&lt;/em&gt; query again and make sure it gives the same results as before (to verify again that no, or limited, inference happens in the default graph without a restart);&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;restart Fuseki and run the &lt;em&gt;id:a&lt;/em&gt; query again and make sure we get the following triples in addition (to verify that cross-graph inference works upon restart):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;...
+rdf:type ont:MyOtherSubType
+owl:sameAs id:XXX
+...
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id="adding-full-text-search"&gt;Adding full-text search&lt;/h3&gt;
+&lt;p&gt;After such a complex exercise on the reasoners, we may wonder whether it would be possible to add full-text search capabilities to a configuration that already includes a reasoner. The answer is: yes! The index will not include inferred triples though, but it will be useful to find some base triples to base other queries on. The configuration of a full-text index would require an article by itself, so here we will just stick to a base configuration to verify that it can work together with a reasoner.&lt;/p&gt;
+&lt;p&gt;We will build upon the simplest configuration that includes a reasoner, so we will start by creating a &lt;code&gt;example-inf-lucene&lt;/code&gt; dataset as before, then we will update its configuration file by adding the following triples:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://jena.apache.org/text#&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="p"&gt;...&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="kt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;RDFDataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;defaultGraph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;model_inf&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;model_inf&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="kt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;InfModel&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;baseModel&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;graph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;reasoner&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;         &lt;/span&gt;&lt;span class="nn"&gt;ja:&lt;/span&gt;&lt;span class="nt"&gt;reasonerURL&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://jena.hpl.hp.com/2003/OWLFBRuleReasoner&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;graph&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="nt"&gt;type&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;GraphTDB&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nn"&gt;tdb2:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;text_dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="nt"&gt;type&lt;/span&gt;&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;TextDataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt;   &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;index&lt;/span&gt;&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;indexLucene&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;indexLucene&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="kt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;TextIndexLucene&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;directory&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;file:/etc/fuseki/databases/example-inf-lucene-index&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;entityMap&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;entMap&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;storeValues&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;true&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;analyzer&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="kt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;StandardAnalyzer&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;queryAnalyzer&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="kt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;StandardAnalyzer&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;queryParser&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;AnalyzingQueryParser&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;entMap&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="kt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;EntityMap&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;defaultField&lt;/span&gt;&lt;span class="w"&gt;     &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;label&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;entityField&lt;/span&gt;&lt;span class="w"&gt;      &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;uri&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;uidField&lt;/span&gt;&lt;span class="w"&gt;         &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;uid&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;langField&lt;/span&gt;&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;lang&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;graphField&lt;/span&gt;&lt;span class="w"&gt;       &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;graph&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;map&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;field&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;label&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;          &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;predicate&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdfs:&lt;/span&gt;&lt;span class="nt"&gt;label&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;        &lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;field&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;title&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;          &lt;/span&gt;&lt;span class="nn"&gt;text:&lt;/span&gt;&lt;span class="nt"&gt;predicate&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/ont#title&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and replace this line:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;with the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;text_dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;This configuration wraps the dataset containing the inference model with a &lt;code&gt;TextDataset&lt;/code&gt; so that a full-text index can be added; more specifically, it will let us search on the objects of the &lt;code&gt;rdfs:label&lt;/code&gt; and &lt;code&gt;&amp;lt;http://www.example.org/ont#title&amp;gt;&lt;/code&gt; predicates. The important bits to remember are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the prefix &lt;code&gt;&amp;lt;http://jena.apache.org/text#&amp;gt;&lt;/code&gt;;&lt;/li&gt;
+&lt;li&gt;the &lt;code&gt;text:directory &amp;lt;file:/etc/fuseki/databases/example-inf-lucene-index&amp;gt;&lt;/code&gt; triple (the physical location of the text index);&lt;/li&gt;
+&lt;li&gt;the &lt;code&gt;text:map&lt;/code&gt; triples that create Lucene document fields (the values of &lt;code&gt;text:field&lt;/code&gt;) associated to RDF properties (the values of &lt;code&gt;text:predicate&lt;/code&gt;).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Let's restart and load &lt;code&gt;data1.ttl&lt;/code&gt; to this new dataset, then run the following query:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;PREFIX&lt;/span&gt; &lt;span class="nn"&gt;ont&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nl"&gt;&amp;lt;http://www.example.org/ont#&amp;gt;&lt;/span&gt;
+&lt;span class="k"&gt;PREFIX&lt;/span&gt; &lt;span class="nn"&gt;id&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nl"&gt;&amp;lt;http://www.example.org/id/&amp;gt;&lt;/span&gt;
+&lt;span class="k"&gt;PREFIX&lt;/span&gt; &lt;span class="nn"&gt;text&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nl"&gt;&amp;lt;http://jena.apache.org/text#&amp;gt;&lt;/span&gt;
+
+&lt;span class="k"&gt;SELECT&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+&lt;span class="k"&gt;WHERE&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="nv"&gt;?s&lt;/span&gt; &lt;span class="nn"&gt;text&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;query&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nn"&gt;ont&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;title&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;title&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;.&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;which will give no result as no triples with the &lt;code&gt;ont:title&lt;/code&gt; predicate have been inserted. Now let's create a new file &lt;code&gt;data4.ttl&lt;/code&gt; with the following content:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdf:&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdfs:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.w3.org/2000/01/rdf-schema#&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;owl:&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.w3.org/2002/07/owl#&amp;gt;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="w"&gt;   &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/id/&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="k"&gt;@prefix&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ont:&lt;/span&gt;&lt;span class="w"&gt;  &lt;/span&gt;&lt;span class="nv"&gt;&amp;lt;http://www.example.org/ont#&amp;gt;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="nt"&gt;with-label&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;rdfs:&lt;/span&gt;&lt;span class="nt"&gt;label&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Usual label&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="nt"&gt;with-label&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;owl:&lt;/span&gt;&lt;span class="nt"&gt;sameAs&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="nt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="nt"&gt;with-title&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;ont:&lt;/span&gt;&lt;span class="nt"&gt;title&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Meaningful title&amp;quot;&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="nt"&gt;with-title&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;owl:&lt;/span&gt;&lt;span class="nt"&gt;sameAs&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;id:&lt;/span&gt;&lt;span class="nt"&gt;a&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and rerun the query. Now the result will be &lt;code&gt;id:with-title&lt;/code&gt;, and we can get more information if we run the following query instead:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;PREFIX&lt;/span&gt; &lt;span class="nn"&gt;ont&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nl"&gt;&amp;lt;http://www.example.org/ont#&amp;gt;&lt;/span&gt;
+&lt;span class="k"&gt;PREFIX&lt;/span&gt; &lt;span class="nn"&gt;id&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nl"&gt;&amp;lt;http://www.example.org/id/&amp;gt;&lt;/span&gt;
+&lt;span class="k"&gt;PREFIX&lt;/span&gt; &lt;span class="nn"&gt;text&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nl"&gt;&amp;lt;http://jena.apache.org/text#&amp;gt;&lt;/span&gt;
+
+&lt;span class="k"&gt;SELECT&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+&lt;span class="k"&gt;WHERE&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;?s&lt;/span&gt; &lt;span class="nv"&gt;?score&lt;/span&gt; &lt;span class="nv"&gt;?title&lt;/span&gt; &lt;span class="nv"&gt;?graph&lt;/span&gt; &lt;span class="nv"&gt;?prop&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="nn"&gt;text&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;query&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nn"&gt;ont&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;title&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;title&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;.&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;which will give the following result:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;id:with-title &amp;quot;0.14181954&amp;quot;^^xsd:float &amp;quot;Meaningful title&amp;quot; &amp;lt;urn:x-arq:DefaultGraphNode&amp;gt; ont:title
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;To verify that the reasoner still works, let's run the &lt;em&gt;id:a&lt;/em&gt; query again and make sure that the results include &lt;code&gt;rdfs:label "Usual label"&lt;/code&gt; and &lt;code&gt;owl:sameAs id:with-title&lt;/code&gt;.&lt;/p&gt;
+&lt;h3 id="conclusions"&gt;Conclusions&lt;/h3&gt;
+&lt;p&gt;Automated reasoning is a complex topic, and we have seen how Jena and Fuseki are flexible enough to allow for advanced solutions. Sometimes this flexibility may come at the cost of clarity, but I am sure that, once the community starts discussing more and more use cases, simpler and cleaner solutions will come up.&lt;/p&gt;</content><category term="Semantic Web"></category><category term="full-text search"></category><category term="reasoning"></category><category term="inferencing"></category></entry><entry><title>Apache Commons Collections</title><link href="https://apothem.blog/apache-commons-collections.html" rel="alternate"></link><published>2020-03-31T00:00:00+01:00</published><updated>2020-03-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2020-03-31:/apache-commons-collections.html</id><summary type="html">&lt;p&gt;With this article I'll take a break from large Apache projects to focus again on a single, easy-to-integrate library. &lt;a href="https://commons.apache.org/proper/commons-collections/"&gt;Apache Commons Collections&lt;/a&gt; is part of the larger &lt;a href="https://commons.apache.org/"&gt;Apache Commons&lt;/a&gt; project, a fantastic collection of libraries that cover very specific domains or use cases such as &lt;a href="https://commons.apache.org/proper/commons-csv/"&gt;CSV files processing&lt;/a&gt;, &lt;a href="https://commons.apache.org/proper/commons-cli/"&gt;command line …&lt;/a&gt;&lt;/p&gt;</summary><content type="html">&lt;p&gt;With this article I'll take a break from large Apache projects to focus again on a single, easy-to-integrate library. &lt;a href="https://commons.apache.org/proper/commons-collections/"&gt;Apache Commons Collections&lt;/a&gt; is part of the larger &lt;a href="https://commons.apache.org/"&gt;Apache Commons&lt;/a&gt; project, a fantastic collection of libraries that cover very specific domains or use cases such as &lt;a href="https://commons.apache.org/proper/commons-csv/"&gt;CSV files processing&lt;/a&gt;, &lt;a href="https://commons.apache.org/proper/commons-cli/"&gt;command line arguments parsing&lt;/a&gt;, &lt;a href="https://commons.apache.org/proper/commons-text/"&gt;string processing&lt;/a&gt;, and many more.&lt;/p&gt;
 &lt;p&gt;The Collections component was created to add more collections and to expand on the existing Java collections' capabilities at a time when functional programming (especially in Java) was not yet widespread. Some solutions have actually been included in the most recent versions of Java itself (the &lt;a href="https://commons.apache.org/proper/commons-collections/javadocs/api-4.4/index.html"&gt;FluentIterable&lt;/a&gt;, for instance, has been "replaced" by Java 8's &lt;a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html"&gt;Stream&lt;/a&gt;), while many other still provide useful additions and good alternatives to other widespread libraries such as &lt;a href="https://github.com/google/guava/wiki/NewCollectionTypesExplained"&gt;Guava&lt;/a&gt;. The collection types that first brought me to Apache Commons Collections are the &lt;code&gt;MultiSet&lt;/code&gt; and the &lt;code&gt;MultiMap&lt;/code&gt;, also because they have a native counterpart in Python, and the &lt;code&gt;LRUMap&lt;/code&gt; as a simple cache; I also found the &lt;code&gt;SetUtils&lt;/code&gt; extremely useful, since they added some mathematical (and functional) foundation to operations between sets. Let's go through some examples and see!&lt;/p&gt;
-&lt;h3&gt;Setting up&lt;/h3&gt;
+&lt;h3 id="setting-up"&gt;Setting up&lt;/h3&gt;
 &lt;p&gt;The latest version of Commons Collections is 4.4, which is based on Java 8; therefore, I will use Java 8 in the following. Although there are newer Java versions, the 8 is the oldest long-term support (LTS) version and is still prevalent in the Big Data world; it makes then for a good balance between "legacy" versions and the newest versions. I will not make use of lambdas in most examples, in order to make the code more readable and all the involved types explicit.&lt;/p&gt;
 &lt;p&gt;I find that the easiest way to get started with a Java library is by creating a Maven project. All the major IDEs support the creation of Maven projects, so that all you need to do is to give a name to your project and edit the &lt;code&gt;pom.xml&lt;/code&gt; file to include lines like the following:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;blog.apothem&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
@@ -19,11 +535,11 @@
 
 
 &lt;p&gt;You are then ready to build the project and start tinkering with the examples. For a very easy start, I would just create a class with a &lt;code&gt;main&lt;/code&gt; method and write all the code there; otherwise, another very good approach is to make the examples as test classes by using a testing framework such as &lt;a href="https://junit.org/junit5/"&gt;JUnit&lt;/a&gt;, but since this would require a bit more setup and some knowledge of testing, I would leave this as an "exercise for the reader". If you just want to grab a ready project with all the examples and run it, check out the &lt;a href="https://github.com/nvitucci/apothem-resources/tree/master/apache-commons-collections"&gt;Apothem resources repository&lt;/a&gt;!&lt;/p&gt;
-&lt;h3&gt;Collection types&lt;/h3&gt;
+&lt;h3 id="collection-types"&gt;Collection types&lt;/h3&gt;
 &lt;p&gt;Let's now see what types of collection are available. First of all, a general remark that the project makes on its user guide: most collections are not thread-safe unless said otherwise, so they should be &lt;code&gt;synchronized&lt;/code&gt; accordingly when thread safety is needed.&lt;/p&gt;
-&lt;h4&gt;&lt;em&gt;Bag&lt;/em&gt;&lt;/h4&gt;
+&lt;h4 id="bag"&gt;&lt;em&gt;Bag&lt;/em&gt;&lt;/h4&gt;
 &lt;p&gt;&lt;code&gt;Bag&lt;/code&gt;s are collections where each element can appear many times. We will skip them because the &lt;code&gt;MultiSet&lt;/code&gt; type is set to replace them (see the &lt;a href="https://commons.apache.org/proper/commons-collections/release_4_1.html"&gt;release notes&lt;/a&gt; of version 4.1).&lt;/p&gt;
-&lt;h4&gt;&lt;em&gt;BidiMap&lt;/em&gt;&lt;/h4&gt;
+&lt;h4 id="bidimap"&gt;&lt;em&gt;BidiMap&lt;/em&gt;&lt;/h4&gt;
 &lt;p&gt;A &lt;code&gt;BidiMap&lt;/code&gt; is a bidirectional map, namely a map where the key-to-value relation can be inverted, and the values effectively be used as keys in the &lt;em&gt;inverted map&lt;/em&gt;. This collection type enables, among the other things, the creation of mappings between IDs as in the following example:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;BidiMap&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Integer&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;bidiMap&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;DualHashBidiMap&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&amp;gt;();&lt;/span&gt;
 
@@ -123,7 +639,7 @@ Key: 3, value: &amp;#39;string-id-3&amp;#39;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;One thing to be careful about is that &lt;code&gt;BidiMap&lt;/code&gt;s do not strictly check for value uniqueness, so inverting a &lt;code&gt;BidiMap&lt;/code&gt; with repeated values can lead to unexpected behaviour (see a "bad BidiMap" example on the repo).&lt;/p&gt;
-&lt;h4&gt;&lt;em&gt;MultiMap&lt;/em&gt;&lt;/h4&gt;
+&lt;h4 id="multimap"&gt;&lt;em&gt;MultiMap&lt;/em&gt;&lt;/h4&gt;
 &lt;p&gt;A &lt;code&gt;MultiMap&lt;/code&gt; is a &lt;code&gt;Map&lt;/code&gt; whose values are collections (lists or sets) of values, similar to Python's &lt;a href="https://docs.python.org/2/library/collections.html#collections.defaultdict"&gt;defaultdict&lt;/a&gt;. When instantiated with the default constructor, the map is initialized with a capacity of 16 and each list or set with a capacity of 3:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;ArrayListValuedHashMap&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;multiMap&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;ArrayListValuedHashMap&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&amp;gt;();&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
@@ -198,7 +714,7 @@ Unique keys in the map: [skill, language]
 
 
 &lt;p&gt;The examples we have seen so far make use of the &lt;code&gt;ArrayListValuedHashMap&lt;/code&gt; implementation, which arranges the values corresponding to each key in an &lt;code&gt;ArrayList&lt;/code&gt;. The &lt;code&gt;HashSetValuedHashMap&lt;/code&gt; can be used to arrange the values in &lt;code&gt;HashSet&lt;/code&gt;s instead.&lt;/p&gt;
-&lt;h4&gt;&lt;em&gt;MultiSet&lt;/em&gt;&lt;/h4&gt;
+&lt;h4 id="multiset"&gt;&lt;em&gt;MultiSet&lt;/em&gt;&lt;/h4&gt;
 &lt;p&gt;A &lt;code&gt;MultiSet&lt;/code&gt; is a &lt;code&gt;Set&lt;/code&gt; that allows for multiple occurrences of each element, keeping track of their count. It is similar to Python's &lt;a href="https://docs.python.org/2/library/collections.html#collections.Counter"&gt;Counter&lt;/a&gt; and can be very useful when a count of the occurrences of an object in a set is needed, for instance in text processing applications.&lt;/p&gt;
 &lt;p&gt;The initialization and the insertion of elements are straightforward:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;MultiSet&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;multiSet&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;HashMultiSet&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&amp;gt;();&lt;/span&gt;
@@ -251,7 +767,7 @@ There are 3 unique elements in the multiset
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h4&gt;&lt;em&gt;CircularFifoQueue&lt;/em&gt;&lt;/h4&gt;
+&lt;h4 id="circularfifoqueue"&gt;&lt;em&gt;CircularFifoQueue&lt;/em&gt;&lt;/h4&gt;
 &lt;p&gt;The &lt;code&gt;Queue&lt;/code&gt; type is already present in Java, so the main addition from Commons Collection is a circular FIFO queue, a fixed size queue where the oldest elements are replaced by the newer elements when it reaches capacity. A &lt;code&gt;CircularFifoQueue&lt;/code&gt; is created with the size as a parameter for the constructor:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;size&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
 &lt;span class="n"&gt;CircularFifoQueue&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;queue&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;CircularFifoQueue&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&amp;gt;(&lt;/span&gt;&lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
@@ -312,7 +828,7 @@ There are 3 unique elements in the multiset
 
 &lt;p&gt;Obviously the queue is still at full capacity, but the first element &lt;code&gt;"A"&lt;/code&gt; has been dropped to make room for the new element &lt;code&gt;"C"&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;Besides the methods just shown, &lt;code&gt;CircularFifoQueue&lt;/code&gt; has the same methods of a standard &lt;code&gt;Queue&lt;/code&gt; (including &lt;code&gt;poll&lt;/code&gt; and &lt;code&gt;remove&lt;/code&gt; to remove and return the head of the queue, and &lt;code&gt;element&lt;/code&gt; and &lt;code&gt;peek&lt;/code&gt; to return the head of the queue without removing it); there is also an &lt;code&gt;isFull&lt;/code&gt; method to determine whether the queue is full, which always returns &lt;code&gt;false&lt;/code&gt; since a circular queue can never be full.&lt;/p&gt;
-&lt;h4&gt;&lt;em&gt;Trie&lt;/em&gt;&lt;/h4&gt;
+&lt;h4 id="trie"&gt;&lt;em&gt;Trie&lt;/em&gt;&lt;/h4&gt;
 &lt;p&gt;A &lt;code&gt;Trie&lt;/code&gt; implements a rather interesting data structure called &lt;a href="https://en.wikipedia.org/wiki/Trie"&gt;trie&lt;/a&gt; (from re&lt;strong&gt;trie&lt;/strong&gt;val), which is mostly used for search using prefixes. A trie is similar to a tree with an important difference: a node of the trie does not contain the value that is being searched, but the &lt;em&gt;path&lt;/em&gt; to the node does; as such, tries are very good at prefix search. The trie implementation that Commons Collections offers is called &lt;code&gt;PatriciaTree&lt;/code&gt; (from the acronym PATRICIA, "Practical Algorithm to Retrieve Information Coded in Alphanumeric"), a type of compressed trie. Let's see an example.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Trie&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Integer&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;trie&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;PatriciaTrie&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&amp;gt;();&lt;/span&gt;
 
@@ -367,7 +883,7 @@ Keys after &amp;#39;cart&amp;#39;: {cart=2, cartography=5, carton=3, cartridge=4
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h4&gt;&lt;em&gt;LRUMap&lt;/em&gt;&lt;/h4&gt;
+&lt;h4 id="lrumap"&gt;&lt;em&gt;LRUMap&lt;/em&gt;&lt;/h4&gt;
 &lt;p&gt;A &lt;code&gt;LRUMap&lt;/code&gt; is basically a limited-size cache where the least recently used (LRU) elements are evicted to leave room for new elements when the cache is full. The LRU policy is quite popular in caches; the concept of "least recently used" may vary, and for instance in Commons Collections it refers to &lt;code&gt;get&lt;/code&gt; and &lt;code&gt;put&lt;/code&gt; operations only: if two elements are inserted one after the other and the former is retrieved once, the latter will become "least recently used". The &lt;code&gt;LRUMap&lt;/code&gt; is initialized with a &lt;code&gt;maxSize&lt;/code&gt; parameter:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;maxSize&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
 &lt;span class="n"&gt;LRUMap&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Integer&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;lruMap&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;LRUMap&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&amp;gt;(&lt;/span&gt;&lt;span class="n"&gt;maxSize&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
@@ -422,7 +938,7 @@ Keys after &amp;#39;cart&amp;#39;: {cart=2, cartography=5, carton=3, cartridge=4
 
 
 &lt;p&gt;It's important to note that, in order to use &lt;code&gt;LRUMap&lt;/code&gt; as a cache in a real multithreaded environment, we should make it thread-safe; an easy way is by wrapping it with the &lt;code&gt;Collections.synchronizedMap&lt;/code&gt; method.&lt;/p&gt;
-&lt;h4&gt;&lt;em&gt;MultiKeyMap&lt;/em&gt;&lt;/h4&gt;
+&lt;h4 id="multikeymap"&gt;&lt;em&gt;MultiKeyMap&lt;/em&gt;&lt;/h4&gt;
 &lt;p&gt;A &lt;code&gt;MultiKeyMap&lt;/code&gt; is a &lt;code&gt;Map&lt;/code&gt; where the keys are composite, such as &lt;code&gt;firstName&lt;/code&gt; and &lt;code&gt;lastName&lt;/code&gt; in a map that associates persons to document IDs. It can be instantiated like a standard &lt;code&gt;Map&lt;/code&gt;:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;MultiKeyMap&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;multiKeyMap&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;MultiKeyMap&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&amp;gt;();&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
@@ -447,7 +963,7 @@ Keys after &amp;#39;cart&amp;#39;: {cart=2, cartography=5, carton=3, cartridge=4
 
 
 &lt;p&gt;This class can be very useful when implementing a structure such as a database table, as it makes it simple to use complex keys. It cannot be used, though, if a key must have components of different types.&lt;/p&gt;
-&lt;h3&gt;Utils&lt;/h3&gt;
+&lt;h3 id="utils"&gt;Utils&lt;/h3&gt;
 &lt;p&gt;Besides new or refined collection types, Commons Collections offers several utility classes. A few examples:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -565,7 +1081,7 @@ Difference: [two, three]
 &lt;p&gt;&lt;code&gt;CollectionUtils&lt;/code&gt;: generic methods on &lt;code&gt;Collection&lt;/code&gt;s, including decorators to make the underlying &lt;code&gt;Collection&lt;/code&gt; synchronized, unmodifiable, filtered or validated by a predicate, etc.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3&gt;Conclusions&lt;/h3&gt;
+&lt;h3 id="conclusions"&gt;Conclusions&lt;/h3&gt;
 &lt;p&gt;We have seen that the Commons Collections project provides a really vast amount of collection types, utilities, and decorators to use with existing collections. The project is very easy to integrate and the documentation, although a bit lacking in examples, is covered by an extensive and detailed Javadoc. If you find yourself making use of many collections, Commons Collections can help you in many ways.&lt;/p&gt;</content><category term="library"></category><category term="Apache Commons"></category></entry><entry><title>Apache Hivemall</title><link href="https://apothem.blog/apache-hivemall.html" rel="alternate"></link><published>2020-02-02T00:00:00+00:00</published><updated>2020-02-02T00:00:00+00:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2020-02-02:/apache-hivemall.html</id><summary type="html">&lt;p&gt;With this article we will move a little bit out of the data engineering space and delve into another subject I love: we will explore the world of distributed machine learning with &lt;a href="https://hivemall.incubator.apache.org/"&gt;Apache Hivemall&lt;/a&gt;. From the project's homepage:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Hivemall is a scalable machine learning library that runs on Apache Hive …&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;With this article we will move a little bit out of the data engineering space and delve into another subject I love: we will explore the world of distributed machine learning with &lt;a href="https://hivemall.incubator.apache.org/"&gt;Apache Hivemall&lt;/a&gt;. From the project's homepage:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Hivemall is a scalable machine learning library that runs on Apache Hive, Spark and Pig.
@@ -574,7 +1090,7 @@ Difference: [two, three]
 
 &lt;p&gt;In short, Hivemall is a collection of Hive UDFs (User-Defined Functions) to create, train, and evaluate machine learning models using any of the supported engines. Since Hive provides a SQL-like query language, Hivemall is basically &lt;strong&gt;machine learning in SQL&lt;/strong&gt;; it is then well suited to users who are already fluent in SQL or who need an additional abstraction layer on top of machine learning libraries.&lt;/p&gt;
 &lt;p&gt;We will explore some of the many capabilities that Hivemall provides by tackling one of the most common machine learning tasks: classification. Let's start by setting up the environment.&lt;/p&gt;
-&lt;h3&gt;Setting up Hivemall and Spark&lt;/h3&gt;
+&lt;h3 id="setting-up-hivemall-and-spark"&gt;Setting up Hivemall and Spark&lt;/h3&gt;
 &lt;p&gt;Like for other Java-based Apache projects, we will need to install git, Java 8, and Maven 3.5+ (check &lt;a href="https://apothem.blog/apache-atlas.html"&gt;the article on Apache Atlas&lt;/a&gt; if you need a detailed walkthrough). Once we have installed everything, we need to build Hivemall:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ git clone https://github.com/apache/incubator-hivemall.git
 $ &lt;span class="nb"&gt;cd&lt;/span&gt; incubator-hivemall
@@ -609,7 +1125,7 @@ $ bin/build.sh
 
 
 &lt;p&gt;We will likely see some errors because some Hivemall functions already exist in Spark 2.4.4, but there is no need to worry because the Spark functions will not be overridden. We are now ready to start using Hivemall!&lt;/p&gt;
-&lt;h3&gt;Classification&lt;/h3&gt;
+&lt;h3 id="classification"&gt;Classification&lt;/h3&gt;
 &lt;p&gt;&lt;a href="https://en.wikipedia.org/wiki/Classification_(machine_learning)"&gt;Classification&lt;/a&gt; is the task of assigning a category to an &lt;em&gt;observation&lt;/em&gt; based on the value of its &lt;em&gt;features&lt;/em&gt;. For example, we may have some emails that we want to classify as "spam" or "non-spam" based on the presence of one or more keywords; this is called &lt;em&gt;binary classification&lt;/em&gt; because we only have two categories, or one category that an instance belongs to or not. Another example, which is a sort of "Hello world" for machine learning and classification, is the categorization of a specific variant of the &lt;a href="https://en.wikipedia.org/wiki/Iris_(plant)"&gt;iris&lt;/a&gt; plant depending on features such as the length and width of its sepals and petals; this is called &lt;em&gt;multiclass classification&lt;/em&gt; because there are more than two different classes. We will use the &lt;a href="https://archive.ics.uci.edu/ml/datasets/Iris"&gt;Iris Data Set&lt;/a&gt; in this section.&lt;/p&gt;
 &lt;p&gt;The algorithm we will use is called &lt;a href="https://xgboost.readthedocs.io/en/latest/"&gt;XGBoost&lt;/a&gt;. There are several reasons behind this choice:&lt;/p&gt;
 &lt;ul&gt;
@@ -619,7 +1135,7 @@ $ bin/build.sh
 &lt;li&gt;it is now supported in Hivemall starting with version 0.6.0 (the supported XGBoost version being 0.90).&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;If you are interested in the theoretical and technical details, do take a look at the excellent documentation &lt;a href="https://xgboost.readthedocs.io/en/latest/tutorials/model.html"&gt;here&lt;/a&gt;. For our purposes, we need to keep in mind just one thing: simplifying a lot, XGBoost will basically give us a group of decision trees.&lt;/p&gt;
-&lt;h4&gt;Data preprocessing&lt;/h4&gt;
+&lt;h4 id="data-preprocessing"&gt;Data preprocessing&lt;/h4&gt;
 &lt;p&gt;First of all, we need to download our dataset from &lt;a href="https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"&gt;here&lt;/a&gt; and put it alongside the previous directories. The data will look like the following:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;5.1,3.5,1.4,0.2,Iris-setosa
 4.9,3.0,1.4,0.2,Iris-setosa
@@ -709,7 +1225,7 @@ $ bin/build.sh
 
 
 &lt;p&gt;The table is ready to be used for training.&lt;/p&gt;
-&lt;h4&gt;Training&lt;/h4&gt;
+&lt;h4 id="training"&gt;Training&lt;/h4&gt;
 &lt;p&gt;We need to add one more function first (which should be included in the &lt;code&gt;define-all.spark&lt;/code&gt; file now, but are not at the moment):&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE TEMPORARY FUNCTION train_xgboost AS &amp;#39;hivemall.xgboost.XGBoostTrainUDTF&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
@@ -813,7 +1329,7 @@ Caused by: ml.dmlc.xgboost4j.java.XGBoostError: [01:14:14] /home/travis/build/my
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h4&gt;Prediction&lt;/h4&gt;
+&lt;h4 id="prediction"&gt;Prediction&lt;/h4&gt;
 &lt;p&gt;Now that the model is ready, we can use it to classify some data. It is important to note that the way Hivemall makes XGBoost parallel is somewhat different from the parallel implementation of the official library; in fact, instead of using the &lt;a href="https://xgboost.readthedocs.io/en/latest/jvm/xgboost4j_spark_tutorial.html"&gt;AllReduce paradigm&lt;/a&gt; where all the parallel workers have to communicate, Hivemall uses a &lt;a href="https://scikit-learn.org/stable/modules/ensemble.html#voting-classifier"&gt;voting classifier&lt;/a&gt; on top of many &lt;em&gt;independent&lt;/em&gt; XGBoost learners. In this way every worker can train its own local model based on its partition of data (possibly overlapping with other partitions if the &lt;code&gt;amplify&lt;/code&gt; or &lt;code&gt;rand_amplify&lt;/code&gt; functions are used), and the actual prediction happens via a majority vote (if the objective function is &lt;code&gt;softmax&lt;/code&gt;, since its output is a class label) or by averaging (if the objective function is &lt;code&gt;softprob&lt;/code&gt;, since its output is a list of probabilities). We will see both examples.&lt;/p&gt;
 &lt;p&gt;Like we did for training, we need first of all to include a few more functions:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE TEMPORARY FUNCTION xgboost_predict_one AS &amp;#39;hivemall.xgboost.XGBoostPredictOneUDTF&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
@@ -891,7 +1407,7 @@ Caused by: ml.dmlc.xgboost4j.java.XGBoostError: [01:14:14] /home/travis/build/my
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h4&gt;Evaluation&lt;/h4&gt;
+&lt;h4 id="evaluation"&gt;Evaluation&lt;/h4&gt;
 &lt;p&gt;It is time now to evaluate our models. Since we performed our predictions on the same dataset that we used for training, we would expect the models to perform really good. Let's start with the &lt;code&gt;softmax&lt;/code&gt; model:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;scala&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;spark&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
 &lt;span class="s"&gt;    SELECT sum(if(actual=predicted, 1.0, 0.0))/count(1)&lt;/span&gt;
@@ -902,7 +1418,7 @@ Caused by: ml.dmlc.xgboost4j.java.XGBoostError: [01:14:14] /home/travis/build/my
 
 
 &lt;p&gt;Here we are simply counting all the instances where the actual value corresponds to the predicted value (using the &lt;code&gt;rowid&lt;/code&gt; column to join the training dataset and the predicted dataset), then we divide that number by the number of all the instances to get a ratio. As expected, the ratio is really high (even though not exactly 1.0); we can also run exactly the same query by just swapping &lt;code&gt;iris_pred_softmax&lt;/code&gt; with &lt;code&gt;iris_pred_softprob&lt;/code&gt; to evaluate the second model. If we do not find very close values, the reason can be parallelization (since each partition calculates its own model); in order to get very close results we would need to reduce the &lt;code&gt;spark.sql.shuffle.partitions&lt;/code&gt; value to one, effectively making the whole computation happen in only one partition by creating a single XGBoost model, which will contain the full dataset (obviously not recommended for large datasets).&lt;/p&gt;
-&lt;h3&gt;Conclusions&lt;/h3&gt;
+&lt;h3 id="conclusions"&gt;Conclusions&lt;/h3&gt;
 &lt;p&gt;We have seen how Hivemall makes the XGBoost algorithm (and the classification task in general) very easy to implement and to understand. Of course there is much more to it, for instance:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;XGBoost can be configured with many different parameters, so it's worth reading its &lt;a href="https://hivemall.incubator.apache.org/userguide/binaryclass/news20b_xgboost.html"&gt;Hivemall usage guide&lt;/a&gt; and its &lt;a href="https://xgboost.readthedocs.io/en/release_0.90/parameter.html"&gt;configuration docs&lt;/a&gt;;&lt;/li&gt;
@@ -910,7 +1426,7 @@ Caused by: ml.dmlc.xgboost4j.java.XGBoostError: [01:14:14] /home/travis/build/my
 &lt;li&gt;Hivemall features other algorithms for classification, including a &lt;a href="https://hivemall.incubator.apache.org/userguide/binaryclass/a9a_generic.html"&gt;general and highly customizable classifier&lt;/a&gt;, &lt;a href="https://hivemall.incubator.apache.org/userguide/binaryclass/a9a_lr.html"&gt;logistic regression&lt;/a&gt;, and &lt;a href="https://hivemall.incubator.apache.org/userguide/binaryclass/a9a_minibatch.html"&gt;mini-batch gradient descent&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;There are many other machine learning tasks to cover, such as &lt;a href="https://en.wikipedia.org/wiki/Regression_analysis"&gt;regression&lt;/a&gt; and &lt;a href="https://en.wikipedia.org/wiki/Cluster_analysis"&gt;clustering&lt;/a&gt;, and we have just barely touched on feature engineering. So, stay tuned for another article on this very interesting project!&lt;/p&gt;</content><category term="Big Data"></category><category term="Machine Learning"></category></entry><entry><title>Apache CarbonData (part 2)</title><link href="https://apothem.blog/apache-carbondata-part-2.html" rel="alternate"></link><published>2019-10-31T00:00:00+00:00</published><updated>2019-10-31T00:00:00+00:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-10-31:/apache-carbondata-part-2.html</id><summary type="html">&lt;p&gt;In the &lt;a href="https://apothem.blog/apache-carbondata.html"&gt;previous article&lt;/a&gt; we have seen many exciting features that CarbonData offers, but we haven't explored them all; in this article we will try out the streaming capabilities and we will delve a bit deeper into the data layout, looking at concept like compaction and partitioning, and the way …&lt;/p&gt;</summary><content type="html">&lt;p&gt;In the &lt;a href="https://apothem.blog/apache-carbondata.html"&gt;previous article&lt;/a&gt; we have seen many exciting features that CarbonData offers, but we haven't explored them all; in this article we will try out the streaming capabilities and we will delve a bit deeper into the data layout, looking at concept like compaction and partitioning, and the way the different files are managed.&lt;/p&gt;
-&lt;h2&gt;Streaming&lt;/h2&gt;
+&lt;h2 id="streaming"&gt;Streaming&lt;/h2&gt;
 &lt;p&gt;Another feature that sets CarbonData apart from other Hadoop data formats is the support for streaming data. Rather than writing many small files or waiting until a larger file can be written, CarbonData uses a slightly different format where single rows can be added as they arrive; such files can later be converted to the standard columnar format (via compaction) in order to support all the features we have already discussed. Every task, including the creation of the sink table and the management of the streaming job, can be performed using SQL commands. Let's see how.&lt;/p&gt;
 &lt;p&gt;First of all, we need to create a streaming source. An easy way to do this is to use &lt;a href="https://en.wikipedia.org/wiki/Netcat"&gt;netcat&lt;/a&gt;, a Linux utility that, among many other things, can be used to send data through a socket, thus simulating a process streaming data over the network. We need to open a new terminal (or to use another utility like &lt;a href="https://en.wikipedia.org/wiki/GNU_Screen"&gt;screen&lt;/a&gt; or &lt;a href="https://en.wikipedia.org/wiki/Tmux"&gt;tmux&lt;/a&gt;) in order to keep &lt;em&gt;netcat&lt;/em&gt; running while we use the Spark shell; on the new terminal we need to run the following command:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ nc -lk &lt;span class="m"&gt;9099&lt;/span&gt;
@@ -1019,7 +1535,7 @@ Caused by: ml.dmlc.xgboost4j.java.XGBoostError: [01:14:14] /home/travis/build/my
 
 
 &lt;p&gt;The format of the data has actually changed, and it cannot be changed back to &lt;code&gt;ROW_V1&lt;/code&gt;. We'll see compaction into more detail in the next section.&lt;/p&gt;
-&lt;h2&gt;Compaction&lt;/h2&gt;
+&lt;h2 id="compaction"&gt;Compaction&lt;/h2&gt;
 &lt;p&gt;Whenever we load data into CarbonData, a new folder called &lt;em&gt;segment&lt;/em&gt; is created; this makes dealing with transactions easier and helps maintaining consistency. In the long run, anyway, the growing number of segments degrades the query performance; &lt;em&gt;compaction&lt;/em&gt; can then be used to merge multiple segments into one.&lt;/p&gt;
 &lt;p&gt;CarbonData supports two main types of compaction besides the &lt;code&gt;CLOSE_STREAMING&lt;/code&gt; that we've seen in the previous section, namely &lt;em&gt;minor&lt;/em&gt; (based on the number of new segments) and &lt;em&gt;major&lt;/em&gt; (based on the size of the new segments). We'll see how they work using another table from the TPCH benchmark.&lt;/p&gt;
 &lt;p&gt;Let's create the &lt;code&gt;order&lt;/code&gt; table:&lt;/p&gt;
@@ -1252,7 +1768,7 @@ Caused by: ml.dmlc.xgboost4j.java.XGBoostError: [01:14:14] /home/travis/build/my
 
 
 &lt;p&gt;By default (parameter &lt;code&gt;carbon.major.compaction.size&lt;/code&gt;) the compaction will only take place on the segments whose sum of the sizes is below 1024 MB. You can try this out as well by loading data once more and running the SQL command.&lt;/p&gt;
-&lt;h3&gt;Update and Delete operations&lt;/h3&gt;
+&lt;h3 id="update-and-delete-operations"&gt;Update and Delete operations&lt;/h3&gt;
 &lt;p&gt;There is another type of compaction, called &lt;em&gt;horizontal compaction&lt;/em&gt;, that takes place on delta files created by Update and Delete operations. Whenever an Update is performed, two files are created:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;an &lt;em&gt;Insert Delta&lt;/em&gt; file which stores newly added rows in the CarbonData columnar format;&lt;/li&gt;
@@ -1339,7 +1855,7 @@ Caused by: ml.dmlc.xgboost4j.java.XGBoostError: [01:14:14] /home/travis/build/my
 &lt;li&gt;&lt;code&gt;carbon.horizontal.update.compaction.threshold&lt;/code&gt;: number of &lt;em&gt;Update delta&lt;/em&gt; files above which the compaction will take place (default is 1);&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;carbon.horizontal.delete.compaction.threshold&lt;/code&gt;: number of &lt;em&gt;Delete delta&lt;/em&gt; files above which the compaction will take place (default is 1).&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2&gt;Partitioning&lt;/h2&gt;
+&lt;h2 id="partitioning"&gt;Partitioning&lt;/h2&gt;
 &lt;p&gt;Partitioning is a data organization strategy used to increase performance and isolation. CarbonData offers two kinds of partitions, a "standard" one (similar to &lt;a href="https://spark.apache.org/docs/2.3.4/sql-programming-guide.html#partition-discovery"&gt;Spark&lt;/a&gt; and Hive partitions) and a "CarbonData" one (that supports several partitioning schemes such as ranges, hashes, and lists, but no Update/Delete); since the latter is still experimental, we will only focus on the former.&lt;/p&gt;
 &lt;p&gt;A partitioned table can be created with the usual Spark/Hive &lt;code&gt;PARTITIONED BY&lt;/code&gt; syntax:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;s&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
@@ -1422,7 +1938,7 @@ Caused by: ml.dmlc.xgboost4j.java.XGBoostError: [01:14:14] /home/travis/build/my
 
 
 &lt;p&gt;where we can see that, instead of the usual &lt;code&gt;Fact/Part0/Segment_0&lt;/code&gt; structure, we have one directory per partition. With this structure, Update Delta and Delete Delta files are created within each folder. Whether partitions can make queries more efficient as opposed to MDKs and dictionaries will likely depend on the use case.&lt;/p&gt;
-&lt;h2&gt;Conclusions&lt;/h2&gt;
+&lt;h2 id="conclusions"&gt;Conclusions&lt;/h2&gt;
 &lt;p&gt;As we have been digging deeper into the internals of CarbonData, we have discovered that there are not only many interesting features to cover different use cases, but also many tools to increase the performance. I would suggest to take a look at the list of &lt;a href="https://carbondata.apache.org/configuration-parameters.html"&gt;configuration parameters&lt;/a&gt; as well as at the list of &lt;a href="https://carbondata.apache.org/usecases.html"&gt;use cases&lt;/a&gt;, since they can provide some guidance in the (daunting) task getting the better out of CarbonData. Have fun!&lt;/p&gt;</content><category term="Big Data"></category><category term="data storage format"></category></entry><entry><title>Apache CarbonData</title><link href="https://apothem.blog/apache-carbondata.html" rel="alternate"></link><published>2019-09-30T00:00:00+01:00</published><updated>2019-09-30T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-09-30:/apache-carbondata.html</id><summary type="html">&lt;p&gt;In the last few years I have been working quite extensively with Apache Spark, and I have come to realize that a good storage format goes a long way toward efficiency and speed. For instance, when dealing with large CSV or JSON files, adding an &lt;a href="https://parquet.apache.org/"&gt;Apache Parquet&lt;/a&gt; writing step would …&lt;/p&gt;</summary><content type="html">&lt;p&gt;In the last few years I have been working quite extensively with Apache Spark, and I have come to realize that a good storage format goes a long way toward efficiency and speed. For instance, when dealing with large CSV or JSON files, adding an &lt;a href="https://parquet.apache.org/"&gt;Apache Parquet&lt;/a&gt; writing step would improve performance in virtually every subsequent task, or at least in all tasks that would profit from a columnar storage. I have briefly dabbled with &lt;a href="https://orc.apache.org/"&gt;Apache ORC&lt;/a&gt; and, then, I found out a rather new format which I haven't really explored until last month, which is what we will see in this article: enter &lt;a href="https://carbondata.apache.org/"&gt;Apache CarbonData&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Developed by Huawei and launched as an Apache Incubator project in 2016, CarbonData is now is at version 1.6.0. The reasons why it caught my interest are several:&lt;/p&gt;
 &lt;ul&gt;
@@ -1435,7 +1951,7 @@ Caused by: ml.dmlc.xgboost4j.java.XGBoostError: [01:14:14] /home/travis/build/my
 &lt;li&gt;the support of streaming use cases via near-real time insertion.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;That's quite a lot of features! So, let's see how to make use of each one of them. As usual, I will refer to a CentOS 7 system; there are not so many tools that need to be installed: besides the usual &lt;code&gt;wget&lt;/code&gt;, &lt;code&gt;git&lt;/code&gt;, and &lt;code&gt;Java 8&lt;/code&gt;, we will need &lt;code&gt;gcc&lt;/code&gt; in order to compile the data generation library.&lt;/p&gt;
-&lt;h2&gt;Data&lt;/h2&gt;
+&lt;h2 id="data"&gt;Data&lt;/h2&gt;
 &lt;p&gt;In order to generate data to load in our CarbonData tables we will use the TPC-H &lt;em&gt;dbgen&lt;/em&gt; tool, which is commonly used for database benchmarks (and, in fact, is used to benchmark CarbonData as well). The tool creates synthetic data based on a real-world scenario, where vendors place orders to buy parts from suppliers and to sell parts to customers. The TPC-H benchmark includes a query generation tool as well, which we won't use here.&lt;/p&gt;
 &lt;p&gt;To build our dataset, let's clone the repo into &lt;code&gt;/tmp&lt;/code&gt; (or any other folder) and build the tools:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ &lt;span class="nb"&gt;cd&lt;/span&gt; /tmp
@@ -1456,7 +1972,7 @@ $ make
 
 
 &lt;p&gt;We will mostly use only one file, &lt;code&gt;lineitem.tbl&lt;/code&gt;, which is the largest one; anyway, the other files can provide some more context - and can be used for more experiments.&lt;/p&gt;
-&lt;h2&gt;Spark and CarbonData&lt;/h2&gt;
+&lt;h2 id="spark-and-carbondata"&gt;Spark and CarbonData&lt;/h2&gt;
 &lt;p&gt;We will explore CarbonData features using the simplest setup: a Spark shell in standalone mode with CarbonData already packaged as a JAR file. We therefore need to:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;download Spark from &lt;a href="https://www.apache.org/dyn/closer.lua/spark/spark-2.3.4/spark-2.3.4-bin-hadoop2.7.tgz"&gt;this page&lt;/a&gt; (we will use Spark 2.3.4 since the latest version of CarbonData is compatible with Spark up to 2.3.2);&lt;/li&gt;
@@ -1481,7 +1997,7 @@ $ make
 
 &lt;p&gt;(Pro tip: a whole piece of code can be pasted and run into the Scala shell by running the command &lt;code&gt;:paste&lt;/code&gt;, pasting the code, and pressing Ctrl + D)&lt;/p&gt;
 &lt;p&gt;Now we are ready!&lt;/p&gt;
-&lt;h2&gt;Creating tables and loading data&lt;/h2&gt;
+&lt;h2 id="creating-tables-and-loading-data"&gt;Creating tables and loading data&lt;/h2&gt;
 &lt;p&gt;First of all, we need to create a table and load some data into it. Every SQL command can be run via the &lt;code&gt;carbon.sql()&lt;/code&gt; method, so we can create a &lt;code&gt;lineitem&lt;/code&gt; table in this way:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE TABLE IF NOT EXISTS lineitem(l_shipdate DATE, l_shipmode STRING, l_shipinstruct STRING, l_returnflag STRING, l_receiptdate DATE, l_orderkey INT, l_partkey INT, l_suppkey STRING, l_linenumber INT, l_quantity DOUBLE, l_extendedprice DOUBLE, l_discount DOUBLE, l_tax DOUBLE, l_linestatus STRING, l_commitdate DATE, l_comment STRING) STORED AS carbondata&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
@@ -1502,7 +2018,7 @@ $ make
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h2&gt;Multi-dimensional keys (MDKs)&lt;/h2&gt;
+&lt;h2 id="multi-dimensional-keys-mdks"&gt;Multi-dimensional keys (MDKs)&lt;/h2&gt;
 &lt;p&gt;Let's now create and populate a new table using multi-dimensional keys (MDKs) by means of the &lt;code&gt;SORT_COLUMNS&lt;/code&gt; table property:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE TABLE IF NOT EXISTS lineitem_sorted(l_shipdate DATE, l_shipmode STRING, l_shipinstruct STRING, l_returnflag STRING, l_receiptdate DATE, l_orderkey INT, l_partkey INT, l_suppkey STRING, l_linenumber INT, l_quantity DOUBLE, l_extendedprice DOUBLE, l_discount DOUBLE, l_tax DOUBLE, l_linestatus STRING, l_commitdate DATE, l_comment STRING) STORED AS carbondata TBLPROPERTIES (&amp;#39;SORT_COLUMNS&amp;#39; = &amp;#39;l_shipdate,l_shipmode,l_shipinstruct,l_receiptdate,l_commitdate,l_returnflag,l_linestatus&amp;#39;)&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
 
@@ -1560,7 +2076,7 @@ $ make
 
 
 &lt;p&gt;If we look at the size of the same directory for the &lt;code&gt;lineitem_sorted&lt;/code&gt; directory, instead, we will see that it's 190 MB! So, MDKs are convenient from the storage point of view as well.&lt;/p&gt;
-&lt;h2&gt;Update and Delete operations&lt;/h2&gt;
+&lt;h2 id="update-and-delete-operations"&gt;Update and Delete operations&lt;/h2&gt;
 &lt;p&gt;Update operations are very simple in CarbonData. The format is the following:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;UPDATE&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="k"&gt;table_name&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; 
 &lt;span class="k"&gt;SET&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;column_name_1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;column_name_2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;...&lt;/span&gt; &lt;span class="n"&gt;column_name_n&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;column_1_expression&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;column_2_expression&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;...&lt;/span&gt; &lt;span class="n"&gt;column_n_expression&lt;/span&gt; &lt;span class="p"&gt;)&lt;/span&gt;
@@ -1598,9 +2114,9 @@ $ make
 
 
 &lt;p&gt;Now the last &lt;code&gt;COUNT&lt;/code&gt; query will return zero results.&lt;/p&gt;
-&lt;h2&gt;Datamaps&lt;/h2&gt;
+&lt;h2 id="datamaps"&gt;Datamaps&lt;/h2&gt;
 &lt;p&gt;The concept of datamap is quite interesting: basically, a new data structure is added on top of the existing data in order to improve the performance of some specific queries. Let's look for instance at the &lt;em&gt;Lucene&lt;/em&gt; datamap, which adds a Lucene-based full-text index to a give column. &lt;/p&gt;
-&lt;h3&gt;Lucene datamap&lt;/h3&gt;
+&lt;h3 id="lucene-datamap"&gt;Lucene datamap&lt;/h3&gt;
 &lt;p&gt;In order to create a Lucene full-text datamap, we run the following query:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;CREATE DATAMAP comment ON TABLE lineitem_sorted USING &amp;#39;lucene&amp;#39; DMPROPERTIES(&amp;#39;INDEX_COLUMNS&amp;#39; = &amp;#39;l_comment&amp;#39;, &amp;#39;SPLIT_BLOCKLET&amp;#39; = &amp;#39;false&amp;#39;)&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
@@ -1673,7 +2189,7 @@ $ make
 
 
 &lt;p&gt;Another thing which is not clearly specified is why more than 10 results are returned even though, starting with the 11th, they seem irrelevant; until this is clarified, I would recommend to add a &lt;code&gt;LIMIT 10&lt;/code&gt; to the query.&lt;/p&gt;
-&lt;h3&gt;Time Series datamap&lt;/h3&gt;
+&lt;h3 id="time-series-datamap"&gt;Time Series datamap&lt;/h3&gt;
 &lt;p&gt;Another useful datamap is the Time Series datamap, which creates a separate table to optimize queries on time series. We can run queries like the following without a datamap:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT TIMESERIES(l_shipdate, &amp;#39;year&amp;#39;) t, AVG(l_quantity) FROM lineitem_sorted GROUP BY t ORDER BY t DESC&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
@@ -1696,7 +2212,7 @@ $ make
 
 &lt;p&gt;(it takes less than 1 second on my machine).&lt;/p&gt;
 &lt;p&gt;The query and the datamap we have created work on a year granularity, but we can create as many datamaps as we need to support finer granularities (down to the minute).&lt;/p&gt;
-&lt;h3&gt;Multivalue datamap&lt;/h3&gt;
+&lt;h3 id="multivalue-datamap"&gt;Multivalue datamap&lt;/h3&gt;
 &lt;p&gt;The last datamap we will see (as we are not going to cover the Bloom datamap) is the Multivalued (MV) datamap, which generalizes the deprecated Pre-Aggregate datamap. This type of datamap is very useful for aggregation queries such as the following:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;carbon&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT l_partkey, AVG(l_quantity) avg_q, AVG(l_extendedprice) avg_p FROM lineitem_sorted GROUP BY l_partkey ORDER BY avg_q DESC LIMIT 10&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
@@ -1723,19 +2239,19 @@ TakeOrderedAndProject(limit=10, orderBy=[avg_q#2573 DESC NULLS LAST], output=[l_
 
 
 &lt;p&gt;where we can see a &lt;code&gt;FileScan&lt;/code&gt; on the &lt;code&gt;avg_qty_price_table&lt;/code&gt; table (the MV datamap is backed by a table).&lt;/p&gt;
-&lt;h2&gt;Conclusions&lt;/h2&gt;
+&lt;h2 id="conclusions"&gt;Conclusions&lt;/h2&gt;
 &lt;p&gt;We have seen some of the best features that CarbonData offers, although we haven't looked in too much detail at the performance and at the structure of the data, and we haven't explored the streaming capabilities and other integrations. The documentation is quite good even though some changes are not well described (for instance, after the &lt;code&gt;SORT_COLUMNS&lt;/code&gt; option has been introduced, do we still need the &lt;code&gt;DICTIONARY_INCLUDE&lt;/code&gt; option? what is the difference?), but the project is still alive and has a fairly large community to support it. I definitely want to find out more and to follow it closely.&lt;/p&gt;</content><category term="Big Data"></category><category term="data storage format"></category></entry><entry><title>Apache Rya</title><link href="https://apothem.blog/apache-rya.html" rel="alternate"></link><published>2019-08-31T00:00:00+01:00</published><updated>2019-08-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-08-31:/apache-rya.html</id><summary type="html">&lt;p&gt;Since I have been working with Semantic Web technologies for quite some time, I was looking forward to explore new Apache projects within the area. &lt;a href="https://rya.incubator.apache.org/"&gt;Apache Rya&lt;/a&gt; fit the purpose perfectly, as it is a SPARQL-enabled triplestore for Big Data, promising to scale to billions of triples across multiple nodes …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Since I have been working with Semantic Web technologies for quite some time, I was looking forward to explore new Apache projects within the area. &lt;a href="https://rya.incubator.apache.org/"&gt;Apache Rya&lt;/a&gt; fit the purpose perfectly, as it is a SPARQL-enabled triplestore for Big Data, promising to scale to billions of triples across multiple nodes. If you are completely lost after this terminology, you can take a look at the &lt;a href="https://en.wikipedia.org/wiki/Semantic_Web"&gt;Wikipedia article&lt;/a&gt; and the &lt;a href="https://www.w3.org/2009/Talks/0615-SanJose-tutorial-IH/Slides.pdf"&gt;W3C presentation&lt;/a&gt; to get an idea of the subject.&lt;/p&gt;
 &lt;p&gt;Rya runs on top of another Apache project, &lt;a href="https://accumulo.apache.org/"&gt;Accumulo&lt;/a&gt; (a distributed key/value store), and is deployed as a Web service. Since Accumulo by itself requires a fairly complex installation procedure as it is based on &lt;a href="https://hadoop.apache.org/"&gt;Apache Hadoop&lt;/a&gt; and &lt;a href="https://zookeeper.apache.org/"&gt;Apache Zookeeper&lt;/a&gt;, we will use yet another great Apache project, &lt;a href="http://fluo.apache.org/"&gt;Apache Fluo&lt;/a&gt; (or, more specifically, its subproject &lt;a href="https://github.com/apache/fluo-uno"&gt;Fluo Uno&lt;/a&gt;), to simplify the whole procedure; we will then use a well-known server, &lt;a href="http://tomcat.apache.org/"&gt;Apache Tomcat&lt;/a&gt;, to run it.&lt;/p&gt;
 &lt;p&gt;In this article we will see how to get a single-machine Rya instance up and running and how to perform basic operations; scalability, management, and more complex operations will be covered in another article. As usual, the reference operating system will be CentOS 7 (if possible, an empty/fresh instance).&lt;/p&gt;
-&lt;h2&gt;Preparing the environment&lt;/h2&gt;
-&lt;h3&gt;Installing Tomcat&lt;/h3&gt;
+&lt;h2 id="preparing-the-environment"&gt;Preparing the environment&lt;/h2&gt;
+&lt;h3 id="installing-tomcat"&gt;Installing Tomcat&lt;/h3&gt;
 &lt;p&gt;First of all we need to have Tomcat installed and running. On CentOS 7 it is just a matter of running the following two commands (both requiring &lt;code&gt;sudo&lt;/code&gt; rights):&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo yum install tomcat
 $ sudo service tomcat start
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h3&gt;Prerequisites for Fluo Uno&lt;/h3&gt;
+&lt;h3 id="prerequisites-for-fluo-uno"&gt;Prerequisites for Fluo Uno&lt;/h3&gt;
 &lt;p&gt;In the following, we will download and use Fluo Uno to setup a single-machine Accumulo instance; its sibling project, &lt;a href="https://github.com/apache/fluo-muchos"&gt;Fluo Muchos&lt;/a&gt;, can be used instead to create a real cluster in Amazon's EC2.&lt;/p&gt;
 &lt;p&gt;In order to use Fluo Uno, we need to have Java 8, &lt;em&gt;wget&lt;/em&gt;, &lt;em&gt;maven&lt;/em&gt;, and &lt;em&gt;git&lt;/em&gt; already installed; if any of these components is missing, it can be installed with &lt;code&gt;sudo yum install&lt;/code&gt;. We also need to install the &lt;em&gt;shasum&lt;/em&gt; program (&lt;strong&gt;not&lt;/strong&gt; the &lt;em&gt;sha1sum&lt;/em&gt; or the similar ones that are likely already installed), which is contained in the &lt;em&gt;perl-Digest-SHA&lt;/em&gt; package, and we might install &lt;em&gt;curl&lt;/em&gt; to test Rya's API. A quick way to install all the needed packages is to run:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ sudo yum install java wget maven git perl-Digest-SHA curl
@@ -1768,7 +2284,7 @@ $ sudo service tomcat start
 
 
 &lt;p&gt;Now, &lt;code&gt;ssh localhost&lt;/code&gt; should successfully open a new shell.&lt;/p&gt;
-&lt;h3&gt;Downloading and using Fluo Uno&lt;/h3&gt;
+&lt;h3 id="downloading-and-using-fluo-uno"&gt;Downloading and using Fluo Uno&lt;/h3&gt;
 &lt;p&gt;We are now ready to clone Fluo Uno from Github:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;git clone https://github.com/apache/fluo-uno.git
 &lt;/pre&gt;&lt;/div&gt;
@@ -1806,7 +2322,7 @@ Setup complete.
 
 
 &lt;p&gt;If the output is different or some errors are displayed, try checking the &lt;code&gt;./install/logs&lt;/code&gt; folder to debug.&lt;/p&gt;
-&lt;h2&gt;Installing Rya&lt;/h2&gt;
+&lt;h2 id="installing-rya"&gt;Installing Rya&lt;/h2&gt;
 &lt;p&gt;Once the environment is ready as detailed in the previous sections, we can clone Rya:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ git clone https://github.com/apache/incubator-rya
 &lt;/pre&gt;&lt;/div&gt;
@@ -1854,7 +2370,7 @@ $ sudo service tomcat restart
 
 
 &lt;p&gt;which should give 200 as the status code. Yay, we have a running Rya instance!&lt;/p&gt;
-&lt;h2&gt;Examples&lt;/h2&gt;
+&lt;h2 id="examples"&gt;Examples&lt;/h2&gt;
 &lt;p&gt;Let's open the SPARQL endpoint on &lt;code&gt;http://localhost:8080/web.rya/sparqlQuery.jsp&lt;/code&gt;. Rya's SPARQL endpoint supports SPARQL Update, so we can insert some example triples using the following query (inspired by Rya's documentation):&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;INSERT DATA&lt;/span&gt;
 &lt;span class="p"&gt;{&lt;/span&gt;
@@ -1971,11 +2487,11 @@ $ sudo service tomcat restart
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h2&gt;Conclusions&lt;/h2&gt;
+&lt;h2 id="conclusions"&gt;Conclusions&lt;/h2&gt;
 &lt;p&gt;Like other Apache projects still in incubation, Rya's documentation and examples may be still somewhat incomplete or difficult to follow. My aim was to try and streamline the installation process, and to provide a couple examples which allow a user to quickly see that everything is working correctly. A more complex setup and more interesting examples to come soon!&lt;/p&gt;</content><category term="Big Data"></category><category term="Semantic Web"></category></entry><entry><title>Apache Atlas (part 2)</title><link href="https://apothem.blog/apache-atlas-part-2.html" rel="alternate"></link><published>2019-07-31T00:00:00+01:00</published><updated>2019-07-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-07-31:/apache-atlas-part-2.html</id><summary type="html">&lt;p&gt;Since Atlas is a fairly large and complex project, one article was definitely not enough to explore all of its capabilities. Building on the &lt;a href="https://apothem.blog/apache-atlas.html"&gt;previous article&lt;/a&gt;, we will explore classifications and glossary, the REST API, and two more sources of lineage information (Spark and Kafka).&lt;/p&gt;
-&lt;h2&gt;Classification&lt;/h2&gt;
+&lt;h2 id="classification"&gt;Classification&lt;/h2&gt;
 &lt;p&gt;Let's start with classification …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Since Atlas is a fairly large and complex project, one article was definitely not enough to explore all of its capabilities. Building on the &lt;a href="https://apothem.blog/apache-atlas.html"&gt;previous article&lt;/a&gt;, we will explore classifications and glossary, the REST API, and two more sources of lineage information (Spark and Kafka).&lt;/p&gt;
-&lt;h2&gt;Classification&lt;/h2&gt;
+&lt;h2 id="classification"&gt;Classification&lt;/h2&gt;
 &lt;p&gt;Let's start with classification. In our previous example we created some Hive tables containing information about people and their documents, and now we'll put ourselves in the shoes of a data steward: How can we describe the data contained in a table, or even in a single column? How can we explain that some data should not be visible to everybody, or that their value is higher, or that they are covered by a SLA?&lt;/p&gt;
 &lt;p&gt;Let's take the &lt;code&gt;people&lt;/code&gt; table we created before, which looks like the following:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;surname&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;age&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;person_id&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt;
@@ -1998,7 +2514,7 @@ $ sudo service tomcat restart
 &lt;p&gt;&lt;img src="images/atlas_classification_attr.png" alt="Atlas classification" class="img-fluid" /&gt;&lt;/p&gt;
 &lt;p&gt;This classification is meant to capture the provenance of a certain dataset, and for this reason it is not to be automatically propagated through the lineage (if a certain group is responsible for a dataset, it is not necessarily responsible for derived data). We can prevent the propagation of a classification by clicking on the "Propagate" checkbox when assigning the classification to an item:&lt;/p&gt;
 &lt;p&gt;&lt;img src="images/atlas_classification_noprop.png" alt="Atlas classification" class="img-fluid" /&gt;&lt;/p&gt;
-&lt;h2&gt;Glossary&lt;/h2&gt;
+&lt;h2 id="glossary"&gt;Glossary&lt;/h2&gt;
 &lt;p&gt;We have seen how to classify the metadata and how the classifications take advantage of lineage information. What if we want to attach tags describing data and metadata according to a specific terminology? In pretty much the same way we have created classifications, we can create one or more &lt;em&gt;glossaries&lt;/em&gt; to group together &lt;em&gt;terms&lt;/em&gt; and &lt;em&gt;categories&lt;/em&gt;.&lt;/p&gt;
 &lt;p&gt;In the "Glossary" section we need first of all to create a glossary, for instance &lt;code&gt;Identification&lt;/code&gt;:&lt;/p&gt;
 &lt;p&gt;&lt;img src="images/atlas_glossary_add.png" alt="Atlas glossary" class="img-fluid" /&gt;&lt;/p&gt;
@@ -2007,7 +2523,7 @@ $ sudo service tomcat restart
 &lt;p&gt;Now, in the same way, we switch to "Terms" and create the two terms &lt;code&gt;National ID card&lt;/code&gt; and &lt;code&gt;Passport&lt;/code&gt;. If we click on any of the terms, we will see the term's detail page where we can assign classifications and categories. We can even create relationships between terms, for instance to say that a &lt;code&gt;National ID card&lt;/code&gt; is somewhat related to a &lt;code&gt;Passport&lt;/code&gt; via a &lt;code&gt;seeAlso&lt;/code&gt; relation. After this, we can finally assign the terms to any metadata item, for instance to the &lt;code&gt;document&lt;/code&gt; table, by clicking on the plus sign under the "Term" column in the search view:&lt;/p&gt;
 &lt;p&gt;&lt;img src="images/atlas_terms_assign.png" alt="Atlas glossary" class="img-fluid" /&gt;&lt;/p&gt;
 &lt;p&gt;For further information, the &lt;a href="https://atlas.apache.org/Glossary.html"&gt;Glossary page&lt;/a&gt; on the Atlas website is very detailed and shows some useful examples.&lt;/p&gt;
-&lt;h2&gt;The REST API&lt;/h2&gt;
+&lt;h2 id="the-rest-api"&gt;The REST API&lt;/h2&gt;
 &lt;p&gt;Another very strong feature that Atlas offers is its rich REST API. Basically, everything that can be done via the UI can be done via the API as well. A &lt;a href="https://atlas.apache.org/2.0.0/api/v2/ui/index.html"&gt;Swagger interactive interface&lt;/a&gt; is available on the website for easier exploration; here we will touch on the main sections with a couple examples.&lt;/p&gt;
 &lt;p&gt;As usual, the following API calls can be performed with any client (curl, Postman, etc.). In the following, every call is run via &lt;code&gt;curl&lt;/code&gt; with JSON as the response content type and with the correct access credentials (which, as a default, are &lt;code&gt;admin / admin&lt;/code&gt;); in other words, an API call such as &lt;code&gt;/api/atlas/v2/types/typedefs&lt;/code&gt; is performed with:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ curl -u admin:admin -H &lt;span class="s2"&gt;&amp;quot;Accept: application/json&amp;quot;&lt;/span&gt; http://localhost:21000/api/atlas/v2/types/typedefs
@@ -2015,7 +2531,7 @@ $ sudo service tomcat restart
 
 
 &lt;p&gt;If the client is based on the command line, a tool such as &lt;code&gt;json_pp&lt;/code&gt; is recommended in order to pretty-print the JSON response.&lt;/p&gt;
-&lt;h4&gt;Types&lt;/h4&gt;
+&lt;h4 id="types"&gt;Types&lt;/h4&gt;
 &lt;p&gt;To list all entity types:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/types/typedefs
 &lt;/pre&gt;&lt;/div&gt;
@@ -2026,7 +2542,7 @@ $ sudo service tomcat restart
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h4&gt;Search&lt;/h4&gt;
+&lt;h4 id="search"&gt;Search&lt;/h4&gt;
 &lt;p&gt;Metadata entities can be searched in multiple ways. The basic search endpoint has to be used with at least one parameter, for instance the type name:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/search/basic?typeName=hive_table
 &lt;/pre&gt;&lt;/div&gt;
@@ -2048,7 +2564,7 @@ $ sudo service tomcat restart
 
 
 &lt;p&gt;An advanced search endpoint using Atlas DSL is available as well, but we will not cover it here. Further information on the DSL can be found &lt;a href="https://atlas.apache.org/Search-Advanced.html"&gt;here&lt;/a&gt;.&lt;/p&gt;
-&lt;h4&gt;Single entity&lt;/h4&gt;
+&lt;h4 id="single-entity"&gt;Single entity&lt;/h4&gt;
 &lt;p&gt;The previous endpoints returned a (possibly empty) list of entities as a result. If we want to explore a single entity, we have to extract its &lt;code&gt;guid&lt;/code&gt; from any of the previous calls. Let's say we are interested in the entity with &lt;code&gt;"guid": "ad9915a8-fdab-4570-964f-8f636a8da20c"&lt;/code&gt;; a rich description of the entity can be obtained by calling this endpoint:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/entity/guid/ad9915a8-fdab-4570-964f-8f636a8da20c
 &lt;/pre&gt;&lt;/div&gt;
@@ -2087,7 +2603,7 @@ $ sudo service tomcat restart
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h4&gt;Glossary&lt;/h4&gt;
+&lt;h4 id="glossary_1"&gt;Glossary&lt;/h4&gt;
 &lt;p&gt;To retrieve all glossaries:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/glossary
 &lt;/pre&gt;&lt;/div&gt;
@@ -2108,9 +2624,9 @@ $ sudo service tomcat restart
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h2&gt;More (meta)data sources&lt;/h2&gt;
+&lt;h2 id="more-metadata-sources"&gt;More (meta)data sources&lt;/h2&gt;
 &lt;p&gt;In order to see how Atlas can be expanded with more sources, we will add a connector to &lt;a href="https://spark.apache.org/"&gt;Apache Spark&lt;/a&gt; and use it to track the lineage of both standard batch processes and stream processes with &lt;a href="https://kafka.apache.org/"&gt;Apache Kafka&lt;/a&gt; as a source. As usual, since the focus of the article is not on any of the two sources, the easiest way to get started with them will be used.&lt;/p&gt;
-&lt;h4&gt;Preparation&lt;/h4&gt;
+&lt;h4 id="preparation"&gt;Preparation&lt;/h4&gt;
 &lt;p&gt;Let's first of all install Spark. We could use the previously installed Apache Bigtop repository and install Spark via &lt;code&gt;yum&lt;/code&gt;, but since the connector needs at least Spark 2.3 to work, we need to &lt;a href="https://spark.apache.org/downloads.html"&gt;download it&lt;/a&gt; (choosing the package pre-built for Hadoop 2.7) and extract it to a folder of our choice, for instance &lt;code&gt;/opt/spark&lt;/code&gt;. When this is done, we need to copy the Atlas configuration file in the Spark configuration folder, for instance (if Atlas was installed in &lt;code&gt;/opt/atlas/apache-atlas-2.0.0/&lt;/code&gt;):&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ &lt;span class="nb"&gt;cd&lt;/span&gt; /opt/spark/spark-2.4.3-bin-hadoop2.7
 $ cp /opt/atlas/apache-atlas-2.0.0/conf/atlas-application.properties conf/
@@ -2137,7 +2653,7 @@ $ ./bin/atlas_start.py
 
 
 &lt;p&gt;If we open Atlas again and look into the "Search By Type" dropdown menu, we should see a few more entity types starting with &lt;code&gt;spark_&lt;/code&gt;.&lt;/p&gt;
-&lt;h4&gt;Spark batch&lt;/h4&gt;
+&lt;h4 id="spark-batch"&gt;Spark batch&lt;/h4&gt;
 &lt;p&gt;As an example, let's create a test CSV file in &lt;code&gt;/tmp/test.csv&lt;/code&gt; with this content:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;person_id,name,surname
 1,John,Smith
@@ -2176,7 +2692,7 @@ $ ./bin/atlas_start.py
 &lt;p&gt;&lt;img src="images/atlas_spark_batch_2.png" alt="Atlas-Spark connector" class="img-fluid" /&gt;&lt;/p&gt;
 &lt;p&gt;(If the lineage does not change, try to click on the "Clear" button and search for Spark processes again.)&lt;/p&gt;
 &lt;p&gt;The current version of the connector considers everything that is run in a single shell execution as a single process, so the lineage will include all the steps together.&lt;/p&gt;
-&lt;h4&gt;Spark streaming&lt;/h4&gt;
+&lt;h4 id="spark-streaming"&gt;Spark streaming&lt;/h4&gt;
 &lt;p&gt;In order to track the lineage of a Spark streaming application, we will use &lt;a href="https://kafka.apache.org/"&gt;Apache Kafka&lt;/a&gt; as a stream source. Atlas already includes a Kafka server, but we will download the full package in order to create the topics more easily.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ wget http://apache.mirror.anlx.net/kafka/2.2.0/kafka_2.12-2.2.0.tgz
 $ tar zxvf kafka_2.12-2.2.0.tgz
@@ -2248,7 +2764,7 @@ $ &lt;span class="nb"&gt;cd&lt;/span&gt; kafka_2.12-2.2.0/
 &lt;p&gt;&lt;img src="images/atlas_spark_streaming_2.png" alt="Atlas-Spark connector" class="img-fluid" /&gt;&lt;/p&gt;
 &lt;p&gt;(In case an exception such as &lt;code&gt;org.I0Itec.zkclient.exception.ZkTimeoutException: Unable to connect to zookeeper server 'localhost:9026' with timeout of 200 ms&lt;/code&gt; is thrown, the value of the &lt;code&gt;atlas.kafka.zookeeper.connection.timeout.ms&lt;/code&gt; field within the &lt;code&gt;atlas-application.properties&lt;/code&gt; configuration file should be increased (e.g. set it to 2000) and Atlas be restarted.)&lt;/p&gt;
 &lt;p&gt;As we can see, lineage information from a Spark batch or streaming job can be easily sent to Atlas. Spark ML pipelines are also supported by the connector, but since this would require patching and recompiling Atlas, I decided to skip them for the time being.&lt;/p&gt;
-&lt;h2&gt;Conclusions&lt;/h2&gt;
+&lt;h2 id="conclusions"&gt;Conclusions&lt;/h2&gt;
 &lt;p&gt;In this article we have explored Atlas capabilities into more details, understanding what classifications and glossaries are and how to make use of them, then listing a few REST API endpoints along with examples, and finally trying out an external connector to add even more lineage information. Atlas is quite mature as a solution, but documentation is still a bit scattered; even if I haven't touched on everything (especially the underlying datastores and the creation of new entities), I hope to have added a little bit to the coverage of this fantastic tool.&lt;/p&gt;</content><category term="Big Data"></category></entry><entry><title>Apache Atlas</title><link href="https://apothem.blog/apache-atlas.html" rel="alternate"></link><published>2019-06-30T00:00:00+01:00</published><updated>2019-06-30T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-06-30:/apache-atlas.html</id><summary type="html">&lt;p&gt;Since I have always been interested in (and mainly working with) Semantic Web technologies and knowledge engineering, metadata is a topic I care about quite a lot. "Metadata" means "data about data", which practically speaking may include the format, the source, the purpose, the author, the creation date, and many …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Since I have always been interested in (and mainly working with) Semantic Web technologies and knowledge engineering, metadata is a topic I care about quite a lot. "Metadata" means "data about data", which practically speaking may include the format, the source, the purpose, the author, the creation date, and many other aspects of some given data. Many languages and tools have been proposed to make the inclusion and management of metadata easier, but only recently there has been a renewed interest in metadata from a Big Data perspective; in fact, given the vast number of data sources and processes that a Big Data architecture might have to manage, a scalable tool for metadata management and governance was much needed. Enter &lt;a href="https://atlas.apache.org/"&gt;Apache Atlas&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;From its homepage:&lt;/p&gt;
 &lt;blockquote&gt;
@@ -2257,10 +2773,10 @@ $ &lt;span class="nb"&gt;cd&lt;/span&gt; kafka_2.12-2.2.0/
 &lt;p&gt;In short, Atlas is a tool that adds metadata management features (descriptions, classifications, controlled vocabularies, tagging, search, and so on) to a Hadoop-based data environment (such as Hive) through bridges, hooks (for automated updates) and an easy-to-use UI.&lt;/p&gt;
 &lt;p&gt;So far, Atlas has mostly been used and deployed with the &lt;a href="https://hortonworks.com/products/data-platforms/hdp/"&gt;Hortonworks Data Platform (HDP)&lt;/a&gt; and, recently, added to AWS as an &lt;a href="https://aws.amazon.com/blogs/big-data/metadata-classification-lineage-and-discovery-using-apache-atlas-on-amazon-emr/"&gt;Amazon EMR template&lt;/a&gt;. Since I wanted to look at its latest version and install it &lt;em&gt;vanilla&lt;/em&gt;, this article will be different from the previous ones in that I will write about a more widely used project and, being it a bit lacking in documentation, my main focus will be to make it work rather than providing many examples. I will then take the chance to touch on another nice Apache project, &lt;a href="https://bigtop.apache.org/"&gt;Bigtop&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;In the following, I will use CentOS 7 as the underlying operating system. If you are not already using it, you can either install it on a &lt;a href="https://wiki.centos.org/HowTos/Virtualization/Introduction"&gt;virtual machine&lt;/a&gt; using your favourite VM tool, or use a &lt;a href="https://docs.docker.com/install/linux/docker-ce/centos/"&gt;Docker image&lt;/a&gt;.&lt;/p&gt;
-&lt;h3&gt;Installing Bigtop&lt;/h3&gt;
+&lt;h3 id="installing-bigtop"&gt;Installing Bigtop&lt;/h3&gt;
 &lt;p&gt;&lt;a href="https://bigtop.apache.org/"&gt;Apache Bigtop&lt;/a&gt; is a comprehensive Big Data package, offered both as a downloadable archive and as an RPM repository. Its intent is to make the installation and management of Big Data tools easy. Although being actively developed, it is not as up-to-date as other commercially-backed solutions; this means that Bigtop components are often a few versions behind their standalone counterparts. Since this article is about Atlas, this will not be an issue as we do not need the latest version of any of the components.&lt;/p&gt;
 &lt;p&gt;In order to use Bigtop and to have Hadoop and Hive available as CentOS RPM packages, we need to install the Bigtop repository by downloading the &lt;a href="http://apache.mirror.anlx.net/bigtop/bigtop-1.4.0/repos/centos7/bigtop.repo"&gt;bigtop.repo&lt;/a&gt; file into the &lt;code&gt;/etc/yum.repos.d/&lt;/code&gt; folder on our CentOS environment.&lt;/p&gt;
-&lt;h3&gt;Installing Hadoop and Hive&lt;/h3&gt;
+&lt;h3 id="installing-hadoop-and-hive"&gt;Installing Hadoop and Hive&lt;/h3&gt;
 &lt;p&gt;Our first step will be to have a working Hadoop environment, with Hive on top of it. With the Bigtop repository now available, we can install Hive (and the other components it depends on) with:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ yum install hive hive-metastore hive-server2
 &lt;/pre&gt;&lt;/div&gt;
@@ -2310,8 +2826,8 @@ $ hdfs dfs -chmod g+w /user/hive/warehouse
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h3&gt;Installing Atlas&lt;/h3&gt;
-&lt;h4&gt;Java environment&lt;/h4&gt;
+&lt;h3 id="installing-atlas"&gt;Installing Atlas&lt;/h3&gt;
+&lt;h4 id="java-environment"&gt;Java environment&lt;/h4&gt;
 &lt;p&gt;In order to install Atlas, let's first of all make sure that Java 8 is installed:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ java -version
 &lt;/pre&gt;&lt;/div&gt;
@@ -2329,7 +2845,7 @@ $ hdfs dfs -chmod g+w /user/hive/warehouse
 
 
 &lt;p&gt;using whatever path leads to our Java SDK (&lt;em&gt;not&lt;/em&gt; JRE) home folder. It is not needed to add this line to the &lt;code&gt;.bashrc&lt;/code&gt; file if all the steps are performed from the same terminal within the same session, although it would be still useful to do so.&lt;/p&gt;
-&lt;h4&gt;Installing Maven&lt;/h4&gt;
+&lt;h4 id="installing-maven"&gt;Installing Maven&lt;/h4&gt;
 &lt;p&gt;Let's now install Maven, which is roughly to Java what &lt;code&gt;pip&lt;/code&gt; is to Python. The version we will need in order to build Atlas correctly is at least the 3.5, and likely the CentOS 7 distribution we are using only provides an older version. If that is the case (and it can be found out by trying to run &lt;code&gt;sudo yum install maven&lt;/code&gt; and looking at the version of the package), we need to:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;
@@ -2362,7 +2878,7 @@ $ hdfs dfs -chmod g+w /user/hive/warehouse
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;If everything worked correctly, Maven 3.5 should be available in the new shell. This environment will only be needed to compile and build Atlas, after which it can be closed.&lt;/p&gt;
-&lt;h4&gt;Building Atlas&lt;/h4&gt;
+&lt;h4 id="building-atlas"&gt;Building Atlas&lt;/h4&gt;
 &lt;p&gt;Now we can download Atlas from the &lt;a href="https://www.apache.org/dyn/closer.cgi/atlas/2.0.0/apache-atlas-2.0.0-sources.tar.gz"&gt;download page&lt;/a&gt; and decompress it in a folder of our choice:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ tar zxvf apache-atlas-2.0.0-sources.tar.gz
 $ &lt;span class="nb"&gt;cd&lt;/span&gt; apache-atlas-sources-2.0.0
@@ -2396,7 +2912,7 @@ $ &lt;span class="nb"&gt;cd&lt;/span&gt; apache-atlas-2.0.0
 
 
 &lt;p&gt;and start exploring the tool.&lt;/p&gt;
-&lt;h4&gt;Installing the Hive hook&lt;/h4&gt;
+&lt;h4 id="installing-the-hive-hook"&gt;Installing the Hive hook&lt;/h4&gt;
 &lt;p&gt;Now that Atlas is up and running, we need to let Atlas "know" about Hive metadata and listen for changes. First of all, let's make the Hive hook available to Atlas:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ tar zxvf ../apache-atlas-sources-2.0.0/distro/target/apache-atlas-2.0.0-hive-hook.tar.gz
 $ mv apache-atlas-hive-hook-2.0.0/* .
@@ -2434,7 +2950,7 @@ $ cp ../apache-atlas-sources-2.0.0/webapp/target/atlas-webapp-2.0.0/WEB-INF/lib/
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h3&gt;Hive-Atlas connection&lt;/h3&gt;
+&lt;h3 id="hive-atlas-connection"&gt;Hive-Atlas connection&lt;/h3&gt;
 &lt;p&gt;We are now ready to check that Hive can actually send information to Atlas. Let's launch the Hive CLI (with &lt;code&gt;sudo&lt;/code&gt; if the Derby DB was initialized as root):&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ hive
 &lt;/pre&gt;&lt;/div&gt;
@@ -2504,14 +3020,14 @@ Time taken: 9.918 seconds, Fetched: 3 row(s)
 &lt;p&gt;and their lineage:&lt;/p&gt;
 &lt;p&gt;&lt;img src="images/atlas_lineage.png" alt="Atlas - Lineage" class="img-fluid" /&gt;&lt;/p&gt;
 &lt;p&gt;which we will expand upon in another article.&lt;/p&gt;
-&lt;h3&gt;Conclusions&lt;/h3&gt;
+&lt;h3 id="conclusions"&gt;Conclusions&lt;/h3&gt;
 &lt;p&gt;In this article we saw how to install Apache Atlas from scratch (a not-so-straightforward process) and how to configure Hive hooks in order to automatically send changes in the Hive metastore to Atlas. In another article we will look a bit deeper into Atlas capabilities and we will see how to configure more data sources.&lt;/p&gt;</content><category term="Big Data"></category></entry><entry><title>Apache MetaModel</title><link href="https://apothem.blog/apache-metamodel.html" rel="alternate"></link><published>2019-05-31T00:00:00+01:00</published><updated>2019-05-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-05-31:/apache-metamodel.html</id><summary type="html">&lt;p&gt;It's a few years now since I've got the "&lt;a href="https://martinfowler.com/bliki/PolyglotPersistence.html"&gt;polyglot persistence&lt;/a&gt;" bug, first out of interest, then out of necessity. Given the abundance of data models and storage technologies available today, it is crucial to be aware of the strengths and weaknesses of each solution; furthermore, more often than not …&lt;/p&gt;</summary><content type="html">&lt;p&gt;It's a few years now since I've got the "&lt;a href="https://martinfowler.com/bliki/PolyglotPersistence.html"&gt;polyglot persistence&lt;/a&gt;" bug, first out of interest, then out of necessity. Given the abundance of data models and storage technologies available today, it is crucial to be aware of the strengths and weaknesses of each solution; furthermore, more often than not, an architecture that integrates several types of solutions is desirable or needed.&lt;/p&gt;
 &lt;p&gt;Leaving architectural questions aside, the main question in this polyglot scenario is: how to read and interpret data from disparate data sources in a reliable and uniform fashion? Is it better to create a data lake out of all the sources, or to take a federated approach where every query is dispatched to its appropriate database? The Apache project we will work with today, &lt;a href="https://metamodel.apache.org/"&gt;MetaModel&lt;/a&gt;, aims at providing tools to deal with such challenges.&lt;/p&gt;
-&lt;h3&gt;Main concepts&lt;/h3&gt;
+&lt;h3 id="main-concepts"&gt;Main concepts&lt;/h3&gt;
 &lt;p&gt;Apache MetaModel provides &lt;em&gt;"a common interface for discovery, exploration of metadata and querying of different types of data sources"&lt;/em&gt;, which means that, through the use of concepts such as &lt;em&gt;datasets&lt;/em&gt;, &lt;em&gt;tables&lt;/em&gt;, and &lt;em&gt;columns&lt;/em&gt;, it exposes a basic abstraction common to all the data sources it can connect to; such abstract data model can then be queried using SQL as an "interlanguage". It is important to note that, as stated on the website, &lt;em&gt;"MetaModel &lt;em&gt;isn't&lt;/em&gt; a data mapping framework"&lt;/em&gt;; in other words its main intended usage is not to integrate different terminologies within the same domain, but rather to make it easy to add new datasources and to maximize the usage of metadata.&lt;/p&gt;
 &lt;p&gt;MetaModel is not the only library to provide tools for data integration. A similar approach is offered by other Apache projects such as &lt;a href="https://spark.apache.org/"&gt;Spark&lt;/a&gt; or &lt;a href="https://drill.apache.org/"&gt;Drill&lt;/a&gt;, but MetaModel might be better suited than such Big Data tools in scenarios where the main challenge is the diversity in the data and the schema variability rather than the scale; it can be plugged into an existing project with no additional setup and it offers many convenience methods to start using data sources (including plain CSV, JSON and XML files!) right away. Now let's see how to include MetaModel in a project, along with a few examples.&lt;/p&gt;
 &lt;p&gt;(Note: in some sections of this article I will make use of Docker for convenience. If you don't want to use Docker at the moment, you can just skip those sections; otherwise, make sure to &lt;a href="https://docs.docker.com/install/"&gt;install it&lt;/a&gt; in order to follow.)&lt;/p&gt;
-&lt;h3&gt;Setup&lt;/h3&gt;
+&lt;h3 id="setup"&gt;Setup&lt;/h3&gt;
 &lt;p&gt;The best way to get started with MetaModel is to include it as a Maven dependency. If you use an IDE such as Eclipse or IntelliJ, all you need to do is to create a new &lt;code&gt;apache-metamodel-example&lt;/code&gt; Maven project; otherwise, you can have a look &lt;a href="https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html"&gt;here&lt;/a&gt; to get an idea of how to install and work with Maven. In any case, as usual you will find a fully working project on the &lt;a href="https://github.com/nvitucci/apothem-resources"&gt;associated repository&lt;/a&gt; under the &lt;code&gt;apache-metamodel&lt;/code&gt; folder.&lt;/p&gt;
 &lt;p&gt;The content of the &lt;code&gt;pom.xml&lt;/code&gt; file should look like the following:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="cp"&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot;?&amp;gt;&lt;/span&gt;
@@ -2555,9 +3071,9 @@ Time taken: 9.918 seconds, Fetched: 3 row(s)
 
 
 &lt;p&gt;If you don't get any errors in the imports, the project is set up correctly.&lt;/p&gt;
-&lt;h3&gt;Examples&lt;/h3&gt;
+&lt;h3 id="examples"&gt;Examples&lt;/h3&gt;
 &lt;p&gt;We can now start to add a few different data sources to explore MetaModel's capabilities.&lt;/p&gt;
-&lt;h4&gt;CSV files&lt;/h4&gt;
+&lt;h4 id="csv-files"&gt;CSV files&lt;/h4&gt;
 &lt;p&gt;Let's start with a simple CSV file. We can manually create an &lt;code&gt;example.csv&lt;/code&gt; file under &lt;code&gt;/tmp&lt;/code&gt; with the following content:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;project,language,completed
 Project1,Java,true
@@ -2625,7 +3141,7 @@ Project3,Python,true
 
 
 &lt;p&gt;If we run again the previous query, we'll see that the file has been updated and &lt;code&gt;Project2&lt;/code&gt; is no longer listed, while &lt;code&gt;Project4&lt;/code&gt; is. Neat!&lt;/p&gt;
-&lt;h4&gt;XLSX files&lt;/h4&gt;
+&lt;h4 id="xlsx-files"&gt;XLSX files&lt;/h4&gt;
 &lt;p&gt;Now let's look at a slightly more complex example. Spreadsheets can contain more than one table, which makes them closer to a relational database; MetaModel can use XLSX (&lt;a href="https://en.wikipedia.org/wiki/Office_Open_XML"&gt;Office Open XML&lt;/a&gt; Workbook) files, which can be read and saved with open source tools such as LibreOffice and OpenOffice. You can find an example file on the repo, or create your own one. All we need to do is to add a method such as this one:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;processSpreadsheet&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;filename&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
     &lt;span class="n"&gt;DataContext&lt;/span&gt; &lt;span class="n"&gt;dataContext&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;DataContextFactory&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;createExcelDataContext&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;File&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;filename&lt;/span&gt;&lt;span class="o"&gt;));&lt;/span&gt;
@@ -2661,7 +3177,7 @@ Project3,Python,true
 
 
 &lt;p&gt;and the output will show the selected columns from the joined table.&lt;/p&gt;
-&lt;h4&gt;JSON files&lt;/h4&gt;
+&lt;h4 id="json-files"&gt;JSON files&lt;/h4&gt;
 &lt;p&gt;So far we have looked at tabular data, but what if we have data structured in a different format such as JSON? We may need to make some compromise between the expressivity of a non-relational model and the ease of use of a relational model, so in some cases we will need to "flatten out" some internal fields. Given instead a simple (and quite common) case, where the file is an array containing objects with the same fields like the following:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;
     &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="nt"&gt;&amp;quot;id&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nt"&gt;&amp;quot;value&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt;
@@ -2690,7 +3206,7 @@ Project3,Python,true
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h4&gt;Databases&lt;/h4&gt;
+&lt;h4 id="databases"&gt;Databases&lt;/h4&gt;
 &lt;p&gt;By now we have understood how to "enhance" static files with querying capabilities, but what if we want to connect to a real datastore such as SQLite, PostgreSQL or MongoDB?&lt;/p&gt;
 &lt;p&gt;MetaModel provides connectors for a wide variety of databases, including a generic JDBC connector and a specific connector for MongoDB, which support schema creation and inserts/updates as well. Let's see an example with MongoDB:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;connectToMongo&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
@@ -2742,7 +3258,7 @@ $ docker run -p &lt;span class="m"&gt;27017&lt;/span&gt;:27017 mongo
 
 &lt;p&gt;If this is not an option, MongoDB can be installed manually following the instructions &lt;a href="https://www.mongodb.com/download-center/community"&gt;here&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Other data sources can be connected to and used in a similar fashion.&lt;/p&gt;
-&lt;h3&gt;Apache Membrane&lt;/h3&gt;
+&lt;h3 id="apache-membrane"&gt;Apache Membrane&lt;/h3&gt;
 &lt;p&gt;A fantastic and little known addition to MetaModel is its subproject &lt;a href="https://cwiki.apache.org/confluence/display/METAMODEL/Membrane"&gt;Membrane&lt;/a&gt;. Membrane is essentially a &lt;a href="https://en.wikipedia.org/wiki/Representational_state_transfer"&gt;RESTful&lt;/a&gt; Web service that can be used to manage and query different data sources &lt;em&gt;live&lt;/em&gt; by adding them to &lt;em&gt;"tenants"&lt;/em&gt; (which are basically independent contexts, each with its own connections to any number of data sources).&lt;/p&gt;
 &lt;p&gt;In order to run Membrane, we should clone the repository and build it:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ git clone https://github.com/apache/metamodel-membrane
@@ -2816,13 +3332,13 @@ $ docker run -p &lt;span class="m"&gt;8000&lt;/span&gt;:80 -e &lt;span class="nv
 
 
 &lt;p&gt;to get the whole content of the example CSV file. (Here, &lt;code&gt;-G&lt;/code&gt; and &lt;code&gt;--data-urlencode&lt;/code&gt; are used in order to URL-encode the &lt;code&gt;sql&lt;/code&gt; parameter and still send it as a &lt;code&gt;GET&lt;/code&gt; request.)&lt;/p&gt;
-&lt;h3&gt;Conclusions&lt;/h3&gt;
+&lt;h3 id="conclusions"&gt;Conclusions&lt;/h3&gt;
 &lt;p&gt;MetaModel is an easy-to-use and extendable tool that makes it easier to integrate multiple data sources programmatically (even at runtime, with its subproject Membrane). I believe it is worth exploring further since it can simplify what is usually a chore, although most likely it cannot easily scale.&lt;/p&gt;
 &lt;p&gt;Just a note of caution: since the project is at a very early stage, there are no strict security measures and the Membrane API could expose information that should not be exposed. Take this into account before releasing anything!&lt;/p&gt;</content><category term="Big Data"></category><category term="library"></category><category term="database"></category></entry><entry><title>Apache Daffodil</title><link href="https://apothem.blog/apache-daffodil.html" rel="alternate"></link><published>2019-04-07T00:00:00+01:00</published><updated>2019-04-07T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2019-04-07:/apache-daffodil.html</id><summary type="html">&lt;p&gt;Let's start the blog with &lt;a href="https://daffodil.apache.org"&gt;Apache Daffodil&lt;/a&gt;. Daffodil presents itself as &lt;em&gt;"an open-source implementation of the Data Format Description Language to convert between fixed format data and XML/JSON"&lt;/em&gt;; basically, by using Daffodil, one should be able to read data saved into an "obscure" format and convert them into an …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Let's start the blog with &lt;a href="https://daffodil.apache.org"&gt;Apache Daffodil&lt;/a&gt;. Daffodil presents itself as &lt;em&gt;"an open-source implementation of the Data Format Description Language to convert between fixed format data and XML/JSON"&lt;/em&gt;; basically, by using Daffodil, one should be able to read data saved into an "obscure" format and convert them into an easy-to-use format, provided that a schema of the original data format is available.&lt;/p&gt;
 &lt;p&gt;Daffodil's approach is different from using a data serialization format that includes a schema (e.g. Apache Avro or Protobuf): it is &lt;em&gt;descriptive&lt;/em&gt; rather than &lt;em&gt;prescriptive&lt;/em&gt;, meaning that it allows the data to be interpreted by using only additional information rather than additional software. Daffodil uses DFDL schemas to convert raw data into an abstract model called &lt;em&gt;infoset&lt;/em&gt;, which can be represented in a &lt;a href="https://daffodil.apache.org/infoset/"&gt;variety of formats&lt;/a&gt; including XML and JSON.&lt;/p&gt;
 &lt;p&gt;The main tasks that Daffodil can perform are &lt;em&gt;parsing&lt;/em&gt;, &lt;em&gt;unparsing&lt;/em&gt;, and &lt;em&gt;testing&lt;/em&gt; (plus a few more). Parsing is the task of converting data into one or more infosets, while unparsing is the reverse task of converting an infoset into the original format; testing uses the Test Data Markup Language (TDML) to check that parsing and unparsing work correctly, either as single tasks or in a chain. In order to parse or unparse data, we need to use a schema; some publicly available schemas can be found on &lt;a href="https://github.com/DFDLSchemas"&gt;Github&lt;/a&gt;, but most likely a custom schema needs to be developed for a specific dataset.&lt;/p&gt;
 &lt;p&gt;Let's see now how the whole machinery works. In the following I will assume that you are using a Linux environment and that you are starting from scratch. You should be able to follow the same steps on MacOS, while if you are using Windows you might need to perform some of the steps manually or to write some additional code (for instance, some Java or Python code to preprocess the files); as an alternative, you can just use the &lt;a href="https://github.com/nvitucci/apothem-resources"&gt;associated repo&lt;/a&gt; where you will find all the files you need.&lt;/p&gt;
-&lt;h3&gt;Example data&lt;/h3&gt;
+&lt;h3 id="example-data"&gt;Example data&lt;/h3&gt;
 &lt;p&gt;Since I am a sort of astronomy geek, I used the &lt;a href="http://tdc-www.harvard.edu/catalogs/bsc5.html"&gt;Bright Star Catalogue&lt;/a&gt; as an example data source. The BSC is a catalog of more than 9,000 objects visible to the naked eye, delivered as a compressed fixed-length format file with many fields of different types (see the section &lt;em&gt;"Byte-by-byte Description of file: catalog"&lt;/em&gt; of the &lt;a href="http://tdc-www.harvard.edu/catalogs/bsc5.readme"&gt;bsc5.readme&lt;/a&gt; file). Since it does not use separators, we cannot parse it as a CSV-like file; we need to parse it in a different way. Let's &lt;a href="http://tdc-www.harvard.edu/catalogs/bsc5.dat.gz"&gt;download&lt;/a&gt; and decompress it:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ wget -q http://tdc-www.harvard.edu/catalogs/bsc5.dat.gz
 $ gunzip bsc5.dat.gz
@@ -2855,7 +3371,7 @@ $ gunzip bsc5.dat.gz
 
 
 &lt;p&gt;Now we can continue with the DFDL schema definition.&lt;/p&gt;
-&lt;h3&gt;DFDL schema&lt;/h3&gt;
+&lt;h3 id="dfdl-schema"&gt;DFDL schema&lt;/h3&gt;
 &lt;p&gt;A basic DFDL schema should look like the following:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="cp"&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot;?&amp;gt;&lt;/span&gt;
 &lt;span class="nt"&gt;&amp;lt;xs:schema&lt;/span&gt; &lt;span class="na"&gt;xmlns:xs=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://www.w3.org/2001/XMLSchema&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;xmlns:fn=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://www.w3.org/2005/xpath-functions&amp;quot;&lt;/span&gt;
@@ -2883,7 +3399,7 @@ $ gunzip bsc5.dat.gz
 &lt;li&gt;an element that represents the data being interpreted, along with its type and some DFDL properties.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Let's create a &lt;code&gt;v1&lt;/code&gt; folder and write this XML content into &lt;code&gt;v1/bsc.dfdl.xsd&lt;/code&gt;.&lt;/p&gt;
-&lt;h3&gt;Parsing&lt;/h3&gt;
+&lt;h3 id="parsing"&gt;Parsing&lt;/h3&gt;
 &lt;p&gt;In order to try and parse our sample data using this schema, we need to download the Apache Daffodil binaries from the &lt;a href="https://daffodil.apache.org/releases/"&gt;Daffodil releases page&lt;/a&gt;; at the time of writing, the most recent version is the &lt;a href="https://www.apache.org/dyn/closer.lua/incubator/daffodil/2.3.0/bin/apache-daffodil-2.3.0-incubating-bin.tgz"&gt;2.3.0&lt;/a&gt;. Let's decompress the .tgz file into our current folder and run the following command:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ apache-daffodil-2.3.0-incubating-bin/bin/daffodil parse -s v1/bsc.dfdl.xsd bsc5_padded_sample.dat
 &amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot; ?&amp;gt;
@@ -2977,7 +3493,7 @@ $ gunzip bsc5.dat.gz
 
 
 &lt;p&gt;We are now ready to try Daffodil's unparsing capabilities.&lt;/p&gt;
-&lt;h3&gt;Unparsing&lt;/h3&gt;
+&lt;h3 id="unparsing"&gt;Unparsing&lt;/h3&gt;
 &lt;p&gt;Let's run the unparser on the infoset:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ apache-daffodil-2.3.0-incubating-bin/bin/daffodil unparse -s v3/bsc.dfdl.xsd v3/bsc5_padded_sample.xml
    1          BD+44 4550      3 36042          46           000001.1+444022000509.9+451345114.44-16.88 6.70  +0.07 +0.08         A1Vn               -0.012-0.018      -018      195  4.2  21.6AC   3 
@@ -2992,7 +3508,7 @@ $ diff -s bsc5_padded_sample.dat v3/bsc5_padded_sample_unparsed.dat
 
 
 &lt;p&gt;The &lt;code&gt;diff&lt;/code&gt; command reports that the two files are identical, which means that we successfully reconstructed the source file from the derived infoset; now, if we add a new record using the schema we created and then we unparse the infoset, we will get as an output an updated file in the original format. This doesn't mean, of course, that the updated file will be valid; we have been pretty shallow in defining the schema, so all we can be sure about is that the new file will have the same structure as the original file.&lt;/p&gt;
-&lt;h3&gt;Testing&lt;/h3&gt;
+&lt;h3 id="testing"&gt;Testing&lt;/h3&gt;
 &lt;p&gt;Daffodil provides a way to check that not only parsing and unparsing work as separate tasks, but also that a sequence of parsing and unparsing leave the original file unchanged; this is done by defining test cases using the Test Data Markup Language (&lt;a href="https://daffodil.apache.org/tdml/"&gt;TDML&lt;/a&gt;). In order to replicate the &lt;code&gt;diff&lt;/code&gt; test, we can create the &lt;code&gt;bsc.tdml&lt;/code&gt; file in the &lt;code&gt;v3&lt;/code&gt; folder as follows:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="cp"&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot;?&amp;gt;&lt;/span&gt;
 &lt;span class="nt"&gt;&amp;lt;testSuite&lt;/span&gt; &lt;span class="na"&gt;suiteName=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Namespaces&amp;quot;&lt;/span&gt;
@@ -3024,7 +3540,7 @@ Total: 1, Pass: 1, Fail: 0, Not Found: 0
 
 
 &lt;p&gt;We can see that the "one-pass" chain (i.e. a chain of parsing the data, unparsing the result, and comparing the original data with the unparsed data) is successful, although we have "cheated" a little since we created the test infoset via a parsing task rather than manually. Anyway, this is a useful and quick way to test that the schema we are developing actually behaves as we expect in both directions.&lt;/p&gt;
-&lt;h3&gt;Improving the schema&lt;/h3&gt;
+&lt;h3 id="improving-the-schema"&gt;Improving the schema&lt;/h3&gt;
 &lt;p&gt;At this point we realize that we converted our fields to strings, but we haven't really added much. This may be all we need to feed the data into a pipeline for further cleaning and processing, but we can actually make the schema more useful. We could start with trimming the strings so that they can be used straight away; we can add some properties to the &lt;code&gt;dfdl:format&lt;/code&gt; element:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;dfdl:format&lt;/span&gt; &lt;span class="na"&gt;ref=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;ex:GeneralFormat&amp;quot;&lt;/span&gt;
   &lt;span class="na"&gt;textStringPadCharacter=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%SP;&amp;quot;&lt;/span&gt;
@@ -3101,7 +3617,7 @@ Total: 1, Pass: 1, Fail: 0, Not Found: 0
 
 
 &lt;p&gt;You can find the updated schema in the &lt;code&gt;v7&lt;/code&gt; folder of the associated repository.&lt;/p&gt;
-&lt;h3&gt;Using a different infoset representation&lt;/h3&gt;
+&lt;h3 id="using-a-different-infoset-representation"&gt;Using a different infoset representation&lt;/h3&gt;
 &lt;p&gt;So far we have parsed the data into XML, but what if we prefer JSON instead? We just need to add a &lt;code&gt;-I json&lt;/code&gt; in the parse/unparse command as follows:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ apache-daffodil-2.3.0-incubating-bin/bin/daffodil parse -s v3/bsc.dfdl.xsd -I json bsc5_padded_sample.dat
 {
@@ -3128,6 +3644,6 @@ Total: 1, Pass: 1, Fail: 0, Not Found: 0
 
 
 &lt;p&gt;We can save the output to a .json file and process it further. JSON is not the only alternative: &lt;a href="https://daffodil.apache.org/infoset/"&gt;other representations&lt;/a&gt; are available as well.&lt;/p&gt;
-&lt;h3&gt;Conclusions&lt;/h3&gt;
+&lt;h3 id="conclusions"&gt;Conclusions&lt;/h3&gt;
 &lt;p&gt;We have touched on the main advantages of using Apache Daffodil and, without going too much into the details of DFDL, we created a schema to successfully parse and unparse scientific data. We only used the standalone binaries, but Daffodil is available also as a Java/Scala library and as an &lt;a href="https://nifi.apache.org/"&gt;Apache Nifi&lt;/a&gt; processor.&lt;/p&gt;
 &lt;p&gt;One thing to be aware of is the size of the source data: the binaries by default load the whole dataset in memory before starting to process it, which might result in a huge memory footprint or heap space errors. A possible solution in this case would be to split the source file into multiple files, which might be easier when the source is in a text format and harder if it is in a binary format; if this is not practical, it might be worth looking into the streaming capabilities of the Daffodil API.&lt;/p&gt;</content><category term="Big Data"></category><category term="library"></category><category term="XML"></category><category term="JSON"></category></entry></feed>

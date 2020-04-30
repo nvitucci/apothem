@@ -75,7 +75,7 @@
     </header>
     <div class="content">
       <p>In the <a href="https://apothem.blog/apache-carbondata.html">previous article</a> we have seen many exciting features that CarbonData offers, but we haven't explored them all; in this article we will try out the streaming capabilities and we will delve a bit deeper into the data layout, looking at concept like compaction and partitioning, and the way the different files are managed.</p>
-<h2>Streaming</h2>
+<h2 id="streaming">Streaming</h2>
 <p>Another feature that sets CarbonData apart from other Hadoop data formats is the support for streaming data. Rather than writing many small files or waiting until a larger file can be written, CarbonData uses a slightly different format where single rows can be added as they arrive; such files can later be converted to the standard columnar format (via compaction) in order to support all the features we have already discussed. Every task, including the creation of the sink table and the management of the streaming job, can be performed using SQL commands. Let's see how.</p>
 <p>First of all, we need to create a streaming source. An easy way to do this is to use <a href="https://en.wikipedia.org/wiki/Netcat">netcat</a>, a Linux utility that, among many other things, can be used to send data through a socket, thus simulating a process streaming data over the network. We need to open a new terminal (or to use another utility like <a href="https://en.wikipedia.org/wiki/GNU_Screen">screen</a> or <a href="https://en.wikipedia.org/wiki/Tmux">tmux</a>) in order to keep <em>netcat</em> running while we use the Spark shell; on the new terminal we need to run the following command:</p>
 <div class="highlight"><pre><span></span>$ nc -lk <span class="m">9099</span>
@@ -184,7 +184,7 @@
 
 
 <p>The format of the data has actually changed, and it cannot be changed back to <code>ROW_V1</code>. We'll see compaction into more detail in the next section.</p>
-<h2>Compaction</h2>
+<h2 id="compaction">Compaction</h2>
 <p>Whenever we load data into CarbonData, a new folder called <em>segment</em> is created; this makes dealing with transactions easier and helps maintaining consistency. In the long run, anyway, the growing number of segments degrades the query performance; <em>compaction</em> can then be used to merge multiple segments into one.</p>
 <p>CarbonData supports two main types of compaction besides the <code>CLOSE_STREAMING</code> that we've seen in the previous section, namely <em>minor</em> (based on the number of new segments) and <em>major</em> (based on the size of the new segments). We'll see how they work using another table from the TPCH benchmark.</p>
 <p>Let's create the <code>order</code> table:</p>
@@ -417,7 +417,7 @@
 
 
 <p>By default (parameter <code>carbon.major.compaction.size</code>) the compaction will only take place on the segments whose sum of the sizes is below 1024 MB. You can try this out as well by loading data once more and running the SQL command.</p>
-<h3>Update and Delete operations</h3>
+<h3 id="update-and-delete-operations">Update and Delete operations</h3>
 <p>There is another type of compaction, called <em>horizontal compaction</em>, that takes place on delta files created by Update and Delete operations. Whenever an Update is performed, two files are created:</p>
 <ul>
 <li>an <em>Insert Delta</em> file which stores newly added rows in the CarbonData columnar format;</li>
@@ -504,7 +504,7 @@
 <li><code>carbon.horizontal.update.compaction.threshold</code>: number of <em>Update delta</em> files above which the compaction will take place (default is 1);</li>
 <li><code>carbon.horizontal.delete.compaction.threshold</code>: number of <em>Delete delta</em> files above which the compaction will take place (default is 1).</li>
 </ul>
-<h2>Partitioning</h2>
+<h2 id="partitioning">Partitioning</h2>
 <p>Partitioning is a data organization strategy used to increase performance and isolation. CarbonData offers two kinds of partitions, a "standard" one (similar to <a href="https://spark.apache.org/docs/2.3.4/sql-programming-guide.html#partition-discovery">Spark</a> and Hive partitions) and a "CarbonData" one (that supports several partitioning schemes such as ranges, hashes, and lists, but no Update/Delete); since the latter is still experimental, we will only focus on the former.</p>
 <p>A partitioned table can be created with the usual Spark/Hive <code>PARTITIONED BY</code> syntax:</p>
 <div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">carbon</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">s&quot;&quot;&quot;</span>
@@ -587,7 +587,7 @@
 
 
 <p>where we can see that, instead of the usual <code>Fact/Part0/Segment_0</code> structure, we have one directory per partition. With this structure, Update Delta and Delete Delta files are created within each folder. Whether partitions can make queries more efficient as opposed to MDKs and dictionaries will likely depend on the use case.</p>
-<h2>Conclusions</h2>
+<h2 id="conclusions">Conclusions</h2>
 <p>As we have been digging deeper into the internals of CarbonData, we have discovered that there are not only many interesting features to cover different use cases, but also many tools to increase the performance. I would suggest to take a look at the list of <a href="https://carbondata.apache.org/configuration-parameters.html">configuration parameters</a> as well as at the list of <a href="https://carbondata.apache.org/usecases.html">use cases</a>, since they can provide some guidance in the (daunting) task getting the better out of CarbonData. Have fun!</p>
     </div>
   </article>

@@ -81,7 +81,7 @@
 
 <p>In short, Hivemall is a collection of Hive UDFs (User-Defined Functions) to create, train, and evaluate machine learning models using any of the supported engines. Since Hive provides a SQL-like query language, Hivemall is basically <strong>machine learning in SQL</strong>; it is then well suited to users who are already fluent in SQL or who need an additional abstraction layer on top of machine learning libraries.</p>
 <p>We will explore some of the many capabilities that Hivemall provides by tackling one of the most common machine learning tasks: classification. Let's start by setting up the environment.</p>
-<h3>Setting up Hivemall and Spark</h3>
+<h3 id="setting-up-hivemall-and-spark">Setting up Hivemall and Spark</h3>
 <p>Like for other Java-based Apache projects, we will need to install git, Java 8, and Maven 3.5+ (check <a href="https://apothem.blog/apache-atlas.html">the article on Apache Atlas</a> if you need a detailed walkthrough). Once we have installed everything, we need to build Hivemall:</p>
 <div class="highlight"><pre><span></span>$ git clone https://github.com/apache/incubator-hivemall.git
 $ <span class="nb">cd</span> incubator-hivemall
@@ -116,7 +116,7 @@ $ bin/build.sh
 
 
 <p>We will likely see some errors because some Hivemall functions already exist in Spark 2.4.4, but there is no need to worry because the Spark functions will not be overridden. We are now ready to start using Hivemall!</p>
-<h3>Classification</h3>
+<h3 id="classification">Classification</h3>
 <p><a href="https://en.wikipedia.org/wiki/Classification_(machine_learning)">Classification</a> is the task of assigning a category to an <em>observation</em> based on the value of its <em>features</em>. For example, we may have some emails that we want to classify as "spam" or "non-spam" based on the presence of one or more keywords; this is called <em>binary classification</em> because we only have two categories, or one category that an instance belongs to or not. Another example, which is a sort of "Hello world" for machine learning and classification, is the categorization of a specific variant of the <a href="https://en.wikipedia.org/wiki/Iris_(plant)">iris</a> plant depending on features such as the length and width of its sepals and petals; this is called <em>multiclass classification</em> because there are more than two different classes. We will use the <a href="https://archive.ics.uci.edu/ml/datasets/Iris">Iris Data Set</a> in this section.</p>
 <p>The algorithm we will use is called <a href="https://xgboost.readthedocs.io/en/latest/">XGBoost</a>. There are several reasons behind this choice:</p>
 <ul>
@@ -126,7 +126,7 @@ $ bin/build.sh
 <li>it is now supported in Hivemall starting with version 0.6.0 (the supported XGBoost version being 0.90).</li>
 </ul>
 <p>If you are interested in the theoretical and technical details, do take a look at the excellent documentation <a href="https://xgboost.readthedocs.io/en/latest/tutorials/model.html">here</a>. For our purposes, we need to keep in mind just one thing: simplifying a lot, XGBoost will basically give us a group of decision trees.</p>
-<h4>Data preprocessing</h4>
+<h4 id="data-preprocessing">Data preprocessing</h4>
 <p>First of all, we need to download our dataset from <a href="https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data">here</a> and put it alongside the previous directories. The data will look like the following:</p>
 <div class="highlight"><pre><span></span>5.1,3.5,1.4,0.2,Iris-setosa
 4.9,3.0,1.4,0.2,Iris-setosa
@@ -216,7 +216,7 @@ $ bin/build.sh
 
 
 <p>The table is ready to be used for training.</p>
-<h4>Training</h4>
+<h4 id="training">Training</h4>
 <p>We need to add one more function first (which should be included in the <code>define-all.spark</code> file now, but are not at the moment):</p>
 <div class="highlight"><pre><span></span><span class="n">scala</span><span class="o">&gt;</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;CREATE TEMPORARY FUNCTION train_xgboost AS &#39;hivemall.xgboost.XGBoostTrainUDTF&#39;&quot;</span><span class="o">)</span>
 </pre></div>
@@ -320,7 +320,7 @@ Caused by: ml.dmlc.xgboost4j.java.XGBoostError: [01:14:14] /home/travis/build/my
 </pre></div>
 
 
-<h4>Prediction</h4>
+<h4 id="prediction">Prediction</h4>
 <p>Now that the model is ready, we can use it to classify some data. It is important to note that the way Hivemall makes XGBoost parallel is somewhat different from the parallel implementation of the official library; in fact, instead of using the <a href="https://xgboost.readthedocs.io/en/latest/jvm/xgboost4j_spark_tutorial.html">AllReduce paradigm</a> where all the parallel workers have to communicate, Hivemall uses a <a href="https://scikit-learn.org/stable/modules/ensemble.html#voting-classifier">voting classifier</a> on top of many <em>independent</em> XGBoost learners. In this way every worker can train its own local model based on its partition of data (possibly overlapping with other partitions if the <code>amplify</code> or <code>rand_amplify</code> functions are used), and the actual prediction happens via a majority vote (if the objective function is <code>softmax</code>, since its output is a class label) or by averaging (if the objective function is <code>softprob</code>, since its output is a list of probabilities). We will see both examples.</p>
 <p>Like we did for training, we need first of all to include a few more functions:</p>
 <div class="highlight"><pre><span></span><span class="n">scala</span><span class="o">&gt;</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;CREATE TEMPORARY FUNCTION xgboost_predict_one AS &#39;hivemall.xgboost.XGBoostPredictOneUDTF&#39;&quot;</span><span class="o">)</span>
@@ -398,7 +398,7 @@ Caused by: ml.dmlc.xgboost4j.java.XGBoostError: [01:14:14] /home/travis/build/my
 </pre></div>
 
 
-<h4>Evaluation</h4>
+<h4 id="evaluation">Evaluation</h4>
 <p>It is time now to evaluate our models. Since we performed our predictions on the same dataset that we used for training, we would expect the models to perform really good. Let's start with the <code>softmax</code> model:</p>
 <div class="highlight"><pre><span></span><span class="n">scala</span><span class="o">&gt;</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;&quot;&quot;</span>
 <span class="s">    SELECT sum(if(actual=predicted, 1.0, 0.0))/count(1)</span>
@@ -409,7 +409,7 @@ Caused by: ml.dmlc.xgboost4j.java.XGBoostError: [01:14:14] /home/travis/build/my
 
 
 <p>Here we are simply counting all the instances where the actual value corresponds to the predicted value (using the <code>rowid</code> column to join the training dataset and the predicted dataset), then we divide that number by the number of all the instances to get a ratio. As expected, the ratio is really high (even though not exactly 1.0); we can also run exactly the same query by just swapping <code>iris_pred_softmax</code> with <code>iris_pred_softprob</code> to evaluate the second model. If we do not find very close values, the reason can be parallelization (since each partition calculates its own model); in order to get very close results we would need to reduce the <code>spark.sql.shuffle.partitions</code> value to one, effectively making the whole computation happen in only one partition by creating a single XGBoost model, which will contain the full dataset (obviously not recommended for large datasets).</p>
-<h3>Conclusions</h3>
+<h3 id="conclusions">Conclusions</h3>
 <p>We have seen how Hivemall makes the XGBoost algorithm (and the classification task in general) very easy to implement and to understand. Of course there is much more to it, for instance:</p>
 <ul>
 <li>XGBoost can be configured with many different parameters, so it's worth reading its <a href="https://hivemall.incubator.apache.org/userguide/binaryclass/news20b_xgboost.html">Hivemall usage guide</a> and its <a href="https://xgboost.readthedocs.io/en/release_0.90/parameter.html">configuration docs</a>;</li>

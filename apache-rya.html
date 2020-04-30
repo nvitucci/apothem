@@ -77,15 +77,15 @@
       <p>Since I have been working with Semantic Web technologies for quite some time, I was looking forward to explore new Apache projects within the area. <a href="https://rya.incubator.apache.org/">Apache Rya</a> fit the purpose perfectly, as it is a SPARQL-enabled triplestore for Big Data, promising to scale to billions of triples across multiple nodes. If you are completely lost after this terminology, you can take a look at the <a href="https://en.wikipedia.org/wiki/Semantic_Web">Wikipedia article</a> and the <a href="https://www.w3.org/2009/Talks/0615-SanJose-tutorial-IH/Slides.pdf">W3C presentation</a> to get an idea of the subject.</p>
 <p>Rya runs on top of another Apache project, <a href="https://accumulo.apache.org/">Accumulo</a> (a distributed key/value store), and is deployed as a Web service. Since Accumulo by itself requires a fairly complex installation procedure as it is based on <a href="https://hadoop.apache.org/">Apache Hadoop</a> and <a href="https://zookeeper.apache.org/">Apache Zookeeper</a>, we will use yet another great Apache project, <a href="http://fluo.apache.org/">Apache Fluo</a> (or, more specifically, its subproject <a href="https://github.com/apache/fluo-uno">Fluo Uno</a>), to simplify the whole procedure; we will then use a well-known server, <a href="http://tomcat.apache.org/">Apache Tomcat</a>, to run it.</p>
 <p>In this article we will see how to get a single-machine Rya instance up and running and how to perform basic operations; scalability, management, and more complex operations will be covered in another article. As usual, the reference operating system will be CentOS 7 (if possible, an empty/fresh instance).</p>
-<h2>Preparing the environment</h2>
-<h3>Installing Tomcat</h3>
+<h2 id="preparing-the-environment">Preparing the environment</h2>
+<h3 id="installing-tomcat">Installing Tomcat</h3>
 <p>First of all we need to have Tomcat installed and running. On CentOS 7 it is just a matter of running the following two commands (both requiring <code>sudo</code> rights):</p>
 <div class="highlight"><pre><span></span>$ sudo yum install tomcat
 $ sudo service tomcat start
 </pre></div>
 
 
-<h3>Prerequisites for Fluo Uno</h3>
+<h3 id="prerequisites-for-fluo-uno">Prerequisites for Fluo Uno</h3>
 <p>In the following, we will download and use Fluo Uno to setup a single-machine Accumulo instance; its sibling project, <a href="https://github.com/apache/fluo-muchos">Fluo Muchos</a>, can be used instead to create a real cluster in Amazon's EC2.</p>
 <p>In order to use Fluo Uno, we need to have Java 8, <em>wget</em>, <em>maven</em>, and <em>git</em> already installed; if any of these components is missing, it can be installed with <code>sudo yum install</code>. We also need to install the <em>shasum</em> program (<strong>not</strong> the <em>sha1sum</em> or the similar ones that are likely already installed), which is contained in the <em>perl-Digest-SHA</em> package, and we might install <em>curl</em> to test Rya's API. A quick way to install all the needed packages is to run:</p>
 <div class="highlight"><pre><span></span>$ sudo yum install java wget maven git perl-Digest-SHA curl
@@ -118,7 +118,7 @@ $ sudo service tomcat start
 
 
 <p>Now, <code>ssh localhost</code> should successfully open a new shell.</p>
-<h3>Downloading and using Fluo Uno</h3>
+<h3 id="downloading-and-using-fluo-uno">Downloading and using Fluo Uno</h3>
 <p>We are now ready to clone Fluo Uno from Github:</p>
 <div class="highlight"><pre><span></span>git clone https://github.com/apache/fluo-uno.git
 </pre></div>
@@ -156,7 +156,7 @@ Setup complete.
 
 
 <p>If the output is different or some errors are displayed, try checking the <code>./install/logs</code> folder to debug.</p>
-<h2>Installing Rya</h2>
+<h2 id="installing-rya">Installing Rya</h2>
 <p>Once the environment is ready as detailed in the previous sections, we can clone Rya:</p>
 <div class="highlight"><pre><span></span>$ git clone https://github.com/apache/incubator-rya
 </pre></div>
@@ -204,7 +204,7 @@ $ sudo service tomcat restart
 
 
 <p>which should give 200 as the status code. Yay, we have a running Rya instance!</p>
-<h2>Examples</h2>
+<h2 id="examples">Examples</h2>
 <p>Let's open the SPARQL endpoint on <code>http://localhost:8080/web.rya/sparqlQuery.jsp</code>. Rya's SPARQL endpoint supports SPARQL Update, so we can insert some example triples using the following query (inspired by Rya's documentation):</p>
 <div class="highlight"><pre><span></span><span class="k">INSERT DATA</span>
 <span class="p">{</span>
@@ -321,7 +321,7 @@ $ sudo service tomcat restart
 </pre></div>
 
 
-<h2>Conclusions</h2>
+<h2 id="conclusions">Conclusions</h2>
 <p>Like other Apache projects still in incubation, Rya's documentation and examples may be still somewhat incomplete or difficult to follow. My aim was to try and streamline the installation process, and to provide a couple examples which allow a user to quickly see that everything is working correctly. A more complex setup and more interesting examples to come soon!</p>
     </div>
   </article>

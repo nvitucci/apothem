@@ -76,7 +76,7 @@
     <div class="content">
       <p>With this article I'll take a break from large Apache projects to focus again on a single, easy-to-integrate library. <a href="https://commons.apache.org/proper/commons-collections/">Apache Commons Collections</a> is part of the larger <a href="https://commons.apache.org/">Apache Commons</a> project, a fantastic collection of libraries that cover very specific domains or use cases such as <a href="https://commons.apache.org/proper/commons-csv/">CSV files processing</a>, <a href="https://commons.apache.org/proper/commons-cli/">command line arguments parsing</a>, <a href="https://commons.apache.org/proper/commons-text/">string processing</a>, and many more.</p>
 <p>The Collections component was created to add more collections and to expand on the existing Java collections' capabilities at a time when functional programming (especially in Java) was not yet widespread. Some solutions have actually been included in the most recent versions of Java itself (the <a href="https://commons.apache.org/proper/commons-collections/javadocs/api-4.4/index.html">FluentIterable</a>, for instance, has been "replaced" by Java 8's <a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html">Stream</a>), while many other still provide useful additions and good alternatives to other widespread libraries such as <a href="https://github.com/google/guava/wiki/NewCollectionTypesExplained">Guava</a>. The collection types that first brought me to Apache Commons Collections are the <code>MultiSet</code> and the <code>MultiMap</code>, also because they have a native counterpart in Python, and the <code>LRUMap</code> as a simple cache; I also found the <code>SetUtils</code> extremely useful, since they added some mathematical (and functional) foundation to operations between sets. Let's go through some examples and see!</p>
-<h3>Setting up</h3>
+<h3 id="setting-up">Setting up</h3>
 <p>The latest version of Commons Collections is 4.4, which is based on Java 8; therefore, I will use Java 8 in the following. Although there are newer Java versions, the 8 is the oldest long-term support (LTS) version and is still prevalent in the Big Data world; it makes then for a good balance between "legacy" versions and the newest versions. I will not make use of lambdas in most examples, in order to make the code more readable and all the involved types explicit.</p>
 <p>I find that the easiest way to get started with a Java library is by creating a Maven project. All the major IDEs support the creation of Maven projects, so that all you need to do is to give a name to your project and edit the <code>pom.xml</code> file to include lines like the following:</p>
 <div class="highlight"><pre><span></span><span class="nt">&lt;groupId&gt;</span>blog.apothem<span class="nt">&lt;/groupId&gt;</span>
@@ -94,11 +94,11 @@
 
 
 <p>You are then ready to build the project and start tinkering with the examples. For a very easy start, I would just create a class with a <code>main</code> method and write all the code there; otherwise, another very good approach is to make the examples as test classes by using a testing framework such as <a href="https://junit.org/junit5/">JUnit</a>, but since this would require a bit more setup and some knowledge of testing, I would leave this as an "exercise for the reader". If you just want to grab a ready project with all the examples and run it, check out the <a href="https://github.com/nvitucci/apothem-resources/tree/master/apache-commons-collections">Apothem resources repository</a>!</p>
-<h3>Collection types</h3>
+<h3 id="collection-types">Collection types</h3>
 <p>Let's now see what types of collection are available. First of all, a general remark that the project makes on its user guide: most collections are not thread-safe unless said otherwise, so they should be <code>synchronized</code> accordingly when thread safety is needed.</p>
-<h4><em>Bag</em></h4>
+<h4 id="bag"><em>Bag</em></h4>
 <p><code>Bag</code>s are collections where each element can appear many times. We will skip them because the <code>MultiSet</code> type is set to replace them (see the <a href="https://commons.apache.org/proper/commons-collections/release_4_1.html">release notes</a> of version 4.1).</p>
-<h4><em>BidiMap</em></h4>
+<h4 id="bidimap"><em>BidiMap</em></h4>
 <p>A <code>BidiMap</code> is a bidirectional map, namely a map where the key-to-value relation can be inverted, and the values effectively be used as keys in the <em>inverted map</em>. This collection type enables, among the other things, the creation of mappings between IDs as in the following example:</p>
 <div class="highlight"><pre><span></span><span class="n">BidiMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">bidiMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">DualHashBidiMap</span><span class="o">&lt;&gt;();</span>
 
@@ -198,7 +198,7 @@ Key: 3, value: &#39;string-id-3&#39;
 </li>
 </ul>
 <p>One thing to be careful about is that <code>BidiMap</code>s do not strictly check for value uniqueness, so inverting a <code>BidiMap</code> with repeated values can lead to unexpected behaviour (see a "bad BidiMap" example on the repo).</p>
-<h4><em>MultiMap</em></h4>
+<h4 id="multimap"><em>MultiMap</em></h4>
 <p>A <code>MultiMap</code> is a <code>Map</code> whose values are collections (lists or sets) of values, similar to Python's <a href="https://docs.python.org/2/library/collections.html#collections.defaultdict">defaultdict</a>. When instantiated with the default constructor, the map is initialized with a capacity of 16 and each list or set with a capacity of 3:</p>
 <div class="highlight"><pre><span></span><span class="n">ArrayListValuedHashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">multiMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayListValuedHashMap</span><span class="o">&lt;&gt;();</span>
 </pre></div>
@@ -273,7 +273,7 @@ Unique keys in the map: [skill, language]
 
 
 <p>The examples we have seen so far make use of the <code>ArrayListValuedHashMap</code> implementation, which arranges the values corresponding to each key in an <code>ArrayList</code>. The <code>HashSetValuedHashMap</code> can be used to arrange the values in <code>HashSet</code>s instead.</p>
-<h4><em>MultiSet</em></h4>
+<h4 id="multiset"><em>MultiSet</em></h4>
 <p>A <code>MultiSet</code> is a <code>Set</code> that allows for multiple occurrences of each element, keeping track of their count. It is similar to Python's <a href="https://docs.python.org/2/library/collections.html#collections.Counter">Counter</a> and can be very useful when a count of the occurrences of an object in a set is needed, for instance in text processing applications.</p>
 <p>The initialization and the insertion of elements are straightforward:</p>
 <div class="highlight"><pre><span></span><span class="n">MultiSet</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">multiSet</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMultiSet</span><span class="o">&lt;&gt;();</span>
@@ -326,7 +326,7 @@ There are 3 unique elements in the multiset
 </pre></div>
 
 
-<h4><em>CircularFifoQueue</em></h4>
+<h4 id="circularfifoqueue"><em>CircularFifoQueue</em></h4>
 <p>The <code>Queue</code> type is already present in Java, so the main addition from Commons Collection is a circular FIFO queue, a fixed size queue where the oldest elements are replaced by the newer elements when it reaches capacity. A <code>CircularFifoQueue</code> is created with the size as a parameter for the constructor:</p>
 <div class="highlight"><pre><span></span><span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
 <span class="n">CircularFifoQueue</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">queue</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CircularFifoQueue</span><span class="o">&lt;&gt;(</span><span class="n">size</span><span class="o">);</span>
@@ -387,7 +387,7 @@ There are 3 unique elements in the multiset
 
 <p>Obviously the queue is still at full capacity, but the first element <code>"A"</code> has been dropped to make room for the new element <code>"C"</code>.</p>
 <p>Besides the methods just shown, <code>CircularFifoQueue</code> has the same methods of a standard <code>Queue</code> (including <code>poll</code> and <code>remove</code> to remove and return the head of the queue, and <code>element</code> and <code>peek</code> to return the head of the queue without removing it); there is also an <code>isFull</code> method to determine whether the queue is full, which always returns <code>false</code> since a circular queue can never be full.</p>
-<h4><em>Trie</em></h4>
+<h4 id="trie"><em>Trie</em></h4>
 <p>A <code>Trie</code> implements a rather interesting data structure called <a href="https://en.wikipedia.org/wiki/Trie">trie</a> (from re<strong>trie</strong>val), which is mostly used for search using prefixes. A trie is similar to a tree with an important difference: a node of the trie does not contain the value that is being searched, but the <em>path</em> to the node does; as such, tries are very good at prefix search. The trie implementation that Commons Collections offers is called <code>PatriciaTree</code> (from the acronym PATRICIA, "Practical Algorithm to Retrieve Information Coded in Alphanumeric"), a type of compressed trie. Let's see an example.</p>
 <div class="highlight"><pre><span></span><span class="n">Trie</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">trie</span> <span class="o">=</span> <span class="k">new</span> <span class="n">PatriciaTrie</span><span class="o">&lt;&gt;();</span>
 
@@ -442,7 +442,7 @@ Keys after &#39;cart&#39;: {cart=2, cartography=5, carton=3, cartridge=4, castle
 </pre></div>
 
 
-<h4><em>LRUMap</em></h4>
+<h4 id="lrumap"><em>LRUMap</em></h4>
 <p>A <code>LRUMap</code> is basically a limited-size cache where the least recently used (LRU) elements are evicted to leave room for new elements when the cache is full. The LRU policy is quite popular in caches; the concept of "least recently used" may vary, and for instance in Commons Collections it refers to <code>get</code> and <code>put</code> operations only: if two elements are inserted one after the other and the former is retrieved once, the latter will become "least recently used". The <code>LRUMap</code> is initialized with a <code>maxSize</code> parameter:</p>
 <div class="highlight"><pre><span></span><span class="kt">int</span> <span class="n">maxSize</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
 <span class="n">LRUMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">lruMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LRUMap</span><span class="o">&lt;&gt;(</span><span class="n">maxSize</span><span class="o">);</span>
@@ -497,7 +497,7 @@ Keys after &#39;cart&#39;: {cart=2, cartography=5, carton=3, cartridge=4, castle
 
 
 <p>It's important to note that, in order to use <code>LRUMap</code> as a cache in a real multithreaded environment, we should make it thread-safe; an easy way is by wrapping it with the <code>Collections.synchronizedMap</code> method.</p>
-<h4><em>MultiKeyMap</em></h4>
+<h4 id="multikeymap"><em>MultiKeyMap</em></h4>
 <p>A <code>MultiKeyMap</code> is a <code>Map</code> where the keys are composite, such as <code>firstName</code> and <code>lastName</code> in a map that associates persons to document IDs. It can be instantiated like a standard <code>Map</code>:</p>
 <div class="highlight"><pre><span></span><span class="n">MultiKeyMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">multiKeyMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MultiKeyMap</span><span class="o">&lt;&gt;();</span>
 </pre></div>
@@ -522,7 +522,7 @@ Keys after &#39;cart&#39;: {cart=2, cartography=5, carton=3, cartridge=4, castle
 
 
 <p>This class can be very useful when implementing a structure such as a database table, as it makes it simple to use complex keys. It cannot be used, though, if a key must have components of different types.</p>
-<h3>Utils</h3>
+<h3 id="utils">Utils</h3>
 <p>Besides new or refined collection types, Commons Collections offers several utility classes. A few examples:</p>
 <ul>
 <li>
@@ -640,7 +640,7 @@ Difference: [two, three]
 <p><code>CollectionUtils</code>: generic methods on <code>Collection</code>s, including decorators to make the underlying <code>Collection</code> synchronized, unmodifiable, filtered or validated by a predicate, etc.</p>
 </li>
 </ul>
-<h3>Conclusions</h3>
+<h3 id="conclusions">Conclusions</h3>
 <p>We have seen that the Commons Collections project provides a really vast amount of collection types, utilities, and decorators to use with existing collections. The project is very easy to integrate and the documentation, although a bit lacking in examples, is covered by an extensive and detailed Javadoc. If you find yourself making use of many collections, Commons Collections can help you in many ways.</p>
     </div>
   </article>
