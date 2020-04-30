@@ -59,3 +59,16 @@ HIDE_AUTHORS = True
 
 # Description meta tag
 DESCRIPTION = 'Learning about, experimenting with, and blogging on an Apache project every month'
+
+# Customize Markdown conf
+MARKDOWN = {
+    'extension_configs': {
+        'markdown.extensions.codehilite': {'css_class': 'highlight'},
+        'markdown.extensions.extra': {},
+        'markdown.extensions.meta': {},
+        'markdown.extensions.toc': {
+          'title': 'Index:'
+        },
+    },
+    'output_format': 'html5',
+}
