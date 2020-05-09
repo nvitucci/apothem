@@ -135,12 +135,12 @@ All we need to do is to add the following triples at the end of the file:
 and replace this line:
 
     :::turtle
-    fuseki:dataset                :tdb_dataset_readwrite ;
+    fuseki:dataset :tdb_dataset_readwrite ;
 
 with the following:
 
     :::turtle
-    fuseki:dataset                :dataset ;
+    fuseki:dataset :dataset ;
 
 and then we need to restart Fuseki. (To avoid restarting Fuseki, the alternative would be to produce the configuration file first and then to add the new dataset via the HTTP interface.)
 
@@ -232,12 +232,12 @@ If we have only one named graph and we are fine with the inferenced triples be i
 and, again, replace this line:
 
     :::turtle
-    fuseki:dataset                :tdb_dataset_readwrite ;
+    fuseki:dataset :tdb_dataset_readwrite ;
 
 with the following:
 
     :::turtle
-    fuseki:dataset                :dataset ;
+    fuseki:dataset :dataset ;
 
 Basically, the example `<http://www.example.org/id/mygraph>` named graph has to be added explicitly both to the `:dataset` (via `ja:namedGraph`) and to the `:graph` underlying the `:model_inf` (via `tdb2:graphName`); this will let us query both the original named graph and the inferred model, and updates to the default graph will be reflected in the named graph.
 
@@ -312,7 +312,7 @@ Let's test this complex configuration. We will:
 
 1. create an `example-inf-multinamed` dataset, update its configuration file, and restart Fuseki;
 
-- upload the `data1.ttl` file under the `<http://www.example.org/id/mygraph>` named graph;
+- upload the `data1.ttl` file under the `<http://www.example.org/id/inf>` named graph;
 
 - run the following _g-id:a_ query (similar to the _id:a_ query but including the graph):
 
@@ -353,10 +353,10 @@ Let's test this complex configuration. We will:
 
 - load `data2.ttl` under the same `<http://www.example.org/id/mygraph>` graph and rerun both queries (to verify that no change occurs when the base named graph is updated);
 
-- load `data2.ttl` under `<http://www.example.org/id/inf>` instead, then run the _g-id:a_ query and make sure we get the following triples as a result (to verify that adding triples to a model makes inference happen right away):
+- load `data2.ttl` under `<http://www.example.org/id/inf>` instead, then run the _g-id:a_ query and make sure we get the following triples in addition (to verify that adding triples to a model makes inference happen right away):
 
         :::text
-        rdf:type ont:MySuperType id:inf
+        rdf:type ont:MySubType id:inf
         owl:sameAs id:d id:inf
 
 - run the _id:a_ query and make sure that the results are the same as before (to verify that no, or limited, inference happens in the default graph without a restart);
@@ -448,12 +448,12 @@ We will build upon the simplest configuration that includes a reasoner, so we wi
 and replace this line:
 
     :::turtle
-    fuseki:dataset                :tdb_dataset_readwrite ;
+    fuseki:dataset :tdb_dataset_readwrite ;
 
 with the following:
 
     :::turtle
-    fuseki:dataset                :text_dataset ;
+    fuseki:dataset :text_dataset ;
 
 This configuration wraps the dataset containing the inference model with a `TextDataset` so that a full-text index can be added; more specifically, it will let us search on the objects of the `rdfs:label` and `<http://www.example.org/ont#title>` predicates. The important bits to remember are:
 
@@ -488,7 +488,7 @@ which will give no result as no triples with the `ont:title` predicate have been
     id:with-title owl:sameAs id:a .
 
 
-and rerun the query. Now the result will be `	id:with-title`, and we can get more information if we run the following query instead:
+load it, and rerun the query. Now the result will be `id:with-title`, and we can get more information if we run the following query instead:
 
     :::sparql
     PREFIX ont: <http://www.example.org/ont#>
@@ -510,3 +510,7 @@ To verify that the reasoner still works, let's run the _id:a_ query again and ma
 ### Conclusions
 
 Automated reasoning is a complex topic, and we have seen how Jena and Fuseki are flexible enough to allow for advanced solutions. Sometimes this flexibility may come at the cost of clarity, but I am sure that, once the community starts discussing more and more use cases, simpler and cleaner solutions will come up.
+
+### Acknowledgements
+
+I'd like to thank Sascha Meckler for running through the examples and spotting some errors in this [Jena users ML thread](https://lists.apache.org/thread.html/ra2af0cb910c86411b9a3dc19f3329290b1f03bc9902218c880ac7143%40%3Cusers.jena.apache.org%3E).
