@@ -94,6 +94,7 @@
 </li>
 <li><a href="#adding-full-text-search">Adding full-text search</a></li>
 <li><a href="#conclusions">Conclusions</a></li>
+<li><a href="#acknowledgements">Acknowledgements</a></li>
 </ul>
 </div>
 <h3 id="setup">Setup</h3>
@@ -209,12 +210,12 @@ TransitiveReasoner  -&gt; &lt;http://jena.hpl.hp.com/2003/TransitiveReasoner&gt;
 
 
 <p>and replace this line:</p>
-<div class="highlight"><pre><span></span><span class="nn">fuseki:</span><span class="nt">dataset</span><span class="w">                </span><span class="nn">:</span><span class="nt">tdb_dataset_readwrite</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><span class="nn">fuseki:</span><span class="nt">dataset</span><span class="w"> </span><span class="nn">:</span><span class="nt">tdb_dataset_readwrite</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
 </pre></div>
 
 
 <p>with the following:</p>
-<div class="highlight"><pre><span></span><span class="nn">fuseki:</span><span class="nt">dataset</span><span class="w">                </span><span class="nn">:</span><span class="nt">dataset</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><span class="nn">fuseki:</span><span class="nt">dataset</span><span class="w"> </span><span class="nn">:</span><span class="nt">dataset</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
 </pre></div>
 
 
@@ -299,12 +300,12 @@ owl:sameAs id:d
 
 
 <p>and, again, replace this line:</p>
-<div class="highlight"><pre><span></span><span class="nn">fuseki:</span><span class="nt">dataset</span><span class="w">                </span><span class="nn">:</span><span class="nt">tdb_dataset_readwrite</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><span class="nn">fuseki:</span><span class="nt">dataset</span><span class="w"> </span><span class="nn">:</span><span class="nt">tdb_dataset_readwrite</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
 </pre></div>
 
 
 <p>with the following:</p>
-<div class="highlight"><pre><span></span><span class="nn">fuseki:</span><span class="nt">dataset</span><span class="w">                </span><span class="nn">:</span><span class="nt">dataset</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><span class="nn">fuseki:</span><span class="nt">dataset</span><span class="w"> </span><span class="nn">:</span><span class="nt">dataset</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
 </pre></div>
 
 
@@ -381,7 +382,7 @@ owl:sameAs id:d
 <p>create an <code>example-inf-multinamed</code> dataset, update its configuration file, and restart Fuseki;</p>
 </li>
 <li>
-<p>upload the <code>data1.ttl</code> file under the <code>&lt;http://www.example.org/id/mygraph&gt;</code> named graph;</p>
+<p>upload the <code>data1.ttl</code> file under the <code>&lt;http://www.example.org/id/inf&gt;</code> named graph;</p>
 </li>
 <li>
 <p>run the following <em>g-id:a</em> query (similar to the <em>id:a</em> query but including the graph):</p>
@@ -428,8 +429,8 @@ owl:sameAs id:b
 <p>load <code>data2.ttl</code> under the same <code>&lt;http://www.example.org/id/mygraph&gt;</code> graph and rerun both queries (to verify that no change occurs when the base named graph is updated);</p>
 </li>
 <li>
-<p>load <code>data2.ttl</code> under <code>&lt;http://www.example.org/id/inf&gt;</code> instead, then run the <em>g-id:a</em> query and make sure we get the following triples as a result (to verify that adding triples to a model makes inference happen right away):</p>
-<div class="highlight"><pre><span></span>rdf:type ont:MySuperType id:inf
+<p>load <code>data2.ttl</code> under <code>&lt;http://www.example.org/id/inf&gt;</code> instead, then run the <em>g-id:a</em> query and make sure we get the following triples in addition (to verify that adding triples to a model makes inference happen right away):</p>
+<div class="highlight"><pre><span></span>rdf:type ont:MySubType id:inf
 owl:sameAs id:d id:inf
 </pre></div>
 
@@ -530,12 +531,12 @@ owl:sameAs id:XXX
 
 
 <p>and replace this line:</p>
-<div class="highlight"><pre><span></span><span class="nn">fuseki:</span><span class="nt">dataset</span><span class="w">                </span><span class="nn">:</span><span class="nt">tdb_dataset_readwrite</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><span class="nn">fuseki:</span><span class="nt">dataset</span><span class="w"> </span><span class="nn">:</span><span class="nt">tdb_dataset_readwrite</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
 </pre></div>
 
 
 <p>with the following:</p>
-<div class="highlight"><pre><span></span><span class="nn">fuseki:</span><span class="nt">dataset</span><span class="w">                </span><span class="nn">:</span><span class="nt">text_dataset</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<div class="highlight"><pre><span></span><span class="nn">fuseki:</span><span class="nt">dataset</span><span class="w"> </span><span class="nn">:</span><span class="nt">text_dataset</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
 </pre></div>
 
 
@@ -571,7 +572,7 @@ owl:sameAs id:XXX
 </pre></div>
 
 
-<p>and rerun the query. Now the result will be <code>id:with-title</code>, and we can get more information if we run the following query instead:</p>
+<p>load it, and rerun the query. Now the result will be <code>id:with-title</code>, and we can get more information if we run the following query instead:</p>
 <div class="highlight"><pre><span></span><span class="k">PREFIX</span> <span class="nn">ont</span><span class="p">:</span> <span class="nl">&lt;http://www.example.org/ont#&gt;</span>
 <span class="k">PREFIX</span> <span class="nn">id</span><span class="p">:</span> <span class="nl">&lt;http://www.example.org/id/&gt;</span>
 <span class="k">PREFIX</span> <span class="nn">text</span><span class="p">:</span> <span class="nl">&lt;http://jena.apache.org/text#&gt;</span>
@@ -591,6 +592,8 @@ owl:sameAs id:XXX
 <p>To verify that the reasoner still works, let's run the <em>id:a</em> query again and make sure that the results include <code>rdfs:label "Usual label"</code> and <code>owl:sameAs id:with-title</code>.</p>
 <h3 id="conclusions">Conclusions</h3>
 <p>Automated reasoning is a complex topic, and we have seen how Jena and Fuseki are flexible enough to allow for advanced solutions. Sometimes this flexibility may come at the cost of clarity, but I am sure that, once the community starts discussing more and more use cases, simpler and cleaner solutions will come up.</p>
+<h3 id="acknowledgements">Acknowledgements</h3>
+<p>I'd like to thank Sascha Meckler for running through the examples and spotting some errors in this <a href="https://lists.apache.org/thread.html/ra2af0cb910c86411b9a3dc19f3329290b1f03bc9902218c880ac7143%40%3Cusers.jena.apache.org%3E">Jena users ML thread</a>.</p>
     </div>
   </article>
     </div>

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>  Apache Any23 | APOTHEM
+</title>
+  <link rel="canonical" href="https://apothem.blog/drafts/apache-any23.html">
+
+    <link rel="icon" type="image/x-icon" href="https://apothem.blog/favicon.ico">
+
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/pygments/default.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/theme.css">
+
+  <link rel="alternate" type="application/atom+xml" title="Full Atom Feed"
+        href="https://apothem.blog/feeds/all.atom.xml">
+  <link rel="alternate" type="application/atom+xml" title="Categories Atom Feed"
+        href="https://apothem.blog/feeds/{slug}.atom.xml">  
+  <meta name="description" content="Any23. ---> Last commit: cda0c214b33ae065492006a3a9ad27b1dca131a1 Setup Clone repo: $ git clone https://github.com/apache/any23.git Build: $ mvn clean package Core Examples ??? My page ??? https://www.ivan-herman.net/foaf.ttl https://en.wikipedia.org/wiki/RDFa#Examples https://ruben.verborgh.org/ dbpedia article about RDFS: http://dbpedia.org/resource/RDF_Schema API …">
+
+
+</head>
+
+<body>
+  <header class="header">
+    <div class="container">
+<div class="row">
+    <div class="col-sm-4">
+      <a href="https://apothem.blog/">
+        <img class="img-fluid rounded" src=https://apothem.blog/images/profile.svg width=180 alt="APOTHEM">
+      </a>
+    </div>
+  <div class="col-sm-8">
+    <h1 class="title"><a href="https://apothem.blog/">APOTHEM</a></h1>
+      <p class="text-muted">Apache Project(s) of the month</p>
+      <ul class="list-inline">
+          <li class="list-inline-item"><a href="https://projects.apache.org" target="_blank">projects.apache.org</a></li>
+              <li class="list-inline-item text-muted">|</li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/about.html">About</a></li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/faq.html">FAQ</a></li>
+            <li class=" list-inline-item text-muted">|</li>
+          <li class="list-inline-item"><a class="fa fa-github" href="https://github.com/nvitucci/apothem" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-twitter" href="https://twitter.com/nvitucci" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-rss" href="feeds/all.atom.xml" target="_blank"></a></li>
+      </ul>
+  </div>
+</div>    </div>
+  </header>
+
+  <div class="main">
+    <div class="container">
+      <h2>  Apache Any23
+</h2>
+      <hr>
+  <article class="article">
+    <header>
+      <ul class="list-inline">
+        <li class="list-inline-item text-muted" title="2020-05-30T00:00:00+01:00">
+          <i class="fa fa-clock-o"></i>
+          Sat 30 May 2020
+        </li>
+        <li class="list-inline-item">
+          <i class="fa fa-folder-open-o"></i>
+          <a href="https://apothem.blog/category/projects.html">projects</a>
+        </li>
+          <li class="list-inline-item">
+            <i class="fa fa-files-o"></i>
+              <a href="https://apothem.blog/tag/semantic-web.html">#Semantic Web</a>,               <a href="https://apothem.blog/tag/data-format.html">#data format</a>,               <a href="https://apothem.blog/tag/library.html">#library</a>          </li>
+      </ul>
+    </header>
+    <div class="content">
+      <p><a href="https://any23.apache.org">Any23</a>.</p>
+<p>---&gt; Last commit: cda0c214b33ae065492006a3a9ad27b1dca131a1</p>
+<h3 id="setup">Setup</h3>
+<p>Clone repo:</p>
+<div class="highlight"><pre><span></span>$ git clone https://github.com/apache/any23.git
+</pre></div>
+
+
+<p>Build:</p>
+<div class="highlight"><pre><span></span>$ mvn clean package
+</pre></div>
+
+
+<h3 id="core">Core</h3>
+<h3 id="examples">Examples</h3>
+<p>??? My page ???
+https://www.ivan-herman.net/foaf.ttl
+https://en.wikipedia.org/wiki/RDFa#Examples
+https://ruben.verborgh.org/
+dbpedia article about RDFS: http://dbpedia.org/resource/RDF_Schema</p>
+<p>API: http://localhost:8080/apache-any23-service-2.4-SNAPSHOT/any23/jsonld/https://ruben.verborgh.org/</p>
+<h3 id="plugins">Plugins</h3>
+<p><code>html-scraper</code> already included in core. OpenIE is not but can be added. (Best way is not with the plugin repo but with the server repo, with <code>export CLASSPATH_PREFIX=/home/nick/tmp/any23-server/target/apache-any23-service-2.4-SNAPSHOT/WEB-INF/lib/apache-any23-openie/*</code>)</p>
+<p>Download:</p>
+<div class="highlight"><pre><span></span>$ git clone https://github.com/apache/any23-plugins.git
+</pre></div>
+
+
+<p>Build:</p>
+<div class="highlight"><pre><span></span>$ mvn package
+</pre></div>
+
+
+<p>Copy target files under ~/.any23/plugins ???</p>
+<h3 id="server">Server</h3>
+<p>Edit src/main/resources/form.html to remove Google Analytics</p>
+<div class="highlight"><pre><span></span>$ git clone https://github.com/apache/any23-server.git
+</pre></div>
+
+
+<p>Build (Warning: the build creates a folder about 7.5 GB):</p>
+<div class="highlight"><pre><span></span>$ mvn clean package
+</pre></div>
+
+
+<p>deploy target/apache-any23-service-2.4-SNAPSHOT.war to tomcat</p>
+<ul>
+<li>screenshot</li>
+</ul>
+    </div>
+  </article>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+<div class="row">
+  <ul class="col-sm-6 list-inline">
+    <li class="list-inline-item"><a href="https://apothem.blog/archives.html">Archives</a></li>
+    <li class="list-inline-item"><a href="https://apothem.blog/categories.html">Categories</a></li>
+      <li class="list-inline-item"><a href="https://apothem.blog/tags.html">Tags</a></li>
+  </ul>
+  <p class="col-sm-6 text-sm-right text-muted">
+    Generated by <a href="https://github.com/getpelican/pelican" target="_blank">Pelican</a>
+    / <a href="https://github.com/nairobilug/pelican-alchemy" target="_blank">&#x2728;</a>
+  </p>
+</div>    </div>
+  </footer>
+</body>
+
+</html>

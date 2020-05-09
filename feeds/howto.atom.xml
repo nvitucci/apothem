@@ -19,6 +19,7 @@
 &lt;/li&gt;
 &lt;li&gt;&lt;a href="#adding-full-text-search"&gt;Adding full-text search&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#conclusions"&gt;Conclusions&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#acknowledgements"&gt;Acknowledgements&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
 &lt;h3 id="setup"&gt;Setup&lt;/h3&gt;
@@ -134,12 +135,12 @@ TransitiveReasoner  -&amp;gt; &amp;lt;http://jena.hpl.hp.com/2003/TransitiveReas
 
 
 &lt;p&gt;and replace this line:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;with the following:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -224,12 +225,12 @@ owl:sameAs id:d
 
 
 &lt;p&gt;and, again, replace this line:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;with the following:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -306,7 +307,7 @@ owl:sameAs id:d
 &lt;p&gt;create an &lt;code&gt;example-inf-multinamed&lt;/code&gt; dataset, update its configuration file, and restart Fuseki;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;upload the &lt;code&gt;data1.ttl&lt;/code&gt; file under the &lt;code&gt;&amp;lt;http://www.example.org/id/mygraph&amp;gt;&lt;/code&gt; named graph;&lt;/p&gt;
+&lt;p&gt;upload the &lt;code&gt;data1.ttl&lt;/code&gt; file under the &lt;code&gt;&amp;lt;http://www.example.org/id/inf&amp;gt;&lt;/code&gt; named graph;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;run the following &lt;em&gt;g-id:a&lt;/em&gt; query (similar to the &lt;em&gt;id:a&lt;/em&gt; query but including the graph):&lt;/p&gt;
@@ -353,8 +354,8 @@ owl:sameAs id:b
 &lt;p&gt;load &lt;code&gt;data2.ttl&lt;/code&gt; under the same &lt;code&gt;&amp;lt;http://www.example.org/id/mygraph&amp;gt;&lt;/code&gt; graph and rerun both queries (to verify that no change occurs when the base named graph is updated);&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;load &lt;code&gt;data2.ttl&lt;/code&gt; under &lt;code&gt;&amp;lt;http://www.example.org/id/inf&amp;gt;&lt;/code&gt; instead, then run the &lt;em&gt;g-id:a&lt;/em&gt; query and make sure we get the following triples as a result (to verify that adding triples to a model makes inference happen right away):&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;rdf:type ont:MySuperType id:inf
+&lt;p&gt;load &lt;code&gt;data2.ttl&lt;/code&gt; under &lt;code&gt;&amp;lt;http://www.example.org/id/inf&amp;gt;&lt;/code&gt; instead, then run the &lt;em&gt;g-id:a&lt;/em&gt; query and make sure we get the following triples in addition (to verify that adding triples to a model makes inference happen right away):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;rdf:type ont:MySubType id:inf
 owl:sameAs id:d id:inf
 &lt;/pre&gt;&lt;/div&gt;
 
@@ -455,12 +456,12 @@ owl:sameAs id:XXX
 
 
 &lt;p&gt;and replace this line:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;tdb_dataset_readwrite&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
 &lt;p&gt;with the following:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt;                &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;text_dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nn"&gt;fuseki:&lt;/span&gt;&lt;span class="nt"&gt;dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nn"&gt;:&lt;/span&gt;&lt;span class="nt"&gt;text_dataset&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -496,7 +497,7 @@ owl:sameAs id:XXX
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;and rerun the query. Now the result will be &lt;code&gt;id:with-title&lt;/code&gt;, and we can get more information if we run the following query instead:&lt;/p&gt;
+&lt;p&gt;load it, and rerun the query. Now the result will be &lt;code&gt;id:with-title&lt;/code&gt;, and we can get more information if we run the following query instead:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;PREFIX&lt;/span&gt; &lt;span class="nn"&gt;ont&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nl"&gt;&amp;lt;http://www.example.org/ont#&amp;gt;&lt;/span&gt;
 &lt;span class="k"&gt;PREFIX&lt;/span&gt; &lt;span class="nn"&gt;id&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nl"&gt;&amp;lt;http://www.example.org/id/&amp;gt;&lt;/span&gt;
 &lt;span class="k"&gt;PREFIX&lt;/span&gt; &lt;span class="nn"&gt;text&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nl"&gt;&amp;lt;http://jena.apache.org/text#&amp;gt;&lt;/span&gt;
@@ -515,4 +516,6 @@ owl:sameAs id:XXX
 
 &lt;p&gt;To verify that the reasoner still works, let's run the &lt;em&gt;id:a&lt;/em&gt; query again and make sure that the results include &lt;code&gt;rdfs:label "Usual label"&lt;/code&gt; and &lt;code&gt;owl:sameAs id:with-title&lt;/code&gt;.&lt;/p&gt;
 &lt;h3 id="conclusions"&gt;Conclusions&lt;/h3&gt;
-&lt;p&gt;Automated reasoning is a complex topic, and we have seen how Jena and Fuseki are flexible enough to allow for advanced solutions. Sometimes this flexibility may come at the cost of clarity, but I am sure that, once the community starts discussing more and more use cases, simpler and cleaner solutions will come up.&lt;/p&gt;</content><category term="Semantic Web"></category><category term="full-text search"></category><category term="reasoning"></category><category term="inferencing"></category></entry></feed>
+&lt;p&gt;Automated reasoning is a complex topic, and we have seen how Jena and Fuseki are flexible enough to allow for advanced solutions. Sometimes this flexibility may come at the cost of clarity, but I am sure that, once the community starts discussing more and more use cases, simpler and cleaner solutions will come up.&lt;/p&gt;
+&lt;h3 id="acknowledgements"&gt;Acknowledgements&lt;/h3&gt;
+&lt;p&gt;I'd like to thank Sascha Meckler for running through the examples and spotting some errors in this &lt;a href="https://lists.apache.org/thread.html/ra2af0cb910c86411b9a3dc19f3329290b1f03bc9902218c880ac7143%40%3Cusers.jena.apache.org%3E"&gt;Jena users ML thread&lt;/a&gt;.&lt;/p&gt;</content><category term="Semantic Web"></category><category term="full-text search"></category><category term="reasoning"></category><category term="inferencing"></category></entry></feed>

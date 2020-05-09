@@ -77,6 +77,11 @@
       <h3 id="regression">Regression</h3>
 <p><a href="https://en.wikipedia.org/wiki/Regression_analysis">Regression analysis</a> (or, in short, <em>regression</em>) is the task of estimating a model that can predict the value of a (dependent) variable given the values of other (independent) variables usually called <em>features</em>. For example, if we know the size and the number of bathrooms of a house in a neighbourhood, we might be able to predict its price if we have these data for a few other houses in the same neighbourhood. There are many algorithms to create regression models; as we will see, Hivemall offers a very convenient "general" regressor (along with other ones) that can be easily customized and used for prediction.</p>
 <h4 id="data-preprocessing">Data preprocessing</h4>
+<p>??? Data: houses instead?
+https://towardsdatascience.com/linear-regression-on-boston-housing-dataset-f409b7e4a155
+https://towardsdatascience.com/machine-learning-project-predicting-boston-house-prices-with-regression-b4e47493633d
+https://www.kaggle.com/c/house-prices-advanced-regression-techniques/overview/tutorials
+https://www.kaggle.com/dgawlik/house-prices-eda</p>
 <p>Let's download some data. We will use an extract of the <a href="https://www.cs.cmu.edu/~ark/10K/">"10-K Corpus"</a>, a collection of 10-K filings where</p>
 <ul>
 <li>Download https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/regression/E2006.train.bz2 and https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/regression/E2006.test.bz2</li>
@@ -106,6 +111,13 @@
 <span class="o">:::</span><span class="n">scala</span>
 <span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">eval</span> <span class="k">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="o">(</span><span class="s">&quot;SELECT rmse(predicted, actual) as RMSE, mse(predicted, actual) as MSE, mae(predicted, actual) as MAE, r2(predicted, actual) as R2 FROM (SELECT t.target actual, p.predicted predicted FROM e2006_test_table t JOIN pred p USING (rowid))&quot;</span><span class="o">)</span>
 </pre></div>
+
+
+<h3 id="topic-modelling">Topic modelling</h3>
+<p>(If useful)</p>
+<p>https://towardsdatascience.com/beginners-guide-to-lda-topic-modelling-with-r-e57a5a8e7a25
+https://medium.com/@yanlinc/how-to-build-a-lda-topic-model-using-from-text-601cdcbfd3a6
+https://towardsdatascience.com/evaluate-topic-model-in-python-latent-dirichlet-allocation-lda-7d57484bb5d0</p>
     </div>
   </article>
     </div>
