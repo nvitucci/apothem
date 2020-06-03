@@ -1,5 +1,408 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM - howto</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/howto.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2020-04-30T00:00:00+01:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache Jena Fuseki - Adding reasoning and full-text search capabilities to a dataset</title><link href="https://apothem.blog/apache-jena-fuseki-adding-reasoning-and-full-text-search-capabilities-to-a-dataset.html" rel="alternate"></link><published>2020-04-30T00:00:00+01:00</published><updated>2020-04-30T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2020-04-30:/apache-jena-fuseki-adding-reasoning-and-full-text-search-capabilities-to-a-dataset.html</id><summary type="html">&lt;p&gt;With this article I am kicking off a new series called &lt;strong&gt;&lt;a href="/category/howto.html"&gt;howto&lt;/a&gt;&lt;/strong&gt; where, instead of describing a whole Apache project, I will explore use cases, problems and solutions related to one. I will start with &lt;a href="https://jena.apache.org/documentation/fuseki2/"&gt;Apache Jena Fuseki&lt;/a&gt; looking into how to enable both reasoning and full-text search on a …&lt;/p&gt;</summary><content type="html">&lt;p&gt;With this article I am kicking off a new series called &lt;strong&gt;&lt;a href="/category/howto.html"&gt;howto&lt;/a&gt;&lt;/strong&gt; where, instead of describing a whole Apache project, I will explore use cases, problems and solutions related to one. I will start with &lt;a href="https://jena.apache.org/documentation/fuseki2/"&gt;Apache Jena Fuseki&lt;/a&gt; looking into how to enable both reasoning and full-text search on a given dataset, which took me some time to figure out as the documentation is a bit lacking on the topic. As usual, I will put the relevant files and examples in the &lt;a href="https://github.com/nvitucci/apothem-resources/tree/master/howto/apache-jena-fuseki/reasoning_and_fts/"&gt;Apothem resources repository&lt;/a&gt;.&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM - howto</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/howto.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2020-05-31T00:00:00+01:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache Solr - Content-based image retrieval</title><link href="https://apothem.blog/apache-solr-content-based-image-retrieval.html" rel="alternate"></link><published>2020-05-31T00:00:00+01:00</published><updated>2020-05-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2020-05-31:/apache-solr-content-based-image-retrieval.html</id><summary type="html">&lt;p&gt;In this article we will see how to use &lt;a href="https://lucene.apache.org/solr/"&gt;Apache Solr&lt;/a&gt; for an unusual use case: we will not use it for text search but, rather, for &lt;a href="https://en.wikipedia.org/wiki/Content-based_image_retrieval"&gt;content-based image retrieval&lt;/a&gt;. In other words, we will use Solr to search for images by using... images! We will use a Solr plugin …&lt;/p&gt;</summary><content type="html">&lt;p&gt;In this article we will see how to use &lt;a href="https://lucene.apache.org/solr/"&gt;Apache Solr&lt;/a&gt; for an unusual use case: we will not use it for text search but, rather, for &lt;a href="https://en.wikipedia.org/wiki/Content-based_image_retrieval"&gt;content-based image retrieval&lt;/a&gt;. In other words, we will use Solr to search for images by using... images! We will use a Solr plugin based on the &lt;a href="http://www.lire-project.net/"&gt;LIRE project&lt;/a&gt;, a Java library for image retrieval based on color and texture features powered by a Lucene index.&lt;/p&gt;
+&lt;div class="toc"&gt;&lt;span class="toctitle"&gt;Index:&lt;/span&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#setup"&gt;Setup&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#solr"&gt;Solr&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#lire-solr-plugin"&gt;LIRE Solr plugin&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#image-dataset"&gt;Image dataset&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#indexing"&gt;Indexing&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#extracting-the-image-features"&gt;Extracting the image features&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#loading-the-feature-documents"&gt;Loading the feature documents&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#image-search"&gt;Image search&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#search-by-images"&gt;Search by images&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#search-by-features"&gt;Search by features&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#choosing-the-features"&gt;Choosing the features&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#conclusions"&gt;Conclusions&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#references"&gt;References&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;h3 id="setup"&gt;Setup&lt;/h3&gt;
+&lt;p&gt;For our image search engine, we will need:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a recent version of Solr (at least 7.5.0) running either in standalone or in SolrCloud mode;&lt;/li&gt;
+&lt;li&gt;the &lt;a href="https://github.com/dermotte/liresolr"&gt;LIRE Solr plugin&lt;/a&gt; built and ready to be added to Solr;&lt;/li&gt;
+&lt;li&gt;a dataset of images.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;I would also recommend to use Python as a simple means to both serve local images via HTTP (for URL-based image search) and to visualize query results; anyway, all the examples can be translated to any other language that has libraries for HTTP requests and image visualization.&lt;/p&gt;
+&lt;h4 id="solr"&gt;Solr&lt;/h4&gt;
+&lt;p&gt;If you do not have Solr already up and running, the easiest thing to do is to:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;download it from the &lt;a href="https://lucene.apache.org/solr/downloads.html"&gt;download page&lt;/a&gt; (at the time of writing, the most recent version is 8.5.1);&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;uncompress it:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ tar zxvf solr-8.5.1.tgz
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;start it in standalone mode:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ solr-8.5.1/bin/solr start
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;or in SolrCloud mode:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ solr-8.5.1/bin/solr start -c
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;From now on, I will assume that Solr 8.5.1 is installed in the &lt;code&gt;/opt/solr&lt;/code&gt; directory and is running in SolrCloud mode.&lt;/p&gt;
+&lt;h4 id="lire-solr-plugin"&gt;LIRE Solr plugin&lt;/h4&gt;
+&lt;p&gt;The LIRE Solr plugin can be built by cloning the original repository:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ git clone https://github.com/dermotte/liresolr
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The &lt;a href="https://github.com/dermotte/liresolr/tree/54f279e6ea9bb70bdbc6e7c01b9481dd1bc2c7c3"&gt;current version&lt;/a&gt; of the plugin will not work if we use a version of Solr higher than 8.3; in this case we can use the code from &lt;a href="https://github.com/dermotte/liresolr/pull/11"&gt;my PR&lt;/a&gt; instead:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ git clone https://github.com/nvitucci/liresolr/
+$ git checkout update-solr-8
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We can then build it:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ &lt;span class="nb"&gt;cd&lt;/span&gt; liresolr
+$ ./gradlew distForSolr
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The JAR files will be created under the &lt;code&gt;dist&lt;/code&gt; folder. Once created, they have to be copied into &lt;code&gt;/opt/solr/server/solr-webapp/webapp/WEB-INF/lib/&lt;/code&gt; and Solr has to be restarted.&lt;/p&gt;
+&lt;h4 id="image-dataset"&gt;Image dataset&lt;/h4&gt;
+&lt;p&gt;Many image datasets have been created for image processing and computer vision applications. We will use the &lt;a href="http://cocodataset.org/#"&gt;Common Objects in Context (COCO) dataset&lt;/a&gt; since it has not been used with LIRE before and contains a reasonable amount of images along with categories and annotations. All the datasets and versions can be downloaded from &lt;a href="http://cocodataset.org/#download"&gt;here&lt;/a&gt;; we will only download and uncompress the 2014 validation dataset:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ mkdir /data/mscoco/val2014
+$ &lt;span class="nb"&gt;cd&lt;/span&gt; /data/mscoco/val2014
+$ wget http://images.cocodataset.org/zips/val2014.zip
+$ unzip val2014.zip
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;(Here I am using &lt;code&gt;/data&lt;/code&gt; as a root directory, which may require &lt;code&gt;sudo&lt;/code&gt; rights to write to. Any directory can be used in its place.)&lt;/p&gt;
+&lt;h3 id="indexing"&gt;Indexing&lt;/h3&gt;
+&lt;p&gt;In order to create an index of the images, we need to extract some &lt;em&gt;visual features&lt;/em&gt; and represent them as &lt;em&gt;feature vectors&lt;/em&gt;. Many features have been proposed in the computer vision and image processing literature; broadly speaking, features can be classified as &lt;em&gt;global&lt;/em&gt; when they describe global image properties (colors, edge histograms, etc.), and &lt;em&gt;local&lt;/em&gt; when they describe small regions of an image (corners, edges, etc.). The features that LIRE can extract belong to both categories, but we will focus on the ones that are readily available in the Solr plugin as well (although other can be easily added), namely:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://mpeg.chiariglione.org/standards/mpeg-7/visual"&gt;MPEG-7 visual descriptors&lt;/a&gt;:&lt;ul&gt;
+&lt;li&gt;ScalableColor;&lt;/li&gt;
+&lt;li&gt;ColorLayout;&lt;/li&gt;
+&lt;li&gt;EdgeHistogram;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;PHOG (Pyramid Histogram of Oriented Gradients);&lt;/li&gt;
+&lt;li&gt;CEDD (Color and Edge Directivity Descriptor);&lt;/li&gt;
+&lt;li&gt;FCTH (Fuzzy Color and Texture Histogram);&lt;/li&gt;
+&lt;li&gt;JCD (Joined Composite Descriptor, combines CEDD and FCTH);&lt;/li&gt;
+&lt;li&gt;ACCID (combines scaled edge and fuzzy color histograms);&lt;/li&gt;
+&lt;li&gt;AutoColorCorrelogram (color-to-color correlation histogram);&lt;/li&gt;
+&lt;li&gt;simple joint histogram (combines 64-bin RGB and pixel rank);&lt;/li&gt;
+&lt;li&gt;opponent histogram (simple color histogram in the opponent color space);&lt;/li&gt;
+&lt;li&gt;fuzzy opponent histogram (fuzzy color histogram in the opponent color space);&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;LIRE provides methods to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;encode these features as &lt;a href="https://en.wikipedia.org/wiki/Base64"&gt;Base64-encoded&lt;/a&gt; strings;&lt;/li&gt;
+&lt;li&gt;extract hashes that represent the features via &lt;a href="https://en.wikipedia.org/wiki/Locality-sensitive_hashing#Bit_sampling_for_Hamming_distance"&gt;bit sampling&lt;/a&gt;);&lt;/li&gt;
+&lt;li&gt;create &lt;em&gt;reference objects&lt;/em&gt; to use with a distance function to enable &lt;a href="https://en.wikipedia.org/wiki/Nearest_neighbor_search"&gt;nearest-neighbour search&lt;/a&gt; in metric spaces.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The hashes and the reference objects can be used to speed up search by restricting the search space; the candidate results returned by this phase are then re-ranked using the actual encoded feature vectors and a distance function associated with each feature. More details can be found in the &lt;a href="https://github.com/dermotte/LIRE/tree/master/src/main/docs/developer-docs/docs"&gt;LIRE documentation&lt;/a&gt;.&lt;/p&gt;
+&lt;h4 id="extracting-the-image-features"&gt;Extracting the image features&lt;/h4&gt;
+&lt;p&gt;Once we have decided what features to use, we can use the &lt;code&gt;ParallelSolrIndexer&lt;/code&gt; class to extract them and save them in an XML file:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ find /data/mscoco/val2014 -name &lt;span class="s2"&gt;&amp;quot;*.jpg&amp;quot;&lt;/span&gt; &amp;gt; val2014.txt
+$ java -cp dist/lire.jar:liresolr/dist/liresolr.jar net.semanticmetadata.lire.solr.indexing.ParallelSolrIndexer -i val2014.txt -o val2014_all_plus_ms.xml -a -y &lt;span class="s2"&gt;&amp;quot;oh,sc,ce,fc,ac,ad,fo,jh&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;where we specify:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;-i&lt;/code&gt;: the file containing the list of image files to process;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-o&lt;/code&gt;: the output XML file;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-a&lt;/code&gt;: an option to include both the bit sampling and the metric space representations;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-y&lt;/code&gt;: the additional features to extract in addition to the default PHOG, ColorLayout, EdgeHistogram and JCD (check &lt;a href="https://github.com/dermotte/liresolr#preliminaries"&gt;the README file&lt;/a&gt; for a list of all the abbreviations).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The XML file now contains a list of documents that can be indexed.&lt;/p&gt;
+&lt;h4 id="loading-the-feature-documents"&gt;Loading the feature documents&lt;/h4&gt;
+&lt;p&gt;Before we can load the features, we need to create a Solr index that can make use of them (and that exposes a LIRE request handler); we basically need text fields to index the hashes and the reference points and a special binary &lt;a href="https://lucene.apache.org/solr/guide/8_5/docvalues.html"&gt;DocValues&lt;/a&gt; field to hold the encoded features. To make it simple, we can create a &lt;code&gt;lire-config&lt;/code&gt; folder as a copy of the &lt;code&gt;_default&lt;/code&gt; configuration from &lt;code&gt;/opt/solr/server/solr/configsets/_default/&lt;/code&gt;, then update the &lt;code&gt;managed-schema&lt;/code&gt; in the new configuration by adding these lines:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;field&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;title&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;text_general&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;indexed=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;true&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;stored=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;true&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;multiValued=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;true&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;                                                                                                                                                                                         
+&lt;span class="nt"&gt;&amp;lt;fieldtype&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;binaryDV&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;class=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;net.semanticmetadata.lire.solr.BinaryDocValuesField&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;dynamicField&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;*_ha&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;text_ws&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;indexed=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;true&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;stored=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;false&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;dynamicField&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;*_ms&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;text_ws&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;indexed=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;true&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;stored=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;false&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;dynamicField&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;*_hi&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;binaryDV&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;indexed=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;false&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;stored=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;true&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and &lt;code&gt;solrconfig.xml&lt;/code&gt; by adding these lines:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;requestHandler&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;/lireq&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;class=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;net.semanticmetadata.lire.solr.LireRequestHandler&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;lst&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;defaults&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;str&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;echoParams&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;explicit&lt;span class="nt"&gt;&amp;lt;/str&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;str&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;wt&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;json&lt;span class="nt"&gt;&amp;lt;/str&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;str&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;indent&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;true&lt;span class="nt"&gt;&amp;lt;/str&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/lst&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/requestHandler&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;valueSourceParser&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;lirefunc&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;class=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;net.semanticmetadata.lire.solr.LireValueSourceParser&amp;quot;&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Then, we can create the collection:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ solr create_collection -c lire_mscoco_val2014 -d lire-config
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and load the XML file that we created before:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ curl http://localhost:8983/solr/lire_mscoco_val2014/update -H &lt;span class="s2"&gt;&amp;quot;Content-Type: text/xml&amp;quot;&lt;/span&gt; --data-binary @val2014_all_plus_ms.xml
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If the file is too large, it can be split in parts and each part be fixed and uploaded separately:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ split -d -l &lt;span class="m"&gt;11000&lt;/span&gt; val2014_all_plus_ms.xml val2014_all_plus_ms_
+$ &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;&amp;lt;/add&amp;gt;&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; val2014_all_plus_ms_00
+$ &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;&amp;lt;/add&amp;gt;&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; val2014_all_plus_ms_01
+$ &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;&amp;lt;/add&amp;gt;&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; val2014_all_plus_ms_02
+$ sed -i &lt;span class="s1"&gt;&amp;#39;1s/^/&amp;lt;add&amp;gt;/&amp;#39;&lt;/span&gt; val2014_all_plus_ms_01
+$ sed -i &lt;span class="s1"&gt;&amp;#39;1s/^/&amp;lt;add&amp;gt;/&amp;#39;&lt;/span&gt; val2014_all_plus_ms_02
+$ sed -i &lt;span class="s1"&gt;&amp;#39;1s/^/&amp;lt;add&amp;gt;/&amp;#39;&lt;/span&gt; val2014_all_plus_ms_03
+$ curl http://localhost:8983/solr/lire_mscoco_val2014/update -H &lt;span class="s2"&gt;&amp;quot;Content-Type: text/xml&amp;quot;&lt;/span&gt; --data-binary @val2014_all_plus_ms_00
+$ curl http://localhost:8983/solr/lire_mscoco_val2014/update -H &lt;span class="s2"&gt;&amp;quot;Content-Type: text/xml&amp;quot;&lt;/span&gt; --data-binary @val2014_all_plus_ms_01
+$ curl http://localhost:8983/solr/lire_mscoco_val2014/update -H &lt;span class="s2"&gt;&amp;quot;Content-Type: text/xml&amp;quot;&lt;/span&gt; --data-binary @val2014_all_plus_ms_02
+$ curl http://localhost:8983/solr/lire_mscoco_val2014/update -H &lt;span class="s2"&gt;&amp;quot;Content-Type: text/xml&amp;quot;&lt;/span&gt; --data-binary @val2014_all_plus_ms_03
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;or, obviously, it can be uploaded using the Solr API with any programming language.&lt;/p&gt;
+&lt;p&gt;Finally, we can issue a commit:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;curl http://localhost:8983/solr/lire_mscoco_val2014/update -H &lt;span class="s2"&gt;&amp;quot;Content-Type: text/xml&amp;quot;&lt;/span&gt; --data-binary &lt;span class="s2"&gt;&amp;quot;&amp;lt;commit/&amp;gt;&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The image index is now ready for search.&lt;/p&gt;
+&lt;h3 id="image-search"&gt;Image search&lt;/h3&gt;
+&lt;p&gt;Once the images are indexed, the search can be performed using the &lt;code&gt;/lireq&lt;/code&gt; request handler in three different ways:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;by image ID using the &lt;code&gt;id&lt;/code&gt; request parameter (to use images from the same index);&lt;/li&gt;
+&lt;li&gt;by URL using the &lt;code&gt;url&lt;/code&gt; parameter (to use external images);&lt;/li&gt;
+&lt;li&gt;by feature histogram and hashes using the &lt;code&gt;feature&lt;/code&gt; and &lt;code&gt;hashes&lt;/code&gt; parameters (with both manually extracted or obtained via another call to &lt;code&gt;lireq&lt;/code&gt; using the &lt;code&gt;extract&lt;/code&gt; parameter).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Here are some examples using Python with &lt;code&gt;requests&lt;/code&gt; and &lt;code&gt;matplotlib&lt;/code&gt;, and using the image &lt;code&gt;COCO_val2014_000000481654.jpg&lt;/code&gt; as an example:&lt;/p&gt;
+&lt;p&gt;&lt;img src="images/COCO_val2014_000000481654.jpg" alt="Example image" class="img-fluid" /&gt;&lt;/p&gt;
+&lt;p&gt;The easiest way to serve the images via HTTP is to launch a simple HTTP server from their directory with Python:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ &lt;span class="nb"&gt;cd&lt;/span&gt; /data/mscoco/val2014
+$ python -m SimpleHTTPServer
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;All the following examples are completely implemented and collected in a Jupyter notebook in the &lt;a href="https://github.com/nvitucci/apothem-resources/tree/master/howto/apache-solr/cbir/"&gt;Apothem resources repository&lt;/a&gt;.&lt;/p&gt;
+&lt;h4 id="search-by-images"&gt;Search by images&lt;/h4&gt;
+&lt;p&gt;In a separate console, or on a Jupyter notebook, we can:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;search by ID:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;res&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;http://localhost:8983/solr/lire_mscoco_val2014/lireq&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;fl&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;*,score&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;accuracy&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;0.99&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;rows&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;/data/mscoco/val2014/COCO_val2014_000000481654.jpg&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;field&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;ce&amp;#39;&lt;/span&gt;
+               &lt;span class="p"&gt;})&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;search by URL:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;res&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;http://localhost:8983/solr/lire_mscoco_val2014/lireq&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;fl&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;*,score&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;accuracy&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;0.99&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;rows&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;url&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;http://localhost:8000/COCO_val2014_000000481654.jpg&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;field&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;ce&amp;#39;&lt;/span&gt;
+               &lt;span class="p"&gt;})&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Here the &lt;code&gt;accuracy&lt;/code&gt; parameter is the fraction of hashes that are used in a query, with a maximum of 1 being all hashes; the field is set to &lt;code&gt;ce&lt;/code&gt; for the CEDD descriptor, but &lt;code&gt;ce_ha&lt;/code&gt; would be the same, since we are using the bit sampling hashes.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Note: a search by ID and URL on the same image may give different results because the two methods are implemented slightly differently. This may be a bug.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;In both cases we can collect the results as JSON and inspect them   :&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;j_res&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;res&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;json&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;json&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dumps&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;j_res&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;indent&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;!-- --&gt;
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;quot;responseHeader&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;quot;status&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;quot;QTime&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;755&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;quot;params&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;field&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;ce&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;fl&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;*,score&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;accuracy&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;0.99&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;rows&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;20&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;url&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://localhost:8000/COCO_val2014_000000481654.jpg&amp;quot;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+  &lt;span class="p"&gt;},&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;quot;DocValuesOpenTime&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;0&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;quot;RawDocsCount&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;32931&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;quot;RawDocsSearchTime&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;183&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;quot;ReRankSearchTime&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;441&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;quot;response&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;quot;numFound&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;quot;start&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;quot;docs&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+      &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;quot;score&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;4.934342757604213&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;quot;localimagefile&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/data/mscoco/val2014/COCO_val2014_000000481654.jpg&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;quot;id&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/data/mscoco/val2014/COCO_val2014_000000481654.jpg&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;quot;d&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;4.934342757604213&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;quot;title&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/data/mscoco/val2014/COCO_val2014_000000481654.jpg&amp;quot;&lt;/span&gt;
+      &lt;span class="p"&gt;},&lt;/span&gt;
+      &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;quot;score&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;14.45337473741894&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;quot;localimagefile&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/data/mscoco/val2014/COCO_val2014_000000431996.jpg&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;quot;id&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/data/mscoco/val2014/COCO_val2014_000000431996.jpg&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;quot;d&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;14.45337473741894&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;quot;title&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;/data/mscoco/val2014/COCO_val2014_000000431996.jpg&amp;quot;&lt;/span&gt;
+      &lt;span class="p"&gt;},&lt;/span&gt;
+      &lt;span class="err"&gt;...&lt;/span&gt;
+    &lt;span class="p"&gt;]&lt;/span&gt;
+  &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and visualize the top five results:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;docs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;j_res&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;response&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;docs&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;enumerate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;docs&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;]):&lt;/span&gt;
+    &lt;span class="n"&gt;filename&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;os&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;path&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;basename&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+    &lt;span class="n"&gt;img&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;http://localhost:8000/{filename}&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;stream&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;img_id&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;filename&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;split&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;_&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;replace&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;.jpg&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;lstrip&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;0&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+
+    &lt;span class="n"&gt;ax&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;fig&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_subplot&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;ax&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;title&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;set_text&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;ce | {d[&amp;#39;score&amp;#39;]:.3f}, id: {img_id}&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;ax&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;imshow&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;plt&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;imread&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;img&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;raw&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;jpg&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;img src="images/solr_lire_result_ce.png" alt="Example with CEDD" class="img-fluid" /&gt;&lt;/p&gt;
+&lt;h4 id="search-by-features"&gt;Search by features&lt;/h4&gt;
+&lt;p&gt;As mentioned before, we can extract the feature representation and the hashes using the &lt;code&gt;extract&lt;/code&gt; parameter:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;res&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;http://localhost:8983/solr/lire_mscoco_val2014/lireq&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+                       &lt;span class="s1"&gt;&amp;#39;fl&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;*,score&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                       &lt;span class="s1"&gt;&amp;#39;accuracy&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;0.99&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                       &lt;span class="s1"&gt;&amp;#39;rows&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;20&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                       &lt;span class="s1"&gt;&amp;#39;extract&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;http://localhost:8000/COCO_val2014_000000481654.jpg&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                       &lt;span class="s1"&gt;&amp;#39;field&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;ce&amp;#39;&lt;/span&gt;
+                   &lt;span class="p"&gt;})&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;In the result we'll see encoded feature as the &lt;code&gt;histogram&lt;/code&gt; field with value &lt;code&gt;4ICAgICA...&lt;/code&gt;, and the hashes as the &lt;code&gt;bs_list&lt;/code&gt; field with values &lt;code&gt;"121", "c0a", "e5d", ...&lt;/code&gt;, with the actual bit sampling query (i.e. the number of hashes to be used as determined by the &lt;code&gt;accuracy&lt;/code&gt; parameter) as the &lt;code&gt;bs_query&lt;/code&gt; field with value &lt;code&gt;121 c0a e5d ...&lt;/code&gt;; the same applies for the metric spaces reference objects (fields &lt;code&gt;ms_list&lt;/code&gt; and &lt;code&gt;ms_query&lt;/code&gt;):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;quot;responseHeader&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;quot;status&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;quot;QTime&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;208&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;quot;params&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;extract&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;http://localhost:8000/COCO_val2014_000000481654.jpg&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;field&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;ce&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;fl&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;*,score&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;accuracy&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;0.99&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="nt"&gt;&amp;quot;rows&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;20&amp;quot;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+  &lt;span class="p"&gt;},&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;quot;histogram&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;4ICAgICAgIC...&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;quot;bs_list&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;121&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;c0a&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;e5d&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="err"&gt;...&lt;/span&gt;
+    &lt;span class="p"&gt;],&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;quot;bs_query&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;121 c0a e5d ...&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;quot;ms_list&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;R003429&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s2"&gt;&amp;quot;R003219&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="err"&gt;...&lt;/span&gt;
+  &lt;span class="p"&gt;],&lt;/span&gt;
+  &lt;span class="nt"&gt;&amp;quot;ms_query&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;R003429^1.00 R003219^0.96 ... &amp;quot;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Assuming we want to search for images similar to the one having histogram &lt;code&gt;4ICAgICA...&lt;/code&gt; and hashes &lt;code&gt;"121", "c0a", "e5d", ...&lt;/code&gt; for the feature &lt;code&gt;ce&lt;/code&gt; with accuracy 0.99, these API calls are equivalent:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;with the &lt;code&gt;lireq&lt;/code&gt; handler:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;res&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;http://localhost:8983/solr/lire_mscoco_val2014/lireq&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;fl&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;id,d&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;accuracy&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;0.99&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;rows&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;feature&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;4ICAgICA...&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;hashes&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;121 c0a e5d ...&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;field&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;ce&amp;#39;&lt;/span&gt;
+               &lt;span class="p"&gt;})&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;with the &lt;code&gt;select&lt;/code&gt; handler, using &lt;code&gt;lirefunc&lt;/code&gt; as a distance function for sorting:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;res&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;http://localhost:8983/solr/lire_mscoco_val2014/select&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;fl&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;id,d:lirefunc(ce, 4ICAgICA...)&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;accuracy&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;0.89&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;rows&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;q&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;ce_ha:(121 c0a e5d ...)&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;sort&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;lirefunc(ce, 4ICAgICA...) asc&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;field&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;ce_ha&amp;#39;&lt;/span&gt;
+               &lt;span class="p"&gt;})&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The same applies if we want to use metric spaces instead of bit sampling, by replacing the hashes with the reference objects and adding the parameter &lt;code&gt;'ms': 'true'&lt;/code&gt; in the &lt;code&gt;lireq&lt;/code&gt; handler call as in this example:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;res&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;http://localhost:8983/solr/lire_mscoco_val2014/lireq&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+               &lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;fl&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;id,d&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;accuracy&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;0.99&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;rows&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;feature&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;4ICAgICA...&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;hashes&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;R003429 R003219 ...&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;field&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;ce&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                   &lt;span class="s1"&gt;&amp;#39;ms&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;true&amp;#39;&lt;/span&gt;
+               &lt;span class="p"&gt;})&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;When using the &lt;code&gt;select&lt;/code&gt; handler, we need to use the full field name (e.g. with &lt;code&gt;_ha&lt;/code&gt; if using bit sampling or with &lt;code&gt;_ms&lt;/code&gt; if using metric spaces). The result images can be displayed as before.&lt;/p&gt;
+&lt;h4 id="choosing-the-features"&gt;Choosing the features&lt;/h4&gt;
+&lt;p&gt;During the feature extraction phase, we have extracted many possible features so that experimenting with different features becomes easier. This may obviously not be the case for a real use case, where evaluation is done in a previous phase and the index is kept as efficient as possible. Therefore, it is important to try and forecast the possible use cases and the images that will be kept in the index in order to optimize the features. For instance, one can start by answering these questions:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Will the images contain mostly nature and landscapes? In this case, will a color-based search be enough?&lt;/li&gt;
+&lt;li&gt;Will the images contain artifacts? In this case, will texture-based features be more appropriate?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;As for all information retrieval tasks, some tuning and a good evaluation framework will be needed for best results.&lt;/p&gt;
+&lt;h3 id="conclusions"&gt;Conclusions&lt;/h3&gt;
+&lt;p&gt;Although nowadays image retrieval techniques may no longer (or not only) be based on predefined global and local features, and some research is under way to use neural networks as feature extractors instead, the methods and techniques explored here and implemented in libraries such as LIRE are still quite efficient for many tasks. The CBIR field is very exciting.
+We have only covered Solr as a search engine here, but plugins for other search engines like &lt;a href="https://github.com/kzwang/elasticsearch-image"&gt;Elasticsearch&lt;/a&gt; have been implemented and occasionally updated. LIRE itself has not been updated in the last two years, but I think it can be adapted easily to use new features - or it can be considered as a good example for more CBIR libraries.&lt;/p&gt;
+&lt;h3 id="references"&gt;References&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;LIRE Solr plugin: &lt;a href="https://github.com/dermotte/liresolr"&gt;website&lt;/a&gt;, &lt;a href="https://apothem.blog/files/liresolr.bib"&gt;BibTeX&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;LIRE Java package: &lt;a href="https://github.com/dermotte/lire"&gt;website&lt;/a&gt;, &lt;a href="https://apothem.blog/files/lire.bib"&gt;BibTeX&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;COCO dataset: &lt;a href="http://cocodataset.org"&gt;website&lt;/a&gt;, &lt;a href="https://apothem.blog/files/coco_dataset.bib"&gt;BibTeX&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content><category term="full-text search"></category><category term="information retrieval"></category><category term="image processing"></category></entry><entry><title>Apache Jena Fuseki - Adding reasoning and full-text search capabilities to a dataset</title><link href="https://apothem.blog/apache-jena-fuseki-adding-reasoning-and-full-text-search-capabilities-to-a-dataset.html" rel="alternate"></link><published>2020-04-30T00:00:00+01:00</published><updated>2020-04-30T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2020-04-30:/apache-jena-fuseki-adding-reasoning-and-full-text-search-capabilities-to-a-dataset.html</id><summary type="html">&lt;p&gt;With this article I am kicking off a new series called &lt;strong&gt;&lt;a href="/category/howto.html"&gt;howto&lt;/a&gt;&lt;/strong&gt; where, instead of describing a whole Apache project, I will explore use cases, problems and solutions related to one. I will start with &lt;a href="https://jena.apache.org/documentation/fuseki2/"&gt;Apache Jena Fuseki&lt;/a&gt; looking into how to enable both reasoning and full-text search on a …&lt;/p&gt;</summary><content type="html">&lt;p&gt;With this article I am kicking off a new series called &lt;strong&gt;&lt;a href="/category/howto.html"&gt;howto&lt;/a&gt;&lt;/strong&gt; where, instead of describing a whole Apache project, I will explore use cases, problems and solutions related to one. I will start with &lt;a href="https://jena.apache.org/documentation/fuseki2/"&gt;Apache Jena Fuseki&lt;/a&gt; looking into how to enable both reasoning and full-text search on a given dataset, which took me some time to figure out as the documentation is a bit lacking on the topic. As usual, I will put the relevant files and examples in the &lt;a href="https://github.com/nvitucci/apothem-resources/tree/master/howto/apache-jena-fuseki/reasoning_and_fts/"&gt;Apothem resources repository&lt;/a&gt;.&lt;/p&gt;
 &lt;div class="toc"&gt;&lt;span class="toctitle"&gt;Index:&lt;/span&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#setup"&gt;Setup&lt;/a&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#downloading-and-running-fuseki"&gt;Downloading and running Fuseki&lt;/a&gt;&lt;/li&gt;

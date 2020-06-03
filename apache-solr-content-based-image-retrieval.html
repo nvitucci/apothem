@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>  Apache Solr - Content-based image retrieval | APOTHEM
+</title>
+  <link rel="canonical" href="https://apothem.blog/apache-solr-content-based-image-retrieval.html">
+
+    <link rel="icon" type="image/x-icon" href="https://apothem.blog/favicon.ico">
+
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/pygments/default.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/theme.css">
+
+  <link rel="alternate" type="application/atom+xml" title="Full Atom Feed"
+        href="https://apothem.blog/feeds/all.atom.xml">
+  <link rel="alternate" type="application/atom+xml" title="Categories Atom Feed"
+        href="https://apothem.blog/feeds/{slug}.atom.xml">  
+  <meta name="description" content="In this article we will see how to use Apache Solr for an unusual use case: we will not use it for text search but, rather, for content-based image retrieval. In other words, we will use Solr to search for images by using... images! We will use a Solr plugin …">
+
+
+</head>
+
+<body>
+  <header class="header">
+    <div class="container">
+<div class="row">
+    <div class="col-sm-4">
+      <a href="https://apothem.blog/">
+        <img class="img-fluid rounded" src=https://apothem.blog/images/profile.svg width=180 alt="APOTHEM">
+      </a>
+    </div>
+  <div class="col-sm-8">
+    <h1 class="title"><a href="https://apothem.blog/">APOTHEM</a></h1>
+      <p class="text-muted">Apache Project(s) of the month</p>
+      <ul class="list-inline">
+          <li class="list-inline-item"><a href="https://projects.apache.org" target="_blank">projects.apache.org</a></li>
+              <li class="list-inline-item text-muted">|</li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/about.html">About</a></li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/faq.html">FAQ</a></li>
+            <li class=" list-inline-item text-muted">|</li>
+          <li class="list-inline-item"><a class="fa fa-github" href="https://github.com/nvitucci/apothem" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-twitter" href="https://twitter.com/nvitucci" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-rss" href="feeds/all.atom.xml" target="_blank"></a></li>
+      </ul>
+  </div>
+</div>    </div>
+  </header>
+
+  <div class="main">
+    <div class="container">
+      <h2>  Apache Solr - Content-based image retrieval
+</h2>
+      <hr>
+  <article class="article">
+    <header>
+      <ul class="list-inline">
+        <li class="list-inline-item text-muted" title="2020-05-31T00:00:00+01:00">
+          <i class="fa fa-clock-o"></i>
+          Sun 31 May 2020
+        </li>
+        <li class="list-inline-item">
+          <i class="fa fa-folder-open-o"></i>
+          <a href="https://apothem.blog/category/howto.html">howto</a>
+        </li>
+          <li class="list-inline-item">
+            <i class="fa fa-files-o"></i>
+              <a href="https://apothem.blog/tag/full-text-search.html">#full-text search</a>,               <a href="https://apothem.blog/tag/information-retrieval.html">#information retrieval</a>,               <a href="https://apothem.blog/tag/image-processing.html">#image processing</a>          </li>
+      </ul>
+    </header>
+    <div class="content">
+      <p>In this article we will see how to use <a href="https://lucene.apache.org/solr/">Apache Solr</a> for an unusual use case: we will not use it for text search but, rather, for <a href="https://en.wikipedia.org/wiki/Content-based_image_retrieval">content-based image retrieval</a>. In other words, we will use Solr to search for images by using... images! We will use a Solr plugin based on the <a href="http://www.lire-project.net/">LIRE project</a>, a Java library for image retrieval based on color and texture features powered by a Lucene index.</p>
+<div class="toc"><span class="toctitle">Index:</span><ul>
+<li><a href="#setup">Setup</a><ul>
+<li><a href="#solr">Solr</a></li>
+<li><a href="#lire-solr-plugin">LIRE Solr plugin</a></li>
+<li><a href="#image-dataset">Image dataset</a></li>
+</ul>
+</li>
+<li><a href="#indexing">Indexing</a><ul>
+<li><a href="#extracting-the-image-features">Extracting the image features</a></li>
+<li><a href="#loading-the-feature-documents">Loading the feature documents</a></li>
+</ul>
+</li>
+<li><a href="#image-search">Image search</a><ul>
+<li><a href="#search-by-images">Search by images</a></li>
+<li><a href="#search-by-features">Search by features</a></li>
+<li><a href="#choosing-the-features">Choosing the features</a></li>
+</ul>
+</li>
+<li><a href="#conclusions">Conclusions</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+<h3 id="setup">Setup</h3>
+<p>For our image search engine, we will need:</p>
+<ul>
+<li>a recent version of Solr (at least 7.5.0) running either in standalone or in SolrCloud mode;</li>
+<li>the <a href="https://github.com/dermotte/liresolr">LIRE Solr plugin</a> built and ready to be added to Solr;</li>
+<li>a dataset of images.</li>
+</ul>
+<p>I would also recommend to use Python as a simple means to both serve local images via HTTP (for URL-based image search) and to visualize query results; anyway, all the examples can be translated to any other language that has libraries for HTTP requests and image visualization.</p>
+<h4 id="solr">Solr</h4>
+<p>If you do not have Solr already up and running, the easiest thing to do is to:</p>
+<ol>
+<li>download it from the <a href="https://lucene.apache.org/solr/downloads.html">download page</a> (at the time of writing, the most recent version is 8.5.1);</li>
+<li>
+<p>uncompress it:</p>
+<div class="highlight"><pre><span></span>$ tar zxvf solr-8.5.1.tgz
+</pre></div>
+
+
+</li>
+<li>
+<p>start it in standalone mode:</p>
+<div class="highlight"><pre><span></span>$ solr-8.5.1/bin/solr start
+</pre></div>
+
+
+<p>or in SolrCloud mode:</p>
+<div class="highlight"><pre><span></span>$ solr-8.5.1/bin/solr start -c
+</pre></div>
+
+
+</li>
+</ol>
+<p>From now on, I will assume that Solr 8.5.1 is installed in the <code>/opt/solr</code> directory and is running in SolrCloud mode.</p>
+<h4 id="lire-solr-plugin">LIRE Solr plugin</h4>
+<p>The LIRE Solr plugin can be built by cloning the original repository:</p>
+<div class="highlight"><pre><span></span>$ git clone https://github.com/dermotte/liresolr
+</pre></div>
+
+
+<p>The <a href="https://github.com/dermotte/liresolr/tree/54f279e6ea9bb70bdbc6e7c01b9481dd1bc2c7c3">current version</a> of the plugin will not work if we use a version of Solr higher than 8.3; in this case we can use the code from <a href="https://github.com/dermotte/liresolr/pull/11">my PR</a> instead:</p>
+<div class="highlight"><pre><span></span>$ git clone https://github.com/nvitucci/liresolr/
+$ git checkout update-solr-8
+</pre></div>
+
+
+<p>We can then build it:</p>
+<div class="highlight"><pre><span></span>$ <span class="nb">cd</span> liresolr
+$ ./gradlew distForSolr
+</pre></div>
+
+
+<p>The JAR files will be created under the <code>dist</code> folder. Once created, they have to be copied into <code>/opt/solr/server/solr-webapp/webapp/WEB-INF/lib/</code> and Solr has to be restarted.</p>
+<h4 id="image-dataset">Image dataset</h4>
+<p>Many image datasets have been created for image processing and computer vision applications. We will use the <a href="http://cocodataset.org/#">Common Objects in Context (COCO) dataset</a> since it has not been used with LIRE before and contains a reasonable amount of images along with categories and annotations. All the datasets and versions can be downloaded from <a href="http://cocodataset.org/#download">here</a>; we will only download and uncompress the 2014 validation dataset:</p>
+<div class="highlight"><pre><span></span>$ mkdir /data/mscoco/val2014
+$ <span class="nb">cd</span> /data/mscoco/val2014
+$ wget http://images.cocodataset.org/zips/val2014.zip
+$ unzip val2014.zip
+</pre></div>
+
+
+<p>(Here I am using <code>/data</code> as a root directory, which may require <code>sudo</code> rights to write to. Any directory can be used in its place.)</p>
+<h3 id="indexing">Indexing</h3>
+<p>In order to create an index of the images, we need to extract some <em>visual features</em> and represent them as <em>feature vectors</em>. Many features have been proposed in the computer vision and image processing literature; broadly speaking, features can be classified as <em>global</em> when they describe global image properties (colors, edge histograms, etc.), and <em>local</em> when they describe small regions of an image (corners, edges, etc.). The features that LIRE can extract belong to both categories, but we will focus on the ones that are readily available in the Solr plugin as well (although other can be easily added), namely:</p>
+<ul>
+<li><a href="https://mpeg.chiariglione.org/standards/mpeg-7/visual">MPEG-7 visual descriptors</a>:<ul>
+<li>ScalableColor;</li>
+<li>ColorLayout;</li>
+<li>EdgeHistogram;</li>
+</ul>
+</li>
+<li>PHOG (Pyramid Histogram of Oriented Gradients);</li>
+<li>CEDD (Color and Edge Directivity Descriptor);</li>
+<li>FCTH (Fuzzy Color and Texture Histogram);</li>
+<li>JCD (Joined Composite Descriptor, combines CEDD and FCTH);</li>
+<li>ACCID (combines scaled edge and fuzzy color histograms);</li>
+<li>AutoColorCorrelogram (color-to-color correlation histogram);</li>
+<li>simple joint histogram (combines 64-bin RGB and pixel rank);</li>
+<li>opponent histogram (simple color histogram in the opponent color space);</li>
+<li>fuzzy opponent histogram (fuzzy color histogram in the opponent color space);</li>
+</ul>
+<p>LIRE provides methods to:</p>
+<ul>
+<li>encode these features as <a href="https://en.wikipedia.org/wiki/Base64">Base64-encoded</a> strings;</li>
+<li>extract hashes that represent the features via <a href="https://en.wikipedia.org/wiki/Locality-sensitive_hashing#Bit_sampling_for_Hamming_distance">bit sampling</a>);</li>
+<li>create <em>reference objects</em> to use with a distance function to enable <a href="https://en.wikipedia.org/wiki/Nearest_neighbor_search">nearest-neighbour search</a> in metric spaces.</li>
+</ul>
+<p>The hashes and the reference objects can be used to speed up search by restricting the search space; the candidate results returned by this phase are then re-ranked using the actual encoded feature vectors and a distance function associated with each feature. More details can be found in the <a href="https://github.com/dermotte/LIRE/tree/master/src/main/docs/developer-docs/docs">LIRE documentation</a>.</p>
+<h4 id="extracting-the-image-features">Extracting the image features</h4>
+<p>Once we have decided what features to use, we can use the <code>ParallelSolrIndexer</code> class to extract them and save them in an XML file:</p>
+<div class="highlight"><pre><span></span>$ find /data/mscoco/val2014 -name <span class="s2">&quot;*.jpg&quot;</span> &gt; val2014.txt
+$ java -cp dist/lire.jar:liresolr/dist/liresolr.jar net.semanticmetadata.lire.solr.indexing.ParallelSolrIndexer -i val2014.txt -o val2014_all_plus_ms.xml -a -y <span class="s2">&quot;oh,sc,ce,fc,ac,ad,fo,jh&quot;</span>
+</pre></div>
+
+
+<p>where we specify:</p>
+<ul>
+<li><code>-i</code>: the file containing the list of image files to process;</li>
+<li><code>-o</code>: the output XML file;</li>
+<li><code>-a</code>: an option to include both the bit sampling and the metric space representations;</li>
+<li><code>-y</code>: the additional features to extract in addition to the default PHOG, ColorLayout, EdgeHistogram and JCD (check <a href="https://github.com/dermotte/liresolr#preliminaries">the README file</a> for a list of all the abbreviations).</li>
+</ul>
+<p>The XML file now contains a list of documents that can be indexed.</p>
+<h4 id="loading-the-feature-documents">Loading the feature documents</h4>
+<p>Before we can load the features, we need to create a Solr index that can make use of them (and that exposes a LIRE request handler); we basically need text fields to index the hashes and the reference points and a special binary <a href="https://lucene.apache.org/solr/guide/8_5/docvalues.html">DocValues</a> field to hold the encoded features. To make it simple, we can create a <code>lire-config</code> folder as a copy of the <code>_default</code> configuration from <code>/opt/solr/server/solr/configsets/_default/</code>, then update the <code>managed-schema</code> in the new configuration by adding these lines:</p>
+<div class="highlight"><pre><span></span><span class="nt">&lt;field</span> <span class="na">name=</span><span class="s">&quot;title&quot;</span> <span class="na">type=</span><span class="s">&quot;text_general&quot;</span> <span class="na">indexed=</span><span class="s">&quot;true&quot;</span> <span class="na">stored=</span><span class="s">&quot;true&quot;</span> <span class="na">multiValued=</span><span class="s">&quot;true&quot;</span><span class="nt">/&gt;</span>                                                                                                                                                                                         
+<span class="nt">&lt;fieldtype</span> <span class="na">name=</span><span class="s">&quot;binaryDV&quot;</span> <span class="na">class=</span><span class="s">&quot;net.semanticmetadata.lire.solr.BinaryDocValuesField&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;dynamicField</span> <span class="na">name=</span><span class="s">&quot;*_ha&quot;</span> <span class="na">type=</span><span class="s">&quot;text_ws&quot;</span> <span class="na">indexed=</span><span class="s">&quot;true&quot;</span> <span class="na">stored=</span><span class="s">&quot;false&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;dynamicField</span> <span class="na">name=</span><span class="s">&quot;*_ms&quot;</span> <span class="na">type=</span><span class="s">&quot;text_ws&quot;</span> <span class="na">indexed=</span><span class="s">&quot;true&quot;</span> <span class="na">stored=</span><span class="s">&quot;false&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;dynamicField</span> <span class="na">name=</span><span class="s">&quot;*_hi&quot;</span> <span class="na">type=</span><span class="s">&quot;binaryDV&quot;</span> <span class="na">indexed=</span><span class="s">&quot;false&quot;</span> <span class="na">stored=</span><span class="s">&quot;true&quot;</span><span class="nt">/&gt;</span>
+</pre></div>
+
+
+<p>and <code>solrconfig.xml</code> by adding these lines:</p>
+<div class="highlight"><pre><span></span><span class="nt">&lt;requestHandler</span> <span class="na">name=</span><span class="s">&quot;/lireq&quot;</span> <span class="na">class=</span><span class="s">&quot;net.semanticmetadata.lire.solr.LireRequestHandler&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;lst</span> <span class="na">name=</span><span class="s">&quot;defaults&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;str</span> <span class="na">name=</span><span class="s">&quot;echoParams&quot;</span><span class="nt">&gt;</span>explicit<span class="nt">&lt;/str&gt;</span>
+        <span class="nt">&lt;str</span> <span class="na">name=</span><span class="s">&quot;wt&quot;</span><span class="nt">&gt;</span>json<span class="nt">&lt;/str&gt;</span>
+        <span class="nt">&lt;str</span> <span class="na">name=</span><span class="s">&quot;indent&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/str&gt;</span>
+    <span class="nt">&lt;/lst&gt;</span>
+<span class="nt">&lt;/requestHandler&gt;</span>
+<span class="nt">&lt;valueSourceParser</span> <span class="na">name=</span><span class="s">&quot;lirefunc&quot;</span> <span class="na">class=</span><span class="s">&quot;net.semanticmetadata.lire.solr.LireValueSourceParser&quot;</span> <span class="nt">/&gt;</span>
+</pre></div>
+
+
+<p>Then, we can create the collection:</p>
+<div class="highlight"><pre><span></span>$ solr create_collection -c lire_mscoco_val2014 -d lire-config
+</pre></div>
+
+
+<p>and load the XML file that we created before:</p>
+<div class="highlight"><pre><span></span>$ curl http://localhost:8983/solr/lire_mscoco_val2014/update -H <span class="s2">&quot;Content-Type: text/xml&quot;</span> --data-binary @val2014_all_plus_ms.xml
+</pre></div>
+
+
+<p>If the file is too large, it can be split in parts and each part be fixed and uploaded separately:</p>
+<div class="highlight"><pre><span></span>$ split -d -l <span class="m">11000</span> val2014_all_plus_ms.xml val2014_all_plus_ms_
+$ <span class="nb">echo</span> <span class="s2">&quot;&lt;/add&gt;&quot;</span> &gt;&gt; val2014_all_plus_ms_00
+$ <span class="nb">echo</span> <span class="s2">&quot;&lt;/add&gt;&quot;</span> &gt;&gt; val2014_all_plus_ms_01
+$ <span class="nb">echo</span> <span class="s2">&quot;&lt;/add&gt;&quot;</span> &gt;&gt; val2014_all_plus_ms_02
+$ sed -i <span class="s1">&#39;1s/^/&lt;add&gt;/&#39;</span> val2014_all_plus_ms_01
+$ sed -i <span class="s1">&#39;1s/^/&lt;add&gt;/&#39;</span> val2014_all_plus_ms_02
+$ sed -i <span class="s1">&#39;1s/^/&lt;add&gt;/&#39;</span> val2014_all_plus_ms_03
+$ curl http://localhost:8983/solr/lire_mscoco_val2014/update -H <span class="s2">&quot;Content-Type: text/xml&quot;</span> --data-binary @val2014_all_plus_ms_00
+$ curl http://localhost:8983/solr/lire_mscoco_val2014/update -H <span class="s2">&quot;Content-Type: text/xml&quot;</span> --data-binary @val2014_all_plus_ms_01
+$ curl http://localhost:8983/solr/lire_mscoco_val2014/update -H <span class="s2">&quot;Content-Type: text/xml&quot;</span> --data-binary @val2014_all_plus_ms_02
+$ curl http://localhost:8983/solr/lire_mscoco_val2014/update -H <span class="s2">&quot;Content-Type: text/xml&quot;</span> --data-binary @val2014_all_plus_ms_03
+</pre></div>
+
+
+<p>or, obviously, it can be uploaded using the Solr API with any programming language.</p>
+<p>Finally, we can issue a commit:</p>
+<div class="highlight"><pre><span></span>curl http://localhost:8983/solr/lire_mscoco_val2014/update -H <span class="s2">&quot;Content-Type: text/xml&quot;</span> --data-binary <span class="s2">&quot;&lt;commit/&gt;&quot;</span>
+</pre></div>
+
+
+<p>The image index is now ready for search.</p>
+<h3 id="image-search">Image search</h3>
+<p>Once the images are indexed, the search can be performed using the <code>/lireq</code> request handler in three different ways:</p>
+<ul>
+<li>by image ID using the <code>id</code> request parameter (to use images from the same index);</li>
+<li>by URL using the <code>url</code> parameter (to use external images);</li>
+<li>by feature histogram and hashes using the <code>feature</code> and <code>hashes</code> parameters (with both manually extracted or obtained via another call to <code>lireq</code> using the <code>extract</code> parameter).</li>
+</ul>
+<p>Here are some examples using Python with <code>requests</code> and <code>matplotlib</code>, and using the image <code>COCO_val2014_000000481654.jpg</code> as an example:</p>
+<p><img src="images/COCO_val2014_000000481654.jpg" alt="Example image" class="img-fluid" /></p>
+<p>The easiest way to serve the images via HTTP is to launch a simple HTTP server from their directory with Python:</p>
+<div class="highlight"><pre><span></span>$ <span class="nb">cd</span> /data/mscoco/val2014
+$ python -m SimpleHTTPServer
+</pre></div>
+
+
+<p>All the following examples are completely implemented and collected in a Jupyter notebook in the <a href="https://github.com/nvitucci/apothem-resources/tree/master/howto/apache-solr/cbir/">Apothem resources repository</a>.</p>
+<h4 id="search-by-images">Search by images</h4>
+<p>In a separate console, or on a Jupyter notebook, we can:</p>
+<ul>
+<li>
+<p>search by ID:</p>
+<div class="highlight"><pre><span></span><span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;http://localhost:8983/solr/lire_mscoco_val2014/lireq&#39;</span><span class="p">,</span>
+               <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+                   <span class="s1">&#39;fl&#39;</span><span class="p">:</span> <span class="s1">&#39;*,score&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span> <span class="mf">0.99</span><span class="p">,</span>
+                   <span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+                   <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s1">&#39;/data/mscoco/val2014/COCO_val2014_000000481654.jpg&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="s1">&#39;ce&#39;</span>
+               <span class="p">})</span>
+</pre></div>
+
+
+</li>
+<li>
+<p>search by URL:</p>
+<div class="highlight"><pre><span></span><span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;http://localhost:8983/solr/lire_mscoco_val2014/lireq&#39;</span><span class="p">,</span>
+               <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+                   <span class="s1">&#39;fl&#39;</span><span class="p">:</span> <span class="s1">&#39;*,score&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span> <span class="mf">0.99</span><span class="p">,</span>
+                   <span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+                   <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s1">&#39;http://localhost:8000/COCO_val2014_000000481654.jpg&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="s1">&#39;ce&#39;</span>
+               <span class="p">})</span>
+</pre></div>
+
+
+</li>
+</ul>
+<p>Here the <code>accuracy</code> parameter is the fraction of hashes that are used in a query, with a maximum of 1 being all hashes; the field is set to <code>ce</code> for the CEDD descriptor, but <code>ce_ha</code> would be the same, since we are using the bit sampling hashes.</p>
+<blockquote>
+<p>Note: a search by ID and URL on the same image may give different results because the two methods are implemented slightly differently. This may be a bug.</p>
+</blockquote>
+<p>In both cases we can collect the results as JSON and inspect them   :</p>
+<div class="highlight"><pre><span></span><span class="n">j_res</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">j_res</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="nt">&quot;responseHeader&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="nt">&quot;QTime&quot;</span><span class="p">:</span> <span class="mi">755</span><span class="p">,</span>
+    <span class="nt">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;ce&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;fl&quot;</span><span class="p">:</span> <span class="s2">&quot;*,score&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;accuracy&quot;</span><span class="p">:</span> <span class="s2">&quot;0.99&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;rows&quot;</span><span class="p">:</span> <span class="s2">&quot;20&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:8000/COCO_val2014_000000481654.jpg&quot;</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;DocValuesOpenTime&quot;</span><span class="p">:</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;RawDocsCount&quot;</span><span class="p">:</span> <span class="s2">&quot;32931&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;RawDocsSearchTime&quot;</span><span class="p">:</span> <span class="s2">&quot;183&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;ReRankSearchTime&quot;</span><span class="p">:</span> <span class="s2">&quot;441&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;response&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;numFound&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="nt">&quot;start&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="nt">&quot;docs&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="nt">&quot;score&quot;</span><span class="p">:</span> <span class="mf">4.934342757604213</span><span class="p">,</span>
+        <span class="nt">&quot;localimagefile&quot;</span><span class="p">:</span> <span class="s2">&quot;/data/mscoco/val2014/COCO_val2014_000000481654.jpg&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;/data/mscoco/val2014/COCO_val2014_000000481654.jpg&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;d&quot;</span><span class="p">:</span> <span class="mf">4.934342757604213</span><span class="p">,</span>
+        <span class="nt">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;/data/mscoco/val2014/COCO_val2014_000000481654.jpg&quot;</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+        <span class="nt">&quot;score&quot;</span><span class="p">:</span> <span class="mf">14.45337473741894</span><span class="p">,</span>
+        <span class="nt">&quot;localimagefile&quot;</span><span class="p">:</span> <span class="s2">&quot;/data/mscoco/val2014/COCO_val2014_000000431996.jpg&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;/data/mscoco/val2014/COCO_val2014_000000431996.jpg&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;d&quot;</span><span class="p">:</span> <span class="mf">14.45337473741894</span><span class="p">,</span>
+        <span class="nt">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;/data/mscoco/val2014/COCO_val2014_000000431996.jpg&quot;</span>
+      <span class="p">},</span>
+      <span class="err">...</span>
+    <span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>and visualize the top five results:</p>
+<div class="highlight"><pre><span></span><span class="n">docs</span> <span class="o">=</span> <span class="n">j_res</span><span class="p">[</span><span class="s1">&#39;response&#39;</span><span class="p">][</span><span class="s1">&#39;docs&#39;</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">docs</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">5</span><span class="p">]):</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;http://localhost:8000/{filename}&#39;</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">img_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">))</span>
+
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;ce | {d[&#39;score&#39;]:.3f}, id: {img_id}&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">raw</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s1">&#39;jpg&#39;</span><span class="p">))</span>
+</pre></div>
+
+
+<p><img src="images/solr_lire_result_ce.png" alt="Example with CEDD" class="img-fluid" /></p>
+<h4 id="search-by-features">Search by features</h4>
+<p>As mentioned before, we can extract the feature representation and the hashes using the <code>extract</code> parameter:</p>
+<div class="highlight"><pre><span></span><span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;http://localhost:8983/solr/lire_mscoco_val2014/lireq&#39;</span><span class="p">,</span>
+                   <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+                       <span class="s1">&#39;fl&#39;</span><span class="p">:</span> <span class="s1">&#39;*,score&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span> <span class="mf">0.99</span><span class="p">,</span>
+                       <span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+                       <span class="s1">&#39;extract&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s1">&#39;http://localhost:8000/COCO_val2014_000000481654.jpg&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="s1">&#39;ce&#39;</span>
+                   <span class="p">})</span>
+</pre></div>
+
+
+<p>In the result we'll see encoded feature as the <code>histogram</code> field with value <code>4ICAgICA...</code>, and the hashes as the <code>bs_list</code> field with values <code>"121", "c0a", "e5d", ...</code>, with the actual bit sampling query (i.e. the number of hashes to be used as determined by the <code>accuracy</code> parameter) as the <code>bs_query</code> field with value <code>121 c0a e5d ...</code>; the same applies for the metric spaces reference objects (fields <code>ms_list</code> and <code>ms_query</code>):</p>
+<div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="nt">&quot;responseHeader&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="nt">&quot;QTime&quot;</span><span class="p">:</span> <span class="mi">208</span><span class="p">,</span>
+    <span class="nt">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;extract&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:8000/COCO_val2014_000000481654.jpg&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;ce&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;fl&quot;</span><span class="p">:</span> <span class="s2">&quot;*,score&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;accuracy&quot;</span><span class="p">:</span> <span class="s2">&quot;0.99&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;rows&quot;</span><span class="p">:</span> <span class="s2">&quot;20&quot;</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;histogram&quot;</span><span class="p">:</span> <span class="s2">&quot;4ICAgICAgIC...&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;bs_list&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;121&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;c0a&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;e5d&quot;</span><span class="p">,</span>
+    <span class="err">...</span>
+    <span class="p">],</span>
+  <span class="nt">&quot;bs_query&quot;</span><span class="p">:</span> <span class="s2">&quot;121 c0a e5d ...&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;ms_list&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;R003429&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;R003219&quot;</span><span class="p">,</span>
+    <span class="err">...</span>
+  <span class="p">],</span>
+  <span class="nt">&quot;ms_query&quot;</span><span class="p">:</span> <span class="s2">&quot;R003429^1.00 R003219^0.96 ... &quot;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>Assuming we want to search for images similar to the one having histogram <code>4ICAgICA...</code> and hashes <code>"121", "c0a", "e5d", ...</code> for the feature <code>ce</code> with accuracy 0.99, these API calls are equivalent:</p>
+<ul>
+<li>
+<p>with the <code>lireq</code> handler:</p>
+<div class="highlight"><pre><span></span><span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;http://localhost:8983/solr/lire_mscoco_val2014/lireq&#39;</span><span class="p">,</span>
+               <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+                   <span class="s1">&#39;fl&#39;</span><span class="p">:</span> <span class="s1">&#39;id,d&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span> <span class="mf">0.99</span><span class="p">,</span>
+                   <span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                   <span class="s1">&#39;feature&#39;</span><span class="p">:</span> <span class="s1">&#39;4ICAgICA...&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;hashes&#39;</span><span class="p">:</span> <span class="s1">&#39;121 c0a e5d ...&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="s1">&#39;ce&#39;</span>
+               <span class="p">})</span>
+</pre></div>
+
+
+</li>
+<li>
+<p>with the <code>select</code> handler, using <code>lirefunc</code> as a distance function for sorting:</p>
+<div class="highlight"><pre><span></span><span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;http://localhost:8983/solr/lire_mscoco_val2014/select&#39;</span><span class="p">,</span>
+               <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+                   <span class="s1">&#39;fl&#39;</span><span class="p">:</span> <span class="s1">&#39;id,d:lirefunc(ce, 4ICAgICA...)&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span> <span class="mf">0.89</span><span class="p">,</span>
+                   <span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                   <span class="s1">&#39;q&#39;</span><span class="p">:</span> <span class="s1">&#39;ce_ha:(121 c0a e5d ...)&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;sort&#39;</span><span class="p">:</span> <span class="s1">&#39;lirefunc(ce, 4ICAgICA...) asc&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="s1">&#39;ce_ha&#39;</span>
+               <span class="p">})</span>
+</pre></div>
+
+
+</li>
+</ul>
+<p>The same applies if we want to use metric spaces instead of bit sampling, by replacing the hashes with the reference objects and adding the parameter <code>'ms': 'true'</code> in the <code>lireq</code> handler call as in this example:</p>
+<div class="highlight"><pre><span></span><span class="n">res</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;http://localhost:8983/solr/lire_mscoco_val2014/lireq&#39;</span><span class="p">,</span>
+               <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+                   <span class="s1">&#39;fl&#39;</span><span class="p">:</span> <span class="s1">&#39;id,d&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span> <span class="mf">0.99</span><span class="p">,</span>
+                   <span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                   <span class="s1">&#39;feature&#39;</span><span class="p">:</span> <span class="s1">&#39;4ICAgICA...&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;hashes&#39;</span><span class="p">:</span> <span class="s1">&#39;R003429 R003219 ...&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;field&#39;</span><span class="p">:</span> <span class="s1">&#39;ce&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;ms&#39;</span><span class="p">:</span> <span class="s1">&#39;true&#39;</span>
+               <span class="p">})</span>
+</pre></div>
+
+
+<p>When using the <code>select</code> handler, we need to use the full field name (e.g. with <code>_ha</code> if using bit sampling or with <code>_ms</code> if using metric spaces). The result images can be displayed as before.</p>
+<h4 id="choosing-the-features">Choosing the features</h4>
+<p>During the feature extraction phase, we have extracted many possible features so that experimenting with different features becomes easier. This may obviously not be the case for a real use case, where evaluation is done in a previous phase and the index is kept as efficient as possible. Therefore, it is important to try and forecast the possible use cases and the images that will be kept in the index in order to optimize the features. For instance, one can start by answering these questions:</p>
+<ul>
+<li>Will the images contain mostly nature and landscapes? In this case, will a color-based search be enough?</li>
+<li>Will the images contain artifacts? In this case, will texture-based features be more appropriate?</li>
+</ul>
+<p>As for all information retrieval tasks, some tuning and a good evaluation framework will be needed for best results.</p>
+<h3 id="conclusions">Conclusions</h3>
+<p>Although nowadays image retrieval techniques may no longer (or not only) be based on predefined global and local features, and some research is under way to use neural networks as feature extractors instead, the methods and techniques explored here and implemented in libraries such as LIRE are still quite efficient for many tasks. The CBIR field is very exciting.
+We have only covered Solr as a search engine here, but plugins for other search engines like <a href="https://github.com/kzwang/elasticsearch-image">Elasticsearch</a> have been implemented and occasionally updated. LIRE itself has not been updated in the last two years, but I think it can be adapted easily to use new features - or it can be considered as a good example for more CBIR libraries.</p>
+<h3 id="references">References</h3>
+<ul>
+<li>LIRE Solr plugin: <a href="https://github.com/dermotte/liresolr">website</a>, <a href="https://apothem.blog/files/liresolr.bib">BibTeX</a></li>
+<li>LIRE Java package: <a href="https://github.com/dermotte/lire">website</a>, <a href="https://apothem.blog/files/lire.bib">BibTeX</a></li>
+<li>COCO dataset: <a href="http://cocodataset.org">website</a>, <a href="https://apothem.blog/files/coco_dataset.bib">BibTeX</a></li>
+</ul>
+    </div>
+  </article>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+<div class="row">
+  <ul class="col-sm-6 list-inline">
+    <li class="list-inline-item"><a href="https://apothem.blog/archives.html">Archives</a></li>
+    <li class="list-inline-item"><a href="https://apothem.blog/categories.html">Categories</a></li>
+      <li class="list-inline-item"><a href="https://apothem.blog/tags.html">Tags</a></li>
+  </ul>
+  <p class="col-sm-6 text-sm-right text-muted">
+    Generated by <a href="https://github.com/getpelican/pelican" target="_blank">Pelican</a>
+    / <a href="https://github.com/nairobilug/pelican-alchemy" target="_blank">&#x2728;</a>
+  </p>
+</div>    </div>
+  </footer>
+</body>
+
+</html>
