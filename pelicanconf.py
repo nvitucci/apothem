@@ -35,7 +35,7 @@ DEFAULT_PAGINATION = 4
 
 THEME_TEMPLATES_OVERRIDES = ['templates']
 
-STATIC_PATHS = ['images', 'extra/CNAME', 'extra/robots.txt', 'extra/favicon.ico']
+STATIC_PATHS = ['images', 'extra/CNAME', 'extra/robots.txt', 'extra/favicon.ico', 'files']
 EXTRA_PATH_METADATA = {
     'extra/CNAME': {'path': 'CNAME'},
     'extra/robots.txt': {'path': 'robots.txt'},
