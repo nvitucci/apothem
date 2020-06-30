@@ -74,3 +74,4 @@ MARKDOWN = {
 }
 
 PLUGINS = ['pelican_alias']
+
