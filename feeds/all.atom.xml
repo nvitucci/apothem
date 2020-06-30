@@ -14,9 +14,9 @@
 &lt;li&gt;&lt;a href="#the-textdiff-package"&gt;The text.diff package&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#the-texttranslate-package"&gt;The text.translate package&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#the-textsimilarity-package"&gt;The text.similarity package&lt;/a&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href="#string-similarities"&gt;String similarities&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#string-similarity"&gt;String similarity&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#token-similarity"&gt;Token similarity&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="#string-distances"&gt;String distances&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#string-distance"&gt;String distance&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#token-distance"&gt;Token distance&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
@@ -330,7 +330,7 @@ Let it be!
 &lt;/ul&gt;
 &lt;p&gt;A string similarity measure is more "relaxed" than a metric distance since it does neither enforce the triangle inequality nor the identity axiom. Keeping this in mind, the &lt;a href="https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance"&gt;Jaro-Winkler distance&lt;/a&gt;, for instance, is not strictly a metric distance but rather a similarity measure; nevertheless, it is common to refer to it as a distance in terms of "complement of similarity", i.e. &lt;em&gt;distance = 1 - similarity&lt;/em&gt;. Another thing worth noting is that all the distances and similarities in Commons Text are based on characters except for the &lt;em&gt;cosine&lt;/em&gt; distance and similarity, which is based on &lt;em&gt;words&lt;/em&gt; (or &lt;em&gt;tokens&lt;/em&gt;).&lt;/p&gt;
 &lt;p&gt;There are many things to consider when choosing what the most appropriate similarity measure could be for a certain use case, although some &lt;a href="https://www.kdnuggets.com/2019/01/comparison-text-distance-metrics.html"&gt;general suggestions&lt;/a&gt; can be made; furthermore, for even more string similarity goodness, other Java libraries such as &lt;a href="https://github.com/tdebatty/java-string-similarity"&gt;this one&lt;/a&gt; should be checked out.&lt;/p&gt;
-&lt;h4 id="string-similarities"&gt;String similarities&lt;/h4&gt;
+&lt;h4 id="string-similarity"&gt;String similarity&lt;/h4&gt;
 &lt;p&gt;In the following examples we will use the two strings &lt;code&gt;s1 = "hyperspace"&lt;/code&gt; and &lt;code&gt;s2 = "cyberscape"&lt;/code&gt;. The available similarity measures are:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -443,7 +443,7 @@ Fuzzy score similarity: 13
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;h4 id="string-distances"&gt;String distances&lt;/h4&gt;
+&lt;h4 id="string-distance"&gt;String distance&lt;/h4&gt;
 &lt;p&gt;Given again the two strings &lt;code&gt;s1 = "hyperspace"&lt;/code&gt; and &lt;code&gt;s2 = "cyberscape"&lt;/code&gt;, we have the following string distances:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;

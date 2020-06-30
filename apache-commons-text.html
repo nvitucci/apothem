@@ -89,9 +89,9 @@
 <li><a href="#the-textdiff-package">The text.diff package</a></li>
 <li><a href="#the-texttranslate-package">The text.translate package</a></li>
 <li><a href="#the-textsimilarity-package">The text.similarity package</a><ul>
-<li><a href="#string-similarities">String similarities</a></li>
+<li><a href="#string-similarity">String similarity</a></li>
 <li><a href="#token-similarity">Token similarity</a></li>
-<li><a href="#string-distances">String distances</a></li>
+<li><a href="#string-distance">String distance</a></li>
 <li><a href="#token-distance">Token distance</a></li>
 </ul>
 </li>
@@ -405,7 +405,7 @@ Let it be!
 </ul>
 <p>A string similarity measure is more "relaxed" than a metric distance since it does neither enforce the triangle inequality nor the identity axiom. Keeping this in mind, the <a href="https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance">Jaro-Winkler distance</a>, for instance, is not strictly a metric distance but rather a similarity measure; nevertheless, it is common to refer to it as a distance in terms of "complement of similarity", i.e. <em>distance = 1 - similarity</em>. Another thing worth noting is that all the distances and similarities in Commons Text are based on characters except for the <em>cosine</em> distance and similarity, which is based on <em>words</em> (or <em>tokens</em>).</p>
 <p>There are many things to consider when choosing what the most appropriate similarity measure could be for a certain use case, although some <a href="https://www.kdnuggets.com/2019/01/comparison-text-distance-metrics.html">general suggestions</a> can be made; furthermore, for even more string similarity goodness, other Java libraries such as <a href="https://github.com/tdebatty/java-string-similarity">this one</a> should be checked out.</p>
-<h4 id="string-similarities">String similarities</h4>
+<h4 id="string-similarity">String similarity</h4>
 <p>In the following examples we will use the two strings <code>s1 = "hyperspace"</code> and <code>s2 = "cyberscape"</code>. The available similarity measures are:</p>
 <ul>
 <li>
@@ -518,7 +518,7 @@ Fuzzy score similarity: 13
 </pre></div>
 
 
-<h4 id="string-distances">String distances</h4>
+<h4 id="string-distance">String distance</h4>
 <p>Given again the two strings <code>s1 = "hyperspace"</code> and <code>s2 = "cyberscape"</code>, we have the following string distances:</p>
 <ul>
 <li>
