@@ -149,7 +149,7 @@ $ make
 
 
 <p>and also time every query using <code>spark.time()</code>, for instance:</p>
-<div class="highlight"><pre><span></span>spark.time(carbon.sql(&quot;SELECT COUNT(*) FROM lineitem WHERE l_shipdate = &#39;1996-06-06&#39;&quot;).show)
+<div class="highlight"><pre><span></span><span class="err">spark.time(carbon.sql(&quot;SELECT COUNT(*) FROM lineitem WHERE l_shipdate = &#39;1996-06-06&#39;&quot;).show)</span>
 </pre></div>
 
 

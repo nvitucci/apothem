@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>  Apache Commons Text | APOTHEM
+</title>
+  <link rel="canonical" href="https://apothem.blog/apache-commons-text.html">
+
+    <link rel="icon" type="image/x-icon" href="https://apothem.blog/favicon.ico">
+
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/pygments/default.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/theme.css">
+
+  <link rel="alternate" type="application/atom+xml" title="Full Atom Feed"
+        href="https://apothem.blog/feeds/all.atom.xml">
+  <link rel="alternate" type="application/atom+xml" title="Categories Atom Feed"
+        href="https://apothem.blog/feeds/{slug}.atom.xml">  
+  <meta name="description" content="Today we are back to the Apache Commons project with a library for string manipulation and comparison, Apache Commons Text. The library can be a lightweight alternative to larger NLP libraries or a good complement to the powerful StringUtils class from the Apache Commons Lang library. What I really like …">
+
+
+</head>
+
+<body>
+  <header class="header">
+    <div class="container">
+<div class="row">
+    <div class="col-sm-4">
+      <a href="https://apothem.blog/">
+        <img class="img-fluid rounded" src=https://apothem.blog/images/profile.svg width=180 alt="APOTHEM">
+      </a>
+    </div>
+  <div class="col-sm-8">
+    <h1 class="title"><a href="https://apothem.blog/">APOTHEM</a></h1>
+      <p class="text-muted">Apache Project(s) of the month</p>
+      <ul class="list-inline">
+          <li class="list-inline-item"><a href="https://projects.apache.org" target="_blank">projects.apache.org</a></li>
+              <li class="list-inline-item text-muted">|</li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/about.html">About</a></li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/faq.html">FAQ</a></li>
+            <li class=" list-inline-item text-muted">|</li>
+          <li class="list-inline-item"><a class="fa fa-github" href="https://github.com/nvitucci/apothem" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-twitter" href="https://twitter.com/nvitucci" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-rss" href="feeds/all.atom.xml" target="_blank"></a></li>
+      </ul>
+  </div>
+</div>    </div>
+  </header>
+
+  <div class="main">
+    <div class="container">
+      <h2>  Apache Commons Text
+</h2>
+      <hr>
+  <article class="article">
+    <header>
+      <ul class="list-inline">
+        <li class="list-inline-item text-muted" title="2020-06-30T00:00:00+01:00">
+          <i class="fa fa-clock-o"></i>
+          Tue 30 June 2020
+        </li>
+        <li class="list-inline-item">
+          <i class="fa fa-folder-open-o"></i>
+          <a href="https://apothem.blog/category/projects.html">projects</a>
+        </li>
+          <li class="list-inline-item">
+            <i class="fa fa-files-o"></i>
+              <a href="https://apothem.blog/tag/library.html">#library</a>,               <a href="https://apothem.blog/tag/apache-commons.html">#Apache Commons</a>,               <a href="https://apothem.blog/tag/text-processing.html">#text processing</a>          </li>
+      </ul>
+    </header>
+    <div class="content">
+      <p>Today we are back to the <a href="https://commons.apache.org/">Apache Commons</a> project with a library for string manipulation and comparison, <a href="http://commons.apache.org/proper/commons-text/">Apache Commons Text</a>. The library can be a lightweight alternative to larger NLP libraries or a good complement to the powerful <code>StringUtils</code> class from the <a href="http://commons.apache.org/proper/commons-lang/">Apache Commons Lang</a> library. What I really like of Commons Text, besides the "base" operations on strings, is the collection of string similarity measures that allow to quantify <em>how much</em> two strings are close to each other, as we will see in detail in the <code>text.similarity</code> section.</p>
+<p>The Commons Text library contains a few packages which we will explore one by one. We will just skip the <code>text.lookup</code> and <code>text.matcher</code> packages because they only contain one very specialized class each, which I do not consider very interesting.</p>
+<div class="toc"><span class="toctitle">Index:</span><ul>
+<li><a href="#setting-up">Setting up</a></li>
+<li><a href="#the-text-package">The text package</a><ul>
+<li><a href="#caseutils">CaseUtils</a></li>
+<li><a href="#stringescapeutils">StringEscapeUtils</a></li>
+<li><a href="#stringsubstitutor">StringSubstitutor</a></li>
+<li><a href="#textstringbuilder">TextStringBuilder</a></li>
+<li><a href="#wordutils">WordUtils</a></li>
+</ul>
+</li>
+<li><a href="#the-textdiff-package">The text.diff package</a></li>
+<li><a href="#the-texttranslate-package">The text.translate package</a></li>
+<li><a href="#the-textsimilarity-package">The text.similarity package</a><ul>
+<li><a href="#string-similarities">String similarities</a></li>
+<li><a href="#token-similarity">Token similarity</a></li>
+<li><a href="#string-distances">String distances</a></li>
+<li><a href="#token-distance">Token distance</a></li>
+</ul>
+</li>
+<li><a href="#conclusions">Conclusions</a></li>
+</ul>
+</div>
+<h3 id="setting-up">Setting up</h3>
+<p>The latest version of Commons Text is 1.8, which is based on Java 8; therefore, we will use Java 8 in the code examples. As we have done in the <a href="https://apothem.blog/apache-commons-collections.html">Apache Commons Collections article</a>, we will use the library by means of a <code>pom.xml</code> like the following:</p>
+<div class="highlight"><pre><span></span><span class="nt">&lt;groupId&gt;</span>blog.apothem<span class="nt">&lt;/groupId&gt;</span>
+<span class="nt">&lt;artifactId&gt;</span>apache-commons-text-example<span class="nt">&lt;/artifactId&gt;</span>
+<span class="nt">&lt;version&gt;</span>0.0.1-SNAPSHOT<span class="nt">&lt;/version&gt;</span>
+
+<span class="nt">&lt;dependencies&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>org.apache.commons<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>commons-text<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>1.8<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+<span class="nt">&lt;/dependencies&gt;</span>
+</pre></div>
+
+
+<p>Again, we will create a class with a <code>main</code> method and write all the code there; the complete code is available as always in the <a href="https://github.com/nvitucci/apothem-resources/tree/master/apache-commons-text">Apothem resources repository</a>.</p>
+<h3 id="the-text-package">The <code>text</code> package</h3>
+<p>In the main package we can find a few classes dedicated to alphabet conversion (<code>AlphabetConverter</code>), case change (<code>CaseUtils</code>), escaping (<code>StringEscapeUtils</code>), substitution (<code>StringSubstitutor</code>), tokenization (<code>StringTokenizer</code>), string building (<code>TextStringBuilder</code>) and word utilities (<code>WordUtils</code>). The <code>StringTokenizer</code> just adds some functionalities to Java's <code>StringTokenizer</code>, and I couldn't find a useful use case for the <code>AlphabetConverter</code>; therefore, we won't see any examples of these classes.</p>
+<h4 id="caseutils"><code>CaseUtils</code></h4>
+<p>The <code>CaseUtils</code> class contains only one static method <code>toCamelCase</code>, which converts a string to <a href="https://en.wikipedia.org/wiki/Camel_case">camel case</a> based on a delimiter and optionally capitalizes the first letter:</p>
+<div class="highlight"><pre><span></span><span class="n">String</span> <span class="n">string</span> <span class="o">=</span> <span class="s">&quot;java-programming-language&quot;</span><span class="p">;</span>
+
+<span class="c1">// Capitalizes the first letter</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">CaseUtils</span><span class="p">.</span><span class="na">toCamelCase</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="kc">true</span><span class="p">,</span> <span class="sc">&#39;-&#39;</span><span class="p">));</span>
+<span class="c1">// Does not capitalize the first letter</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">CaseUtils</span><span class="p">.</span><span class="na">toCamelCase</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="kc">false</span><span class="p">,</span> <span class="sc">&#39;-&#39;</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>JavaProgrammingLanguage
+javaProgrammingLanguage
+</pre></div>
+
+
+<h4 id="stringescapeutils"><code>StringEscapeUtils</code></h4>
+<p>The <code>StringEscapeUtils</code> class contains several methods to escape a string given a language such as HTML or XML, or a format like CSV:</p>
+<div class="highlight"><pre><span></span><span class="n">String</span> <span class="n">string</span> <span class="o">=</span> <span class="s">&quot;&lt;a&gt;Department, R&amp;D&lt;/a&gt;&quot;</span><span class="p">;</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">StringEscapeUtils</span><span class="p">.</span><span class="na">escapeHtml4</span><span class="p">(</span><span class="n">string</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">StringEscapeUtils</span><span class="p">.</span><span class="na">escapeXml11</span><span class="p">(</span><span class="n">string</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">StringEscapeUtils</span><span class="p">.</span><span class="na">escapeCsv</span><span class="p">(</span><span class="n">string</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>&lt;a&gt;Department, R&amp;amp;D&lt;/a&gt;
+&lt;a&gt;Department, R&amp;amp;D&lt;/a&gt;
+&quot;&lt;a&gt;Department, R&amp;D&lt;/a&gt;&quot;
+</pre></div>
+
+
+<p>Escaping can also be included in a string builder to interactively escape only some parts of a string:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span>
+        <span class="n">StringEscapeUtils</span>
+                <span class="p">.</span><span class="na">builder</span><span class="p">(</span><span class="n">StringEscapeUtils</span><span class="p">.</span><span class="na">ESCAPE_HTML4</span><span class="p">)</span>
+                <span class="p">.</span><span class="na">append</span><span class="p">(</span><span class="s">&quot;R&amp;D dept: &quot;</span><span class="p">)</span>
+                <span class="p">.</span><span class="na">escape</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+                <span class="p">.</span><span class="na">toString</span><span class="p">());</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>R&amp;D dept: &lt;a&gt;Department, R&amp;amp;D&lt;/a&gt;
+</pre></div>
+
+
+<h4 id="stringsubstitutor"><code>StringSubstitutor</code></h4>
+<p>The <code>StringSubstitutor</code> is a different take on string interpolation than <code>String.format()</code>, closer to the approach that Scala and Kotlin use; it requires the creation of a map containing the variables to substitute in a template string, which can be used both with a static method and with a <code>StringSubstitutor</code> instance:</p>
+<div class="highlight"><pre><span></span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="p">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">substitutions</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;&gt;</span><span class="p">();</span>
+<span class="n">substitutions</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&quot;city&quot;</span><span class="p">,</span> <span class="s">&quot;London&quot;</span><span class="p">);</span>
+<span class="n">substitutions</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&quot;country&quot;</span><span class="p">,</span> <span class="s">&quot;England&quot;</span><span class="p">);</span>
+
+<span class="c1">// With static method</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span>
+        <span class="n">StringSubstitutor</span><span class="p">.</span><span class="na">replace</span><span class="p">(</span><span class="s">&quot;${city} is the capital of ${country}&quot;</span><span class="p">,</span> <span class="n">substitutions</span><span class="p">));</span>
+
+<span class="c1">// With StringSubstitutor object</span>
+<span class="n">StringSubstitutor</span> <span class="n">sub</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StringSubstitutor</span><span class="p">(</span><span class="n">substitutions</span><span class="p">);</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">sub</span><span class="p">.</span><span class="na">replace</span><span class="p">(</span><span class="s">&quot;${city} is the capital of ${country}&quot;</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>London is the capital of England
+</pre></div>
+
+
+<p>The <code>StringSubstitutor</code> can also create an <em>interpolator</em>, a lookup-based substitutor that can calculate values such as the Base64 encoding of a string:</p>
+<div class="highlight"><pre><span></span><span class="n">StringSubstitutor</span> <span class="n">interpolator</span> <span class="o">=</span> <span class="n">StringSubstitutor</span><span class="p">.</span><span class="na">createInterpolator</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">interpolator</span><span class="p">.</span><span class="na">replace</span><span class="p">(</span><span class="s">&quot;Base64 encoder: ${base64Encoder:Secret password}&quot;</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Base64 encoder: U2VjcmV0IHBhc3N3b3Jk
+</pre></div>
+
+
+<p>and many more (check out <a href="http://commons.apache.org/proper/commons-text/apidocs/org/apache/commons/text/StringSubstitutor.html">the docs</a> for a complete list).</p>
+<h4 id="textstringbuilder"><code>TextStringBuilder</code></h4>
+<p>This class can be considered as an "enriched" <code>StringBuilder</code> that adds more methods, for instance to append some fixed-length padding to the string that is being created:</p>
+<div class="highlight"><pre><span></span><span class="n">String</span> <span class="n">header</span> <span class="o">=</span> <span class="s">&quot;Header&quot;</span><span class="p">;</span>
+
+<span class="n">TextStringBuilder</span> <span class="n">builder</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TextStringBuilder</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">builder</span><span class="p">.</span><span class="na">appendPadding</span><span class="p">(</span><span class="n">header</span><span class="p">.</span><span class="na">length</span><span class="p">(),</span> <span class="sc">&#39;-&#39;</span><span class="p">).</span><span class="na">toString</span><span class="p">());</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Header
+------
+</pre></div>
+
+
+<p>and <a href="http://commons.apache.org/proper/commons-text/apidocs/org/apache/commons/text/TextStringBuilder.html">much more</a> (e.g. to delete and replace characters, add separators, etc.).</p>
+<h4 id="wordutils"><code>WordUtils</code></h4>
+<p>The <code>WordUtils</code> class contains methods for:</p>
+<ul>
+<li>
+<p>word/sentence abbreviation:</p>
+<div class="highlight"><pre><span></span><span class="n">String</span> <span class="n">longString</span> <span class="o">=</span> <span class="s">&quot;This is a very long string, from https://www.example.org&quot;</span><span class="p">;</span>
+
+<span class="c1">// Take at least 9 characters, cutting to 12 characters if no space is found before</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">WordUtils</span><span class="p">.</span><span class="na">abbreviate</span><span class="p">(</span><span class="n">longString</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="s">&quot; ...&quot;</span><span class="p">));</span>
+<span class="c1">// Take at least 10 characters, cutting to 12 characters if no space is found before</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">WordUtils</span><span class="p">.</span><span class="na">abbreviate</span><span class="p">(</span><span class="n">longString</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="s">&quot; ...&quot;</span><span class="p">));</span>
+<span class="c1">// Take at least 10 characters, then cut on the first space wherever it is</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">WordUtils</span><span class="p">.</span><span class="na">abbreviate</span><span class="p">(</span><span class="n">longString</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot; ...&quot;</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>This is a ...
+This is a ve ...
+This is a very ...
+</pre></div>
+
+
+</li>
+<li>
+<p>initials extraction:</p>
+<div class="highlight"><pre><span></span><span class="n">String</span> <span class="n">allLower</span> <span class="o">=</span> <span class="s">&quot;all lower but ONE&quot;</span><span class="p">;</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">WordUtils</span><span class="p">.</span><span class="na">initials</span><span class="p">(</span><span class="n">allLower</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>albO
+</pre></div>
+
+
+</li>
+<li>
+<p>case change (strange enough, with the exception of camel case conversion that, as we have seen, is in its own <code>CaseUtils</code> class):</p>
+<div class="highlight"><pre><span></span><span class="n">String</span> <span class="n">allLower</span> <span class="o">=</span> <span class="s">&quot;all lower but ONE&quot;</span><span class="p">;</span>
+<span class="n">String</span> <span class="n">allCapitalized</span> <span class="o">=</span> <span class="s">&quot;All Capitalized But ONE&quot;</span><span class="p">;</span>
+
+<span class="c1">// Doesn&#39;t lowercase the uppercase characters</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">WordUtils</span><span class="p">.</span><span class="na">capitalize</span><span class="p">(</span><span class="n">allLower</span><span class="p">));</span>
+<span class="c1">// Lowercases everything, then capitalizes the first letter of each word</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">WordUtils</span><span class="p">.</span><span class="na">capitalizeFully</span><span class="p">(</span><span class="n">allLower</span><span class="p">));</span>
+<span class="c1">// Lowercases the first letter of each word</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">WordUtils</span><span class="p">.</span><span class="na">uncapitalize</span><span class="p">(</span><span class="n">allCapitalized</span><span class="p">));</span>
+<span class="c1">// Swaps the case of each character</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">WordUtils</span><span class="p">.</span><span class="na">swapCase</span><span class="p">(</span><span class="n">allLower</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>All Lower But ONE
+All Lower But One
+all capitalized but oNE
+ALL LOWER BUT one
+</pre></div>
+
+
+</li>
+<li>
+<p>paragraph wrapping:</p>
+<div class="highlight"><pre><span></span><span class="n">String</span> <span class="n">longString</span> <span class="o">=</span> <span class="s">&quot;This is a very long string, from https://www.example.org&quot;</span><span class="p">;</span>
+
+<span class="c1">// Line length is 10, uses &#39;\n&#39; as a line break, does not break words longer than the line</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span>
+        <span class="n">WordUtils</span><span class="p">.</span><span class="na">wrap</span><span class="p">(</span><span class="n">longString</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&quot;\n&quot;</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;\n&quot;</span><span class="p">);</span>
+
+<span class="c1">// Line length is 10, uses &#39;\n&#39; as a line break, breaks words longer than the line</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span>
+        <span class="n">WordUtils</span><span class="p">.</span><span class="na">wrap</span><span class="p">(</span><span class="n">longString</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&quot;\n&quot;</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;\n&quot;</span><span class="p">);</span>
+
+<span class="c1">// Line length is 10, uses &#39;\n&#39; as a line break, breaks words longer than the line, also breaks on commas</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span>
+        <span class="n">WordUtils</span><span class="p">.</span><span class="na">wrap</span><span class="p">(</span><span class="n">longString</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s">&quot;\n&quot;</span><span class="p">,</span> <span class="kc">true</span><span class="p">,</span> <span class="s">&quot;,&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;\n&quot;</span><span class="p">);</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>This is a
+very long
+string,
+from
+https://www.example.org
+
+This is a
+very long
+string,
+from
+https://ww
+w.example.
+org
+
+This is a 
+very long 
+string
+ from http
+s://www.ex
+ample.org
+</pre></div>
+
+
+</li>
+</ul>
+<h3 id="the-textdiff-package">The <code>text.diff</code> package</h3>
+<p>This package features some classes to show how a diff between two strings is calculated. In particular, the <code>StringComparator</code> class can be used to create a script that transforms one string into another:</p>
+<div class="highlight"><pre><span></span><span class="n">String</span> <span class="n">s1</span> <span class="o">=</span> <span class="s">&quot;hyperspace&quot;</span><span class="p">;</span>
+<span class="n">String</span> <span class="n">s2</span> <span class="o">=</span> <span class="s">&quot;cyberscape&quot;</span><span class="p">;</span>
+
+<span class="n">StringsComparator</span> <span class="n">comparator</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StringsComparator</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">);</span>
+<span class="n">EditScript</span><span class="o">&lt;</span><span class="n">Character</span><span class="o">&gt;</span> <span class="n">script</span> <span class="o">=</span> <span class="n">comparator</span><span class="p">.</span><span class="na">getScript</span><span class="p">();</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Longest Common Subsequence length (number of \&quot;keep\&quot; commands): &quot;</span> <span class="o">+</span>
+        <span class="n">script</span><span class="p">.</span><span class="na">getLCSLength</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Effective modifications (number of \&quot;insert\&quot; and \&quot;delete\&quot; commands): &quot;</span> <span class="o">+</span>
+        <span class="n">script</span><span class="p">.</span><span class="na">getModifications</span><span class="p">());</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Longest Common Subsequence length (number of &quot;keep&quot; commands): 6
+Effective modifications (number of &quot;insert&quot; and &quot;delete&quot; commands): 8
+</pre></div>
+
+
+<p>and by implementing a visitor class we can see each <code>insert</code>, <code>delete</code> and <code>keep</code> operation (see the code in the repository for an example implementation).</p>
+<h3 id="the-texttranslate-package">The <code>text.translate</code> package</h3>
+<p>In this package we can find classes for translating the characters of a string into different characters, for instance via lookup to transform a string in its <a href="https://en.wikipedia.org/wiki/Leet">leetspeak</a> equivalent:</p>
+<div class="highlight"><pre><span></span><span class="n">Map</span><span class="o">&lt;</span><span class="n">CharSequence</span><span class="p">,</span> <span class="n">CharSequence</span><span class="o">&gt;</span> <span class="n">translation</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;&gt;</span><span class="p">();</span>
+<span class="n">translation</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&quot;e&quot;</span><span class="p">,</span> <span class="s">&quot;3&quot;</span><span class="p">);</span>
+<span class="n">translation</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&quot;l&quot;</span><span class="p">,</span> <span class="s">&quot;1&quot;</span><span class="p">);</span>
+<span class="n">translation</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&quot;t&quot;</span><span class="p">,</span> <span class="s">&quot;7&quot;</span><span class="p">);</span>
+
+<span class="n">String</span> <span class="n">s1</span> <span class="o">=</span> <span class="s">&quot;Let it be!&quot;</span><span class="p">;</span>
+
+<span class="n">LookupTranslator</span> <span class="n">lookupTranslator</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LookupTranslator</span><span class="p">(</span><span class="n">translation</span><span class="p">);</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>L37 i7 b3!
+</pre></div>
+
+
+<p>or to convert a string into Unicode characters and viceversa:</p>
+<div class="highlight"><pre><span></span><span class="n">String</span> <span class="n">s1</span> <span class="o">=</span> <span class="s">&quot;Let it be!&quot;</span><span class="p">;</span>
+
+<span class="n">UnicodeEscaper</span> <span class="n">unicodeEscaper</span> <span class="o">=</span> <span class="k">new</span> <span class="n">UnicodeEscaper</span><span class="p">();</span>
+<span class="n">UnicodeUnescaper</span> <span class="n">unicodeUnescaper</span> <span class="o">=</span> <span class="k">new</span> <span class="n">UnicodeUnescaper</span><span class="p">();</span>
+
+<span class="n">String</span> <span class="n">unicodeString</span> <span class="o">=</span> <span class="n">unicodeEscaper</span><span class="p">.</span><span class="na">translate</span><span class="p">(</span><span class="n">s1</span><span class="p">);</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">unicodeString</span><span class="p">);</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">unicodeUnescaper</span><span class="p">.</span><span class="na">translate</span><span class="p">(</span><span class="n">unicodeString</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>\u004C\u0065\u0074\u0020\u0069\u0074\u0020\u0062\u0065\u0021
+Let it be!
+</pre></div>
+
+
+<h3 id="the-textsimilarity-package">The <code>text.similarity</code> package</h3>
+<p>The classes contained in this package let us perform some basic data integration tasks by giving us a measure of how close two strings are; this is done by introducing the concepts of <em>string distance</em> and <em>string similarity</em>.</p>
+<p>A string distance is a metric that obeys the usual metric axioms:</p>
+<ul>
+<li><em>d(a, b) &gt;= 0</em> (non-negativity axiom: a distance cannot be negative);</li>
+<li><em>d(a, b) = 0</em> if and only if <em>a = b</em> (identity axiom);</li>
+<li><em>d(a, b) = d(b, a)</em> (symmetry axiom);</li>
+<li>triangle inequality: <em>d(a, c) ≤ d(a, b) + d(b, c)</em>.</li>
+</ul>
+<p>A string similarity measure is more "relaxed" than a metric distance since it does neither enforce the triangle inequality nor the identity axiom. Keeping this in mind, the <a href="https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance">Jaro-Winkler distance</a>, for instance, is not strictly a metric distance but rather a similarity measure; nevertheless, it is common to refer to it as a distance in terms of "complement of similarity", i.e. <em>distance = 1 - similarity</em>. Another thing worth noting is that all the distances and similarities in Commons Text are based on characters except for the <em>cosine</em> distance and similarity, which is based on <em>words</em> (or <em>tokens</em>).</p>
+<p>There are many things to consider when choosing what the most appropriate similarity measure could be for a certain use case, although some <a href="https://www.kdnuggets.com/2019/01/comparison-text-distance-metrics.html">general suggestions</a> can be made; furthermore, for even more string similarity goodness, other Java libraries such as <a href="https://github.com/tdebatty/java-string-similarity">this one</a> should be checked out.</p>
+<h4 id="string-similarities">String similarities</h4>
+<p>In the following examples we will use the two strings <code>s1 = "hyperspace"</code> and <code>s2 = "cyberscape"</code>. The available similarity measures are:</p>
+<ul>
+<li>
+<p>the <a href="https://en.wikipedia.org/wiki/Jaccard_index">Jaccard similarity</a>, which captures the number of common characters (here <code>a</code>, <code>c</code>, <code>e</code>, <code>p</code>, <code>r</code>, <code>s</code>, <code>y</code>) divided by the number of all characters (here <code>a</code>, <code>b</code>, <code>c</code>, <code>e</code>, <code>h</code>, <code>p</code>, <code>r</code>, <code>s</code>, <code>y</code>), hence <em>7 / 9 = 0.777777...</em>:</p>
+<div class="highlight"><pre><span></span><span class="n">JaccardSimilarity</span> <span class="n">jaccard</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JaccardSimilarity</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Jaccard similarity: &quot;</span> <span class="o">+</span> <span class="n">jaccard</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Jaccard similarity: 0.7777777777777778
+</pre></div>
+
+
+</li>
+<li>
+<p>the <a href="https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance">Jaro-Winkler similarity</a>, which takes into account both matching characters and transpositions correcting them with a scaling factor:</p>
+<div class="highlight"><pre><span></span><span class="n">JaroWinklerSimilarity</span> <span class="n">jaroWinkler</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JaroWinklerSimilarity</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Jaro-Winkler similarity: &quot;</span> <span class="o">+</span> <span class="n">jaroWinkler</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Jaro-Winkler similarity: 0.8250000000000001
+</pre></div>
+
+
+</li>
+<li>
+<p>the <a href="https://en.wikipedia.org/wiki/Longest_common_subsequence_problem">longest common subsequence (LCS)</a>, which finds the longest sequence of characters (not necessarily adjacent), which in this case would be <code>y, e, r, s, a, e</code> of length 6:</p>
+<div class="highlight"><pre><span></span><span class="n">LongestCommonSubsequence</span> <span class="n">lcs</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LongestCommonSubsequence</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Longest Common Subsequence similarity: &quot;</span> <span class="o">+</span> <span class="n">lcs</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Longest Common Subsequence similarity: 6
+</pre></div>
+
+
+</li>
+<li>
+<p>the fuzzy score, a custom matching algorithm based on a specific locale (for lowercasing), where one point is given for every matched character and subsequent matches yield two bonus points; the second string is treated as a query on the first string, so long common character sequences get a higher score:</p>
+<div class="highlight"><pre><span></span><span class="n">FuzzyScore</span> <span class="n">fuzzyScore</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FuzzyScore</span><span class="p">(</span><span class="n">Locale</span><span class="p">.</span><span class="na">ENGLISH</span><span class="p">);</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Fuzzy score similarity: &quot;</span> <span class="o">+</span> <span class="n">fuzzyScore</span><span class="p">.</span><span class="na">fuzzyScore</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Fuzzy score similarity: &quot;</span> <span class="o">+</span> <span class="n">fuzzyScore</span><span class="p">.</span><span class="na">fuzzyScore</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="s">&quot;space&quot;</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Fuzzy score similarity: 1
+Fuzzy score similarity: 13
+</pre></div>
+
+
+</li>
+</ul>
+<h4 id="token-similarity">Token similarity</h4>
+<p>The similarity measures we have seen so far can be used on any string because they are based on single characters; what if instead we want to measure the similarity between <em>sentences</em>, i.e. combinations of words (or <em>tokens</em>) separated by a delimiter such as whitespace? Although a string itself can be seen as a sequence of one-character tokens, tokens usually consist of few characters; therefore, a token distance will look at tokens as the base elements to compare.</p>
+<p>The only token similarity measure that Commons Text offers out of the box is the <a href="https://en.wikipedia.org/wiki/Cosine_similarity">cosine similarity</a>, which works on <em>vectors</em> of tokens (along with their counts) by multiplying them using the <a href="https://en.wikipedia.org/wiki/Dot_product">dot product</a> and dividing the result by the product of their norms. In order to understand how it works, we need to tokenize and transform a sentence into vectors:</p>
+<div class="highlight"><pre><span></span><span class="n">String</span> <span class="n">s1</span> <span class="o">=</span> <span class="s">&quot;string similarity&quot;</span><span class="p">;</span>
+<span class="n">String</span> <span class="n">s2</span> <span class="o">=</span> <span class="s">&quot;string distance&quot;</span><span class="p">;</span>
+
+<span class="n">Map</span><span class="o">&lt;</span><span class="n">CharSequence</span><span class="p">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">vector1</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;&gt;</span><span class="p">();</span>
+<span class="n">Map</span><span class="o">&lt;</span><span class="n">CharSequence</span><span class="p">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">vector2</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;&gt;</span><span class="p">();</span>
+
+<span class="k">for</span> <span class="p">(</span><span class="n">String</span> <span class="n">token</span> <span class="p">:</span> <span class="n">s1</span><span class="p">.</span><span class="na">split</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="p">))</span> <span class="p">{</span>
+    <span class="n">vector1</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">vector1</span><span class="p">.</span><span class="na">getOrDefault</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">for</span> <span class="p">(</span><span class="n">String</span> <span class="n">token</span> <span class="p">:</span> <span class="n">s2</span><span class="p">.</span><span class="na">split</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="p">))</span> <span class="p">{</span>
+    <span class="n">vector2</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">vector2</span><span class="p">.</span><span class="na">getOrDefault</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>Once we have the two vectors, we can just call the <code>cosineSimilarity</code> method from a <code>CosineSimilarity</code> instance:</p>
+<div class="highlight"><pre><span></span><span class="n">CosineSimilarity</span> <span class="n">cosine</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CosineSimilarity</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Cosine similarity: &quot;</span> <span class="o">+</span> <span class="n">cosine</span><span class="p">.</span><span class="na">cosineSimilarity</span><span class="p">(</span><span class="n">vector1</span><span class="p">,</span> <span class="n">vector2</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Cosine similarity: 0.4999999999999999
+</pre></div>
+
+
+<p>The result (besides rounding errors) is 0.5, because we have:</p>
+<ul>
+<li>two vectors of length 3 (because there are 3 different tokens);</li>
+<li>each vector has two elements whose value is 1 (as each token appears once in each sentence) and one element whose value is 0 (e.g. <code>"similarity"</code> is not included in the second sentence, and <code>"distance"</code> is not included in the first);</li>
+<li>the dot product of the vectors <code>[1, 1, 0]</code> and <code>[1, 0, 1]</code> is equal to 1;</li>
+<li>the norm of each vector (square root of the sum of each element squared) is equal to the square root of 2 (about 1.414), so their product is equal to 2;</li>
+<li>the cosine similarity, which is the dot product divided by the product of the norms, is <em>1 / 2 = 0.5</em>.</li>
+</ul>
+<p>If we add one more <code>"string"</code> token to the second vector (thus representing a sentence like <code>"string distance string"</code>) the cosine similarity will change, because the second vector will become <code>[2, 0, 1]</code> with norm equal to the square root of 5 (about 2.236), and the dot product will become 2, hence the cosine similarity <em>2 / (1.414 * 2.236) = 0.632...</em>:</p>
+<div class="highlight"><pre><span></span><span class="n">vector2</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&quot;string&quot;</span><span class="p">,</span> <span class="n">vector2</span><span class="p">.</span><span class="na">getOrDefault</span><span class="p">(</span><span class="s">&quot;string&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Cosine similarity: &quot;</span> <span class="o">+</span> <span class="n">cosine</span><span class="p">.</span><span class="na">cosineSimilarity</span><span class="p">(</span><span class="n">vector1</span><span class="p">,</span> <span class="n">vector2</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Cosine similarity: 0.6324555320336759
+</pre></div>
+
+
+<h4 id="string-distances">String distances</h4>
+<p>Given again the two strings <code>s1 = "hyperspace"</code> and <code>s2 = "cyberscape"</code>, we have the following string distances:</p>
+<ul>
+<li>
+<p>the <a href="https://en.wikipedia.org/wiki/Hamming_distance">Hamming distance</a>, i.e. the number of different characters (which requires the strings to be compared to be of equal length):</p>
+<div class="highlight"><pre><span></span><span class="n">HammingDistance</span> <span class="n">hamming</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HammingDistance</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Hamming distance: &quot;</span> <span class="o">+</span> <span class="n">hamming</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Hamming distance: 4
+</pre></div>
+
+
+</li>
+<li>
+<p>the Jaccard distance, defined as <em>1 - Jaccard similarity</em>, hence <em>1 - 0.777777... = 0.222222...</em>:</p>
+<div class="highlight"><pre><span></span><span class="n">JaccardDistance</span> <span class="n">jaccard</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JaccardDistance</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Jaccard distance: &quot;</span> <span class="o">+</span> <span class="n">jaccard</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Jaccard distance: 0.2222222222222222
+</pre></div>
+
+
+</li>
+<li>
+<p>the Jaro-Winkler distance, defined as <em>1 - Jaro-Winkler similarity</em>, hence it should be <em>1 - 0.825 = 0.175</em> <strong>but it is not</strong> at the moment (see the <a href="https://issues.apache.org/jira/browse/TEXT-104">Jira ticket</a>):</p>
+<div class="highlight"><pre><span></span><span class="n">JaroWinklerDistance</span> <span class="n">jaroWinkler</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JaroWinklerDistance</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Jaro-Winkler distance: &quot;</span> <span class="o">+</span> <span class="n">jaroWinkler</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Jaro-Winkler distance: 0.8250000000000001
+</pre></div>
+
+
+</li>
+<li>
+<p>the longest common subsequence (LCS) distance, defined as the difference between the sum of the lengths of the compared strings minus twice their LCS similarity, hence <em>10 + 10 - 2 * 6 = 8</em>:</p>
+<div class="highlight"><pre><span></span><span class="n">LongestCommonSubsequenceDistance</span> <span class="n">lcs</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LongestCommonSubsequenceDistance</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Longest Common Subsequence distance: &quot;</span> <span class="o">+</span> <span class="n">lcs</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Longest Common Subsequence distance: 8
+</pre></div>
+
+
+</li>
+<li>
+<p>the well-known <a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Levenshtein distance</a>, which takes into account character additions, deletions and substitutions:</p>
+<div class="highlight"><pre><span></span><span class="n">LevenshteinDistance</span> <span class="n">levenshtein</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LevenshteinDistance</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Levenshtein distance: &quot;</span> <span class="o">+</span> <span class="n">levenshtein</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Levenshtein distance: 4
+</pre></div>
+
+
+<p>and can be parameterized with a threshold above which the distance will be returned as -1:</p>
+<div class="highlight"><pre><span></span><span class="n">LevenshteinDistance</span> <span class="n">levenshteinWithThreshold</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LevenshteinDistance</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+<span class="c1">// Returns -1 since the actual distance, 4, is higher than the threshold</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Levenshtein distance: &quot;</span> <span class="o">+</span> <span class="n">levenshteinWithThreshold</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Levenshtein distance: -1
+</pre></div>
+
+
+<p>or used with its <code>Detailed</code> version to retrieve the details of the calculation:</p>
+<div class="highlight"><pre><span></span><span class="n">LevenshteinDetailedDistance</span> <span class="n">levenshteinDetailed</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LevenshteinDetailedDistance</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Levenshtein detailed distance: &quot;</span> <span class="o">+</span> <span class="n">levenshteinDetailed</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Levenshtein detailed distance: Distance: 4, Insert: 0, Delete: 0, Substitute: 4
+</pre></div>
+
+
+</li>
+</ul>
+<h4 id="token-distance">Token distance</h4>
+<p>The only available token distance is the cosine distance, simply defined as <em>1 - cosine similarity</em>. Building from the previous examples with <code>s1 = "string similarity"</code> and <code>s2 = "string distance"</code>, where the cosine similarity were 0.5 and about 0.632 respectively, we will have a cosine distance of 0.5 and about 0.368 respectively:</p>
+<div class="highlight"><pre><span></span><span class="n">CosineDistance</span> <span class="n">cosine</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CosineDistance</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Cosine distance: &quot;</span> <span class="o">+</span> <span class="n">cosine</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Cosine distance: &quot;</span> <span class="o">+</span> <span class="n">cosine</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span> <span class="o">+</span> <span class="s">&quot; string&quot;</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Cosine distance: 0.5000000000000001
+Cosine distance: 0.3675444679663241
+</pre></div>
+
+
+<p>The <code>CosineDistance</code> class tokenizes the sentences before calculating the similarity; the tokenization process is similar to what we did in our token similarity example (although it uses a different regex).</p>
+<h3 id="conclusions">Conclusions</h3>
+<p>Commons Text is a very feature-rich library for string processing, and should be part of everybody's toolkit since it can save from reinventing the wheel in many occasions. It may sometimes be difficult to understand the design choices behind the grouping of some classes and methods, but the library is actively developed and different solutions may be added in future releases.</p>
+    </div>
+  </article>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+<div class="row">
+  <ul class="col-sm-6 list-inline">
+    <li class="list-inline-item"><a href="https://apothem.blog/archives.html">Archives</a></li>
+    <li class="list-inline-item"><a href="https://apothem.blog/categories.html">Categories</a></li>
+      <li class="list-inline-item"><a href="https://apothem.blog/tags.html">Tags</a></li>
+  </ul>
+  <p class="col-sm-6 text-sm-right text-muted">
+    Generated by <a href="https://github.com/getpelican/pelican" target="_blank">Pelican</a>
+    / <a href="https://github.com/nairobilug/pelican-alchemy" target="_blank">&#x2728;</a>
+  </p>
+</div>    </div>
+  </footer>
+</body>
+
+</html>

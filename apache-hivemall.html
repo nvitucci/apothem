@@ -75,7 +75,7 @@
     </header>
     <div class="content">
       <p>With this article we will move a little bit out of the data engineering space and delve into another subject I love: we will explore the world of distributed machine learning with <a href="https://hivemall.incubator.apache.org/">Apache Hivemall</a>. From the project's homepage:</p>
-<div class="highlight"><pre><span></span>Hivemall is a scalable machine learning library that runs on Apache Hive, Spark and Pig.
+<div class="highlight"><pre><span></span><span class="err">Hivemall is a scalable machine learning library that runs on Apache Hive, Spark and Pig.</span>
 </pre></div>
 
 
@@ -256,11 +256,11 @@ Caused by: ml.dmlc.xgboost4j.java.XGBoostError: [01:14:14] /home/travis/build/my
 
 
 <p>When performing a multiclass classification task, we have to explicitly specify the <code>-num_class</code> parameter; we have 3 classes in our dataset, therefore we set it to 3. The other parameter is the objective function: <code>multi:softmax</code> will use the <code>softmax</code> objective and return only the predicted class, while <code>multi:softprob</code> will use the <code>softprob</code> objective and return the probability associated to each class (see <a href="https://xgboost.readthedocs.io/en/release_0.90/parameter.html#learning-task-parameters">the XGBoost docs</a> for more information, and for the other parameters). A model using the <code>softprob</code> objective can be created as follows:</p>
-<div class="highlight"><pre><span></span>scala&gt; spark.sql(&quot;&quot;&quot;
-    CREATE TABLE iris_model_softprob AS
-    SELECT train_xgboost(features, label, &#39;-objective multi:softprob -num_class 3&#39;) AS (model_id, model)
-    FROM (SELECT features, label FROM iris_processed CLUSTER BY rand(0))
-    &quot;&quot;&quot;).show
+<div class="highlight"><pre><span></span><span class="err">scala&gt; spark.sql(&quot;&quot;&quot;</span>
+<span class="err">    CREATE TABLE iris_model_softprob AS</span>
+<span class="err">    SELECT train_xgboost(features, label, &#39;-objective multi:softprob -num_class 3&#39;) AS (model_id, model)</span>
+<span class="err">    FROM (SELECT features, label FROM iris_processed CLUSTER BY rand(0))</span>
+<span class="err">    &quot;&quot;&quot;).show</span>
 </pre></div>
 
 

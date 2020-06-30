@@ -110,16 +110,16 @@
 
 
 <p>Now let's create a new Java file called <code>MetaModelExample.java</code> with the following content:</p>
-<div class="highlight"><pre><span></span><span class="kn">package</span> <span class="nn">com.example</span><span class="o">;</span>
+<div class="highlight"><pre><span></span><span class="kn">package</span> <span class="nn">com.example</span><span class="p">;</span>
 
-<span class="kn">import</span> <span class="nn">org.apache.metamodel.data.DataSet</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.apache.metamodel.data.Row</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.apache.metamodel.data.DataSet</span><span class="p">;</span>
+<span class="kn">import</span> <span class="nn">org.apache.metamodel.data.Row</span><span class="p">;</span>
 
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MetaModelExample</span> <span class="o">{</span>
-    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span> <span class="n">args</span><span class="o">[])</span> <span class="o">{</span>
-        <span class="n">MetaModelExample</span> <span class="n">example</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MetamodelExample</span><span class="o">();</span>
-    <span class="o">}</span>
-<span class="o">}</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MetaModelExample</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="p">(</span><span class="n">String</span> <span class="n">args</span><span class="o">[]</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">MetaModelExample</span> <span class="n">example</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MetamodelExample</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 </pre></div>
 
 
@@ -136,33 +136,33 @@ Project3,Python,true
 
 
 <p>Let's add the following method to the <code>MetaModelExample</code> class:</p>
-<div class="highlight"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">processCsv</span><span class="o">(</span><span class="n">String</span> <span class="n">filename</span><span class="o">)</span> <span class="o">{</span>
-    <span class="n">DataContext</span> <span class="n">dataContext</span> <span class="o">=</span> <span class="n">DataContextFactory</span><span class="o">.</span><span class="na">createCsvDataContext</span><span class="o">(</span><span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="n">filename</span><span class="o">));</span>
-    <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">tableNames</span> <span class="o">=</span> <span class="n">dataContext</span><span class="o">.</span><span class="na">getDefaultSchema</span><span class="o">().</span><span class="na">getTableNames</span><span class="o">();</span>
+<div class="highlight"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">processCsv</span><span class="p">(</span><span class="n">String</span> <span class="n">filename</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">DataContext</span> <span class="n">dataContext</span> <span class="o">=</span> <span class="n">DataContextFactory</span><span class="p">.</span><span class="na">createCsvDataContext</span><span class="p">(</span><span class="k">new</span> <span class="n">File</span><span class="p">(</span><span class="n">filename</span><span class="p">));</span>
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">tableNames</span> <span class="o">=</span> <span class="n">dataContext</span><span class="p">.</span><span class="na">getDefaultSchema</span><span class="p">().</span><span class="na">getTableNames</span><span class="p">();</span>
 
-    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">Arrays</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">tableNames</span><span class="o">.</span><span class="na">toArray</span><span class="o">()));</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">tableNames</span><span class="p">.</span><span class="na">toArray</span><span class="p">()));</span>
 
-    <span class="kd">final</span> <span class="n">String</span> <span class="n">table</span> <span class="o">=</span> <span class="n">tableNames</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+    <span class="kd">final</span> <span class="n">String</span> <span class="n">table</span> <span class="o">=</span> <span class="n">tableNames</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
 
-    <span class="n">DataSet</span> <span class="n">dataSet</span> <span class="o">=</span> <span class="n">dataContext</span><span class="o">.</span><span class="na">query</span><span class="o">()</span>
-            <span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">table</span><span class="o">)</span>
-            <span class="o">.</span><span class="na">select</span><span class="o">(</span><span class="s">&quot;project&quot;</span><span class="o">)</span>
-            <span class="o">.</span><span class="na">where</span><span class="o">(</span><span class="s">&quot;language&quot;</span><span class="o">).</span><span class="na">eq</span><span class="o">(</span><span class="s">&quot;Java&quot;</span><span class="o">)</span>
-            <span class="o">.</span><span class="na">and</span><span class="o">(</span><span class="s">&quot;completed&quot;</span><span class="o">).</span><span class="na">eq</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
-            <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+    <span class="n">DataSet</span> <span class="n">dataSet</span> <span class="o">=</span> <span class="n">dataContext</span><span class="p">.</span><span class="na">query</span><span class="p">()</span>
+            <span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+            <span class="p">.</span><span class="na">select</span><span class="p">(</span><span class="s">&quot;project&quot;</span><span class="p">)</span>
+            <span class="p">.</span><span class="na">where</span><span class="p">(</span><span class="s">&quot;language&quot;</span><span class="p">).</span><span class="na">eq</span><span class="p">(</span><span class="s">&quot;Java&quot;</span><span class="p">)</span>
+            <span class="p">.</span><span class="na">and</span><span class="p">(</span><span class="s">&quot;completed&quot;</span><span class="p">).</span><span class="na">eq</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+            <span class="p">.</span><span class="na">execute</span><span class="p">();</span>
 
-    <span class="k">for</span> <span class="o">(</span><span class="n">Row</span> <span class="n">r</span><span class="o">:</span> <span class="n">dataSet</span><span class="o">.</span><span class="na">toRows</span><span class="o">())</span>
-        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">Arrays</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">r</span><span class="o">.</span><span class="na">getValues</span><span class="o">()));</span>
-<span class="o">}</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">Row</span> <span class="n">r</span><span class="p">:</span> <span class="n">dataSet</span><span class="p">.</span><span class="na">toRows</span><span class="p">())</span>
+        <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="na">getValues</span><span class="p">()));</span>
+<span class="p">}</span>
 </pre></div>
 
 
 <p>and then a call to this method within the main:</p>
-<div class="highlight"><pre><span></span><span class="o">...</span>
-<span class="n">MetaModelExample</span> <span class="n">example</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MetamodelExample</span><span class="o">();</span>
+<div class="highlight"><pre><span></span><span class="p">...</span>
+<span class="n">MetaModelExample</span> <span class="n">example</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MetamodelExample</span><span class="p">();</span>
 
-<span class="n">example</span><span class="o">.</span><span class="na">processCsv</span><span class="o">(</span><span class="s">&quot;/tmp/example.csv&quot;</span><span class="o">);</span>
-<span class="o">...</span>
+<span class="n">example</span><span class="p">.</span><span class="na">processCsv</span><span class="p">(</span><span class="s">&quot;/tmp/example.csv&quot;</span><span class="p">);</span>
+<span class="p">...</span>
 </pre></div>
 
 
@@ -180,52 +180,52 @@ Project3,Python,true
 <li>We printed the result of the query.</li>
 </ul>
 <p>So, in the end, we ran a SQL query on a CSV file! Perhaps even more interestingly, we can update the file with some update instructions by replacing the <code>DataContext</code> class with <code>UpdateableDataContext</code> and then adding the following lines:</p>
-<div class="highlight"><pre><span></span><span class="n">dataContext</span><span class="o">.</span><span class="na">executeUpdate</span><span class="o">(</span><span class="k">new</span> <span class="n">UpdateScript</span><span class="o">()</span> <span class="o">{</span>
-    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">(</span><span class="n">UpdateCallback</span> <span class="n">callback</span><span class="o">)</span> <span class="o">{</span>
-        <span class="n">callback</span><span class="o">.</span><span class="na">update</span><span class="o">(</span><span class="n">table</span><span class="o">).</span><span class="na">value</span><span class="o">(</span><span class="s">&quot;completed&quot;</span><span class="o">,</span> <span class="s">&quot;true&quot;</span><span class="o">).</span><span class="na">where</span><span class="o">(</span><span class="s">&quot;language&quot;</span><span class="o">).</span><span class="na">eq</span><span class="o">(</span><span class="s">&quot;Java&quot;</span><span class="o">).</span><span class="na">execute</span><span class="o">();</span>
-        <span class="n">callback</span><span class="o">.</span><span class="na">insertInto</span><span class="o">(</span><span class="n">table</span><span class="o">)</span>
-                <span class="o">.</span><span class="na">value</span><span class="o">(</span><span class="s">&quot;project&quot;</span><span class="o">,</span> <span class="s">&quot;Project4&quot;</span><span class="o">)</span>
-                <span class="o">.</span><span class="na">value</span><span class="o">(</span><span class="s">&quot;language&quot;</span><span class="o">,</span> <span class="s">&quot;Java&quot;</span><span class="o">)</span>
-                <span class="o">.</span><span class="na">value</span><span class="o">(</span><span class="s">&quot;completed&quot;</span><span class="o">,</span> <span class="s">&quot;false&quot;</span><span class="o">)</span>
-                <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
-    <span class="o">}</span>
-<span class="o">});</span>
+<div class="highlight"><pre><span></span><span class="n">dataContext</span><span class="p">.</span><span class="na">executeUpdate</span><span class="p">(</span><span class="k">new</span> <span class="n">UpdateScript</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="p">(</span><span class="n">UpdateCallback</span> <span class="n">callback</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">callback</span><span class="p">.</span><span class="na">update</span><span class="p">(</span><span class="n">table</span><span class="p">).</span><span class="na">value</span><span class="p">(</span><span class="s">&quot;completed&quot;</span><span class="p">,</span> <span class="s">&quot;true&quot;</span><span class="p">).</span><span class="na">where</span><span class="p">(</span><span class="s">&quot;language&quot;</span><span class="p">).</span><span class="na">eq</span><span class="p">(</span><span class="s">&quot;Java&quot;</span><span class="p">).</span><span class="na">execute</span><span class="p">();</span>
+        <span class="n">callback</span><span class="p">.</span><span class="na">insertInto</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+                <span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="s">&quot;project&quot;</span><span class="p">,</span> <span class="s">&quot;Project4&quot;</span><span class="p">)</span>
+                <span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="s">&quot;language&quot;</span><span class="p">,</span> <span class="s">&quot;Java&quot;</span><span class="p">)</span>
+                <span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="s">&quot;completed&quot;</span><span class="p">,</span> <span class="s">&quot;false&quot;</span><span class="p">)</span>
+                <span class="p">.</span><span class="na">execute</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">});</span>
 </pre></div>
 
 
 <p>If we run again the previous query, we'll see that the file has been updated and <code>Project2</code> is no longer listed, while <code>Project4</code> is. Neat!</p>
 <h4 id="xlsx-files">XLSX files</h4>
 <p>Now let's look at a slightly more complex example. Spreadsheets can contain more than one table, which makes them closer to a relational database; MetaModel can use XLSX (<a href="https://en.wikipedia.org/wiki/Office_Open_XML">Office Open XML</a> Workbook) files, which can be read and saved with open source tools such as LibreOffice and OpenOffice. You can find an example file on the repo, or create your own one. All we need to do is to add a method such as this one:</p>
-<div class="highlight"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">processSpreadsheet</span><span class="o">(</span><span class="n">String</span> <span class="n">filename</span><span class="o">)</span> <span class="o">{</span>
-    <span class="n">DataContext</span> <span class="n">dataContext</span> <span class="o">=</span> <span class="n">DataContextFactory</span><span class="o">.</span><span class="na">createExcelDataContext</span><span class="o">(</span><span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="n">filename</span><span class="o">));</span>
+<div class="highlight"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">processSpreadsheet</span><span class="p">(</span><span class="n">String</span> <span class="n">filename</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">DataContext</span> <span class="n">dataContext</span> <span class="o">=</span> <span class="n">DataContextFactory</span><span class="p">.</span><span class="na">createExcelDataContext</span><span class="p">(</span><span class="k">new</span> <span class="n">File</span><span class="p">(</span><span class="n">filename</span><span class="p">));</span>
 
-    <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">sheetNames</span> <span class="o">=</span> <span class="n">dataContext</span><span class="o">.</span><span class="na">getDefaultSchema</span><span class="o">().</span><span class="na">getTableNames</span><span class="o">();</span>
-    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">Arrays</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">sheetNames</span><span class="o">.</span><span class="na">toArray</span><span class="o">()));</span>
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">sheetNames</span> <span class="o">=</span> <span class="n">dataContext</span><span class="p">.</span><span class="na">getDefaultSchema</span><span class="p">().</span><span class="na">getTableNames</span><span class="p">();</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">sheetNames</span><span class="p">.</span><span class="na">toArray</span><span class="p">()));</span>
 
-    <span class="k">for</span> <span class="o">(</span><span class="n">String</span> <span class="n">sheetName</span><span class="o">:</span> <span class="n">sheetNames</span><span class="o">)</span> <span class="o">{</span>
-        <span class="n">List</span><span class="o">&lt;</span><span class="n">Column</span><span class="o">&gt;</span> <span class="n">sheetColumns</span> <span class="o">=</span> <span class="n">dataContext</span><span class="o">.</span><span class="na">getDefaultSchema</span><span class="o">().</span><span class="na">getTableByName</span><span class="o">(</span><span class="n">sheetName</span><span class="o">).</span><span class="na">getColumns</span><span class="o">();</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">String</span> <span class="n">sheetName</span><span class="p">:</span> <span class="n">sheetNames</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">List</span><span class="o">&lt;</span><span class="n">Column</span><span class="o">&gt;</span> <span class="n">sheetColumns</span> <span class="o">=</span> <span class="n">dataContext</span><span class="p">.</span><span class="na">getDefaultSchema</span><span class="p">().</span><span class="na">getTableByName</span><span class="p">(</span><span class="n">sheetName</span><span class="p">).</span><span class="na">getColumns</span><span class="p">();</span>
 
-        <span class="k">for</span> <span class="o">(</span><span class="n">Column</span> <span class="n">col</span><span class="o">:</span> <span class="n">sheetColumns</span><span class="o">)</span>
-            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">col</span><span class="o">.</span><span class="na">getName</span><span class="o">());</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">Column</span> <span class="n">col</span><span class="p">:</span> <span class="n">sheetColumns</span><span class="p">)</span>
+            <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">col</span><span class="p">.</span><span class="na">getName</span><span class="p">());</span>
 
-        <span class="n">DataSet</span> <span class="n">content</span> <span class="o">=</span> <span class="n">dataContext</span><span class="o">.</span><span class="na">query</span><span class="o">().</span><span class="na">from</span><span class="o">(</span><span class="n">sheetName</span><span class="o">).</span><span class="na">selectAll</span><span class="o">().</span><span class="na">execute</span><span class="o">();</span>
+        <span class="n">DataSet</span> <span class="n">content</span> <span class="o">=</span> <span class="n">dataContext</span><span class="p">.</span><span class="na">query</span><span class="p">().</span><span class="na">from</span><span class="p">(</span><span class="n">sheetName</span><span class="p">).</span><span class="na">selectAll</span><span class="p">().</span><span class="na">execute</span><span class="p">();</span>
 
-        <span class="k">for</span> <span class="o">(</span><span class="n">Row</span> <span class="n">r</span><span class="o">:</span> <span class="n">content</span><span class="o">.</span><span class="na">toRows</span><span class="o">())</span>
-            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">Arrays</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">r</span><span class="o">.</span><span class="na">getValues</span><span class="o">()));</span>
-    <span class="o">}</span>
-<span class="o">}</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">Row</span> <span class="n">r</span><span class="p">:</span> <span class="n">content</span><span class="p">.</span><span class="na">toRows</span><span class="p">())</span>
+            <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="na">getValues</span><span class="p">()));</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 </pre></div>
 
 
 <p>and include it in the main method as we did with the previous example. The output will show the name of all the sheets and, for each sheet, the names of its columns and its data. But there is more! Since in this example the first column of each sheet represents the ID of a customer, we can perform a join between the two sheets by adding the following lines:</p>
-<div class="highlight"><pre><span></span><span class="n">DataSet</span> <span class="n">joined</span> <span class="o">=</span> <span class="n">dataContext</span><span class="o">.</span><span class="na">query</span><span class="o">()</span>
-        <span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">sheetNames</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">))</span>
-        <span class="o">.</span><span class="na">innerJoin</span><span class="o">(</span><span class="n">sheetNames</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">1</span><span class="o">)).</span><span class="na">on</span><span class="o">(</span><span class="s">&quot;id&quot;</span><span class="o">,</span> <span class="s">&quot;id&quot;</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">select</span><span class="o">(</span><span class="s">&quot;Names.surname&quot;</span><span class="o">,</span> <span class="s">&quot;Products.amount&quot;</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+<div class="highlight"><pre><span></span><span class="n">DataSet</span> <span class="n">joined</span> <span class="o">=</span> <span class="n">dataContext</span><span class="p">.</span><span class="na">query</span><span class="p">()</span>
+        <span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="n">sheetNames</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="p">.</span><span class="na">innerJoin</span><span class="p">(</span><span class="n">sheetNames</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)).</span><span class="na">on</span><span class="p">(</span><span class="s">&quot;id&quot;</span><span class="p">,</span> <span class="s">&quot;id&quot;</span><span class="p">)</span>
+        <span class="p">.</span><span class="na">select</span><span class="p">(</span><span class="s">&quot;Names.surname&quot;</span><span class="p">,</span> <span class="s">&quot;Products.amount&quot;</span><span class="p">)</span>
+        <span class="p">.</span><span class="na">execute</span><span class="p">();</span>
 
-<span class="k">for</span> <span class="o">(</span><span class="n">Row</span> <span class="n">r</span><span class="o">:</span> <span class="n">joined</span><span class="o">.</span><span class="na">toRows</span><span class="o">())</span>
-    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">Arrays</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">r</span><span class="o">.</span><span class="na">getValues</span><span class="o">()));</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">Row</span> <span class="n">r</span><span class="p">:</span> <span class="n">joined</span><span class="p">.</span><span class="na">toRows</span><span class="p">())</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="na">getValues</span><span class="p">()));</span>
 </pre></div>
 
 
@@ -241,64 +241,64 @@ Project3,Python,true
 
 
 <p>we can write code similar to what we already wrote before and run SQL queries on JSON files:</p>
-<div class="highlight"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">processJson</span><span class="o">(</span><span class="n">String</span> <span class="n">filename</span><span class="o">)</span> <span class="o">{</span>
-    <span class="n">DataContext</span> <span class="n">dataContext</span> <span class="o">=</span> <span class="n">DataContextFactory</span><span class="o">.</span><span class="na">createJsonDataContext</span><span class="o">(</span><span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="n">filename</span><span class="o">));</span>
+<div class="highlight"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">processJson</span><span class="p">(</span><span class="n">String</span> <span class="n">filename</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">DataContext</span> <span class="n">dataContext</span> <span class="o">=</span> <span class="n">DataContextFactory</span><span class="p">.</span><span class="na">createJsonDataContext</span><span class="p">(</span><span class="k">new</span> <span class="n">File</span><span class="p">(</span><span class="n">filename</span><span class="p">));</span>
 
-    <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">tableNames</span> <span class="o">=</span> <span class="n">dataContext</span><span class="o">.</span><span class="na">getDefaultSchema</span><span class="o">().</span><span class="na">getTableNames</span><span class="o">();</span>
-    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">Arrays</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">tableNames</span><span class="o">.</span><span class="na">toArray</span><span class="o">()));</span>
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">tableNames</span> <span class="o">=</span> <span class="n">dataContext</span><span class="p">.</span><span class="na">getDefaultSchema</span><span class="p">().</span><span class="na">getTableNames</span><span class="p">();</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">tableNames</span><span class="p">.</span><span class="na">toArray</span><span class="p">()));</span>
 
-    <span class="n">DataSet</span> <span class="n">dataSet</span> <span class="o">=</span> <span class="n">dataContext</span><span class="o">.</span><span class="na">query</span><span class="o">().</span><span class="na">from</span><span class="o">(</span><span class="n">tableNames</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">))</span>
-            <span class="o">.</span><span class="na">select</span><span class="o">(</span><span class="s">&quot;id&quot;</span><span class="o">)</span>
-            <span class="o">.</span><span class="na">where</span><span class="o">(</span><span class="s">&quot;value&quot;</span><span class="o">)</span>
-            <span class="o">.</span><span class="na">gte</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
-            <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+    <span class="n">DataSet</span> <span class="n">dataSet</span> <span class="o">=</span> <span class="n">dataContext</span><span class="p">.</span><span class="na">query</span><span class="p">().</span><span class="na">from</span><span class="p">(</span><span class="n">tableNames</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+            <span class="p">.</span><span class="na">select</span><span class="p">(</span><span class="s">&quot;id&quot;</span><span class="p">)</span>
+            <span class="p">.</span><span class="na">where</span><span class="p">(</span><span class="s">&quot;value&quot;</span><span class="p">)</span>
+            <span class="p">.</span><span class="na">gte</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+            <span class="p">.</span><span class="na">execute</span><span class="p">();</span>
 
-    <span class="k">for</span> <span class="o">(</span><span class="n">Row</span> <span class="n">r</span><span class="o">:</span> <span class="n">dataSet</span><span class="o">.</span><span class="na">toRows</span><span class="o">())</span>
-        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">Arrays</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">r</span><span class="o">.</span><span class="na">getValues</span><span class="o">()));</span>
-<span class="o">}</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">Row</span> <span class="n">r</span><span class="p">:</span> <span class="n">dataSet</span><span class="p">.</span><span class="na">toRows</span><span class="p">())</span>
+        <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="na">getValues</span><span class="p">()));</span>
+<span class="p">}</span>
 </pre></div>
 
 
 <h4 id="databases">Databases</h4>
 <p>By now we have understood how to "enhance" static files with querying capabilities, but what if we want to connect to a real datastore such as SQLite, PostgreSQL or MongoDB?</p>
 <p>MetaModel provides connectors for a wide variety of databases, including a generic JDBC connector and a specific connector for MongoDB, which support schema creation and inserts/updates as well. Let's see an example with MongoDB:</p>
-<div class="highlight"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">connectToMongo</span><span class="o">()</span> <span class="o">{</span>
-    <span class="n">UpdateableDataContext</span> <span class="n">dataContext</span> <span class="o">=</span> <span class="n">DataContextFactory</span><span class="o">.</span><span class="na">createMongoDbDataContext</span><span class="o">(</span>
-            <span class="s">&quot;localhost&quot;</span><span class="o">,</span> <span class="mi">27017</span><span class="o">,</span> <span class="s">&quot;test&quot;</span><span class="o">,</span> <span class="kc">null</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+<div class="highlight"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">connectToMongo</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">UpdateableDataContext</span> <span class="n">dataContext</span> <span class="o">=</span> <span class="n">DataContextFactory</span><span class="p">.</span><span class="na">createMongoDbDataContext</span><span class="p">(</span>
+            <span class="s">&quot;localhost&quot;</span><span class="p">,</span> <span class="mi">27017</span><span class="p">,</span> <span class="s">&quot;test&quot;</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="kc">null</span><span class="p">);</span>
 
-    <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">tableNames</span> <span class="o">=</span> <span class="n">dataContext</span><span class="o">.</span><span class="na">getDefaultSchema</span><span class="o">().</span><span class="na">getTableNames</span><span class="o">();</span>
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">tableNames</span> <span class="o">=</span> <span class="n">dataContext</span><span class="p">.</span><span class="na">getDefaultSchema</span><span class="p">().</span><span class="na">getTableNames</span><span class="p">();</span>
 
-    <span class="k">if</span> <span class="o">(</span><span class="n">tableNames</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">())</span> <span class="o">{</span>
-        <span class="n">dataContext</span><span class="o">.</span><span class="na">executeUpdate</span><span class="o">(</span><span class="k">new</span> <span class="n">UpdateScript</span><span class="o">()</span> <span class="o">{</span>
-            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">(</span><span class="n">UpdateCallback</span> <span class="n">callback</span><span class="o">)</span> <span class="o">{</span>
-                <span class="n">String</span> <span class="n">table</span> <span class="o">=</span> <span class="s">&quot;mytable&quot;</span><span class="o">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">tableNames</span><span class="p">.</span><span class="na">isEmpty</span><span class="p">())</span> <span class="p">{</span>
+        <span class="n">dataContext</span><span class="p">.</span><span class="na">executeUpdate</span><span class="p">(</span><span class="k">new</span> <span class="n">UpdateScript</span><span class="p">()</span> <span class="p">{</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="p">(</span><span class="n">UpdateCallback</span> <span class="n">callback</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">String</span> <span class="n">table</span> <span class="o">=</span> <span class="s">&quot;mytable&quot;</span><span class="p">;</span>
 
-                <span class="n">callback</span><span class="o">.</span><span class="na">createTable</span><span class="o">(</span><span class="n">callback</span><span class="o">.</span><span class="na">getDataContext</span><span class="o">().</span><span class="na">getDefaultSchema</span><span class="o">(),</span> <span class="n">table</span><span class="o">)</span>
-                        <span class="o">.</span><span class="na">withColumn</span><span class="o">(</span><span class="s">&quot;color&quot;</span><span class="o">).</span><span class="na">ofType</span><span class="o">(</span><span class="n">ColumnType</span><span class="o">.</span><span class="na">VARCHAR</span><span class="o">)</span>
-                        <span class="o">.</span><span class="na">withColumn</span><span class="o">(</span><span class="s">&quot;size&quot;</span><span class="o">).</span><span class="na">ofType</span><span class="o">(</span><span class="n">ColumnType</span><span class="o">.</span><span class="na">CHAR</span><span class="o">)</span>
-                        <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+                <span class="n">callback</span><span class="p">.</span><span class="na">createTable</span><span class="p">(</span><span class="n">callback</span><span class="p">.</span><span class="na">getDataContext</span><span class="p">().</span><span class="na">getDefaultSchema</span><span class="p">(),</span> <span class="n">table</span><span class="p">)</span>
+                        <span class="p">.</span><span class="na">withColumn</span><span class="p">(</span><span class="s">&quot;color&quot;</span><span class="p">).</span><span class="na">ofType</span><span class="p">(</span><span class="n">ColumnType</span><span class="p">.</span><span class="na">VARCHAR</span><span class="p">)</span>
+                        <span class="p">.</span><span class="na">withColumn</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">).</span><span class="na">ofType</span><span class="p">(</span><span class="n">ColumnType</span><span class="p">.</span><span class="na">CHAR</span><span class="p">)</span>
+                        <span class="p">.</span><span class="na">execute</span><span class="p">();</span>
 
-                <span class="n">callback</span><span class="o">.</span><span class="na">insertInto</span><span class="o">(</span><span class="n">table</span><span class="o">).</span><span class="na">value</span><span class="o">(</span><span class="s">&quot;color&quot;</span><span class="o">,</span> <span class="s">&quot;red&quot;</span><span class="o">).</span><span class="na">value</span><span class="o">(</span><span class="s">&quot;size&quot;</span><span class="o">,</span> <span class="s">&quot;L&quot;</span><span class="o">).</span><span class="na">execute</span><span class="o">();</span>
-                <span class="n">callback</span><span class="o">.</span><span class="na">insertInto</span><span class="o">(</span><span class="n">table</span><span class="o">).</span><span class="na">value</span><span class="o">(</span><span class="s">&quot;color&quot;</span><span class="o">,</span> <span class="s">&quot;yellow&quot;</span><span class="o">).</span><span class="na">value</span><span class="o">(</span><span class="s">&quot;size&quot;</span><span class="o">,</span> <span class="s">&quot;S&quot;</span><span class="o">).</span><span class="na">execute</span><span class="o">();</span>
-            <span class="o">}</span>
-        <span class="o">});</span>
-    <span class="o">}</span>
+                <span class="n">callback</span><span class="p">.</span><span class="na">insertInto</span><span class="p">(</span><span class="n">table</span><span class="p">).</span><span class="na">value</span><span class="p">(</span><span class="s">&quot;color&quot;</span><span class="p">,</span> <span class="s">&quot;red&quot;</span><span class="p">).</span><span class="na">value</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">,</span> <span class="s">&quot;L&quot;</span><span class="p">).</span><span class="na">execute</span><span class="p">();</span>
+                <span class="n">callback</span><span class="p">.</span><span class="na">insertInto</span><span class="p">(</span><span class="n">table</span><span class="p">).</span><span class="na">value</span><span class="p">(</span><span class="s">&quot;color&quot;</span><span class="p">,</span> <span class="s">&quot;yellow&quot;</span><span class="p">).</span><span class="na">value</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">,</span> <span class="s">&quot;S&quot;</span><span class="p">).</span><span class="na">execute</span><span class="p">();</span>
+            <span class="p">}</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
 
-    <span class="n">tableNames</span> <span class="o">=</span> <span class="n">dataContext</span><span class="o">.</span><span class="na">getDefaultSchema</span><span class="o">().</span><span class="na">getTableNames</span><span class="o">();</span>
-    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">Arrays</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">tableNames</span><span class="o">.</span><span class="na">toArray</span><span class="o">()));</span>
-<span class="o">}</span>
+    <span class="n">tableNames</span> <span class="o">=</span> <span class="n">dataContext</span><span class="p">.</span><span class="na">getDefaultSchema</span><span class="p">().</span><span class="na">getTableNames</span><span class="p">();</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">tableNames</span><span class="p">.</span><span class="na">toArray</span><span class="p">()));</span>
+<span class="p">}</span>
 </pre></div>
 
 
 <p>In this example, we create a connection to a MongoDB instance running on <code>localhost:27017</code> and we connect to the <code>test</code> database (which might not exist yet); then, we get the list of "tables" (MongoDB collections) and, if none is found, we create a new one called <code>mytable</code> with "columns" (MongoDB document fields) <code>color</code> and <code>size</code>; finally, we insert two example "records" (MongoDB documents) in the newly created collections. In order to make sure that this works, we can add a query section like in the previous examples:</p>
-<div class="highlight"><pre><span></span><span class="n">DataSet</span> <span class="n">dataSet</span> <span class="o">=</span> <span class="n">dataContext</span><span class="o">.</span><span class="na">query</span><span class="o">().</span><span class="na">from</span><span class="o">(</span><span class="n">tableNames</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">))</span>
-        <span class="o">.</span><span class="na">selectAll</span><span class="o">()</span>
-        <span class="o">.</span><span class="na">where</span><span class="o">(</span><span class="s">&quot;size&quot;</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">eq</span><span class="o">(</span><span class="s">&quot;S&quot;</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">execute</span><span class="o">();</span>
+<div class="highlight"><pre><span></span><span class="n">DataSet</span> <span class="n">dataSet</span> <span class="o">=</span> <span class="n">dataContext</span><span class="p">.</span><span class="na">query</span><span class="p">().</span><span class="na">from</span><span class="p">(</span><span class="n">tableNames</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="p">.</span><span class="na">selectAll</span><span class="p">()</span>
+        <span class="p">.</span><span class="na">where</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">)</span>
+        <span class="p">.</span><span class="na">eq</span><span class="p">(</span><span class="s">&quot;S&quot;</span><span class="p">)</span>
+        <span class="p">.</span><span class="na">execute</span><span class="p">();</span>
 
-<span class="k">for</span> <span class="o">(</span><span class="n">Row</span> <span class="n">r</span><span class="o">:</span> <span class="n">dataSet</span><span class="o">.</span><span class="na">toRows</span><span class="o">())</span>
-    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">Arrays</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">r</span><span class="o">.</span><span class="na">getValues</span><span class="o">()));</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">Row</span> <span class="n">r</span><span class="p">:</span> <span class="n">dataSet</span><span class="p">.</span><span class="na">toRows</span><span class="p">())</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="na">getValues</span><span class="p">()));</span>
 </pre></div>
 
 
