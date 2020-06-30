@@ -315,7 +315,7 @@ A string similarity measure is more "relaxed" than a metric distance since it do
 
 There are many things to consider when choosing what the most appropriate similarity measure could be for a certain use case, although some [general suggestions](https://www.kdnuggets.com/2019/01/comparison-text-distance-metrics.html) can be made; furthermore, for even more string similarity goodness, other Java libraries such as [this one](https://github.com/tdebatty/java-string-similarity) should be checked out.
 
-#### String similarities
+#### String similarity
 
 In the following examples we will use the two strings `s1 = "hyperspace"` and `s2 = "cyberscape"`. The available similarity measures are:
 
@@ -417,7 +417,7 @@ If we add one more `"string"` token to the second vector (thus representing a se
     :::text
     Cosine similarity: 0.6324555320336759
 
-#### String distances
+#### String distance
 
 Given again the two strings `s1 = "hyperspace"` and `s2 = "cyberscape"`, we have the following string distances:
 
