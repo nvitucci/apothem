@@ -106,7 +106,7 @@
 <p><img src="images/atlas_glossary_cat.png" alt="Atlas glossary" class="img-fluid" /></p>
 <p>Now, in the same way, we switch to "Terms" and create the two terms <code>National ID card</code> and <code>Passport</code>. If we click on any of the terms, we will see the term's detail page where we can assign classifications and categories. We can even create relationships between terms, for instance to say that a <code>National ID card</code> is somewhat related to a <code>Passport</code> via a <code>seeAlso</code> relation. After this, we can finally assign the terms to any metadata item, for instance to the <code>document</code> table, by clicking on the plus sign under the "Term" column in the search view:</p>
 <p><img src="images/atlas_terms_assign.png" alt="Atlas glossary" class="img-fluid" /></p>
-<p>For further information, the <a href="https://atlas.apache.org/Glossary.html">Glossary page</a> on the Atlas website is very detailed and shows some useful examples.</p>
+<p>For further information, the <a href="https://atlas.apache.org/#/Glossary.html">Glossary page</a> on the Atlas website is very detailed and shows some useful examples.</p>
 <h2 id="the-rest-api">The REST API</h2>
 <p>Another very strong feature that Atlas offers is its rich REST API. Basically, everything that can be done via the UI can be done via the API as well. A <a href="https://atlas.apache.org/2.0.0/api/v2/ui/index.html">Swagger interactive interface</a> is available on the website for easier exploration; here we will touch on the main sections with a couple examples.</p>
 <p>As usual, the following API calls can be performed with any client (curl, Postman, etc.). In the following, every call is run via <code>curl</code> with JSON as the response content type and with the correct access credentials (which, as a default, are <code>admin / admin</code>); in other words, an API call such as <code>/api/atlas/v2/types/typedefs</code> is performed with:</p>
@@ -147,7 +147,7 @@
 </pre></div>
 
 
-<p>An advanced search endpoint using Atlas DSL is available as well, but we will not cover it here. Further information on the DSL can be found <a href="https://atlas.apache.org/Search-Advanced.html">here</a>.</p>
+<p>An advanced search endpoint using Atlas DSL is available as well, but we will not cover it here. Further information on the DSL can be found <a href="https://atlas.apache.org/#/Search-Advanced.html">here</a>.</p>
 <h4 id="single-entity">Single entity</h4>
 <p>The previous endpoints returned a (possibly empty) list of entities as a result. If we want to explore a single entity, we have to extract its <code>guid</code> from any of the previous calls. Let's say we are interested in the entity with <code>"guid": "ad9915a8-fdab-4570-964f-8f636a8da20c"</code>; a rich description of the entity can be obtained by calling this endpoint:</p>
 <div class="highlight"><pre><span></span>/api/atlas/v2/entity/guid/ad9915a8-fdab-4570-964f-8f636a8da20c
