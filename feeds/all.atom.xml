@@ -3488,7 +3488,7 @@ $ sudo service tomcat restart
 &lt;p&gt;&lt;img src="images/atlas_glossary_cat.png" alt="Atlas glossary" class="img-fluid" /&gt;&lt;/p&gt;
 &lt;p&gt;Now, in the same way, we switch to "Terms" and create the two terms &lt;code&gt;National ID card&lt;/code&gt; and &lt;code&gt;Passport&lt;/code&gt;. If we click on any of the terms, we will see the term's detail page where we can assign classifications and categories. We can even create relationships between terms, for instance to say that a &lt;code&gt;National ID card&lt;/code&gt; is somewhat related to a &lt;code&gt;Passport&lt;/code&gt; via a &lt;code&gt;seeAlso&lt;/code&gt; relation. After this, we can finally assign the terms to any metadata item, for instance to the &lt;code&gt;document&lt;/code&gt; table, by clicking on the plus sign under the "Term" column in the search view:&lt;/p&gt;
 &lt;p&gt;&lt;img src="images/atlas_terms_assign.png" alt="Atlas glossary" class="img-fluid" /&gt;&lt;/p&gt;
-&lt;p&gt;For further information, the &lt;a href="https://atlas.apache.org/#/Glossary.html"&gt;Glossary page&lt;/a&gt; on the Atlas website is very detailed and shows some useful examples.&lt;/p&gt;
+&lt;p&gt;For further information, the &lt;a href="https://atlas.apache.org/#/Glossary"&gt;Glossary page&lt;/a&gt; on the Atlas website is very detailed and shows some useful examples.&lt;/p&gt;
 &lt;h2 id="the-rest-api"&gt;The REST API&lt;/h2&gt;
 &lt;p&gt;Another very strong feature that Atlas offers is its rich REST API. Basically, everything that can be done via the UI can be done via the API as well. A &lt;a href="https://atlas.apache.org/2.0.0/api/v2/ui/index.html"&gt;Swagger interactive interface&lt;/a&gt; is available on the website for easier exploration; here we will touch on the main sections with a couple examples.&lt;/p&gt;
 &lt;p&gt;As usual, the following API calls can be performed with any client (curl, Postman, etc.). In the following, every call is run via &lt;code&gt;curl&lt;/code&gt; with JSON as the response content type and with the correct access credentials (which, as a default, are &lt;code&gt;admin / admin&lt;/code&gt;); in other words, an API call such as &lt;code&gt;/api/atlas/v2/types/typedefs&lt;/code&gt; is performed with:&lt;/p&gt;
@@ -3529,7 +3529,7 @@ $ sudo service tomcat restart
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;An advanced search endpoint using Atlas DSL is available as well, but we will not cover it here. Further information on the DSL can be found &lt;a href="https://atlas.apache.org/#/Search-Advanced.html"&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;An advanced search endpoint using Atlas DSL is available as well, but we will not cover it here. Further information on the DSL can be found &lt;a href="https://atlas.apache.org/#/Search-Advanced"&gt;here&lt;/a&gt;.&lt;/p&gt;
 &lt;h4 id="single-entity"&gt;Single entity&lt;/h4&gt;
 &lt;p&gt;The previous endpoints returned a (possibly empty) list of entities as a result. If we want to explore a single entity, we have to extract its &lt;code&gt;guid&lt;/code&gt; from any of the previous calls. Let's say we are interested in the entity with &lt;code&gt;"guid": "ad9915a8-fdab-4570-964f-8f636a8da20c"&lt;/code&gt;; a rich description of the entity can be obtained by calling this endpoint:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/entity/guid/ad9915a8-fdab-4570-964f-8f636a8da20c
