@@ -2607,7 +2607,7 @@ $ sudo service tomcat restart
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;An advanced search endpoint using Atlas DSL is available as well, but we will not cover it here. Further information on the DSL can be found &lt;a href="https://atlas.apache.org/#/Search-Advanced"&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;An advanced search endpoint using Atlas DSL is available as well, but we will not cover it here. Further information on the DSL can be found &lt;a href="https://atlas.apache.org/#/SearchAdvance"&gt;here&lt;/a&gt;.&lt;/p&gt;
 &lt;h4 id="single-entity"&gt;Single entity&lt;/h4&gt;
 &lt;p&gt;The previous endpoints returned a (possibly empty) list of entities as a result. If we want to explore a single entity, we have to extract its &lt;code&gt;guid&lt;/code&gt; from any of the previous calls. Let's say we are interested in the entity with &lt;code&gt;"guid": "ad9915a8-fdab-4570-964f-8f636a8da20c"&lt;/code&gt;; a rich description of the entity can be obtained by calling this endpoint:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/api/atlas/v2/entity/guid/ad9915a8-fdab-4570-964f-8f636a8da20c
