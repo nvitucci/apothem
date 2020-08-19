@@ -58,7 +58,7 @@ Now, in the same way, we switch to "Terms" and create the two terms `National ID
 
 <img src="images/atlas_terms_assign.png" alt="Atlas glossary" class="img-fluid" />
 
-For further information, the [Glossary page](https://atlas.apache.org/#/Glossary.html) on the Atlas website is very detailed and shows some useful examples.
+For further information, the [Glossary page](https://atlas.apache.org/#/Glossary) on the Atlas website is very detailed and shows some useful examples.
 
 ## The REST API
 
@@ -105,7 +105,7 @@ If we had deleted any entities (e.g. if we dropped any Hive tables), we would se
     :::text
     /api/atlas/v2/search/basic?typeName=hive_table&query=people&excludeDeletedEntities=true
 
-An advanced search endpoint using Atlas DSL is available as well, but we will not cover it here. Further information on the DSL can be found [here](https://atlas.apache.org/#/Search-Advanced.html).
+An advanced search endpoint using Atlas DSL is available as well, but we will not cover it here. Further information on the DSL can be found [here](https://atlas.apache.org/#/Search-Advanced).
 
 #### Single entity
 
