@@ -105,7 +105,7 @@ If we had deleted any entities (e.g. if we dropped any Hive tables), we would se
     :::text
     /api/atlas/v2/search/basic?typeName=hive_table&query=people&excludeDeletedEntities=true
 
-An advanced search endpoint using Atlas DSL is available as well, but we will not cover it here. Further information on the DSL can be found [here](https://atlas.apache.org/#/Search-Advanced).
+An advanced search endpoint using Atlas DSL is available as well, but we will not cover it here. Further information on the DSL can be found [here](https://atlas.apache.org/#/SearchAdvance).
 
 #### Single entity
 
