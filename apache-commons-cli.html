@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>  Apache Commons CLI | APOTHEM
+</title>
+  <link rel="canonical" href="https://apothem.blog/apache-commons-cli.html">
+
+    <link rel="icon" type="image/x-icon" href="https://apothem.blog/favicon.ico">
+
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/pygments/default.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/theme.css">
+
+  <link rel="alternate" type="application/atom+xml" title="Full Atom Feed"
+        href="https://apothem.blog/feeds/all.atom.xml">
+  <link rel="alternate" type="application/atom+xml" title="Categories Atom Feed"
+        href="https://apothem.blog/feeds/{slug}.atom.xml">  
+  <meta name="description" content="A common task when developing user-facing applications is to parse command line parameters to turn them into runtime options. The task is certainly repetitive and prone to error when it is reimplemented time and again, but another little library from the Apache Commons project makes it definitely an easier and …">
+
+
+</head>
+
+<body>
+  <header class="header">
+    <div class="container">
+<div class="row">
+    <div class="col-sm-4">
+      <a href="https://apothem.blog/">
+        <img class="img-fluid rounded" src=https://apothem.blog/images/profile.svg width=180 alt="APOTHEM">
+      </a>
+    </div>
+  <div class="col-sm-8">
+    <h1 class="title"><a href="https://apothem.blog/">APOTHEM</a></h1>
+      <p class="text-muted">Apache Project(s) of the month</p>
+      <ul class="list-inline">
+          <li class="list-inline-item"><a href="https://projects.apache.org" target="_blank">projects.apache.org</a></li>
+              <li class="list-inline-item text-muted">|</li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/about.html">About</a></li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/faq.html">FAQ</a></li>
+            <li class=" list-inline-item text-muted">|</li>
+          <li class="list-inline-item"><a class="fa fa-github" href="https://github.com/nvitucci/apothem" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-twitter" href="https://twitter.com/nvitucci" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-rss" href="feeds/all.atom.xml" target="_blank"></a></li>
+      </ul>
+  </div>
+</div>    </div>
+  </header>
+
+  <div class="main">
+    <div class="container">
+      <h2>  Apache Commons CLI
+</h2>
+      <hr>
+  <article class="article">
+    <header>
+      <ul class="list-inline">
+        <li class="list-inline-item text-muted" title="2020-08-31T00:00:00+01:00">
+          <i class="fa fa-clock-o"></i>
+          Mon 31 August 2020
+        </li>
+        <li class="list-inline-item">
+          <i class="fa fa-folder-open-o"></i>
+          <a href="https://apothem.blog/category/projects.html">projects</a>
+        </li>
+          <li class="list-inline-item">
+            <i class="fa fa-files-o"></i>
+              <a href="https://apothem.blog/tag/library.html">#library</a>,               <a href="https://apothem.blog/tag/apache-commons.html">#Apache Commons</a>,               <a href="https://apothem.blog/tag/cli.html">#CLI</a>,               <a href="https://apothem.blog/tag/command-line.html">#command line</a>          </li>
+      </ul>
+    </header>
+    <div class="content">
+      <p>A common task when developing user-facing applications is to parse command line parameters to turn them into runtime options. The task is certainly repetitive and prone to error when it is reimplemented time and again, but another little library from the <a href="https://commons.apache.org/">Apache Commons</a> project makes it definitely an easier and more enjoyable experience: enter <a href="http://commons.apache.org/proper/commons-cli/">Apache Commons CLI</a>!</p>
+<div class="toc"><span class="toctitle">Index:</span><ul>
+<li><a href="#setting-up">Setting up</a></li>
+<li><a href="#stages-of-processing">Stages of processing</a><ul>
+<li><a href="#definition-stage-the-options-class">Definition stage: the Options class</a></li>
+<li><a href="#parsing-stage-the-commandlineparser-class">Parsing stage: the CommandLineParser class</a></li>
+<li><a href="#interrogation-stage-the-commandline-class">Interrogation stage: the CommandLine class</a></li>
+<li><a href="#putting-everything-together">Putting everything together</a></li>
+</ul>
+</li>
+<li><a href="#conclusions">Conclusions</a></li>
+</ul>
+</div>
+<h3 id="setting-up">Setting up</h3>
+<p>At the moment of writing, the most recent version of Apache Commons CLI is 1.4 (although a complete rewrite known as <a href="http://commons.apache.org/sandbox/commons-cli2/">CLI2</a> is in the works, but yet unfinished).</p>
+<p>As we have done in the <a href="https://apothem.blog/apache-commons-text.html">Apache Commons Text article</a>, we will use the library by means of a <code>pom.xml</code> file containing the following lines:</p>
+<div class="highlight"><pre><span></span><span class="nt">&lt;groupId&gt;</span>blog.apothem<span class="nt">&lt;/groupId&gt;</span>
+<span class="nt">&lt;artifactId&gt;</span>apache-commons-cli-example<span class="nt">&lt;/artifactId&gt;</span>
+<span class="nt">&lt;version&gt;</span>0.0.1-SNAPSHOT<span class="nt">&lt;/version&gt;</span>
+
+<span class="nt">&lt;dependencies&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>commons-cli<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>commons-cli<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>1.4<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+<span class="nt">&lt;/dependencies&gt;</span>
+</pre></div>
+
+
+<p>Again, we will create a class with a <code>main</code> method and write the entire code there; the complete code is available as always in the companion <a href="https://github.com/nvitucci/apothem-resources/tree/master/apache-commons-cli">Apothem resources repository</a>.</p>
+<h3 id="stages-of-processing">Stages of processing</h3>
+<p>Command line processing is usually made up of three stages:</p>
+<ol>
+<li>the <em>definition stage</em>, where the options relevant to the application are defined;</li>
+<li>the <em>parsing stage</em>, where the text that is passed from the command line to the application (the content of <code>args[]</code> in a typical Java <code>main(String args[])</code> method) is interpreted as a list of options with or without values;</li>
+<li>the <em>interrogation stage</em>, where the options are actually used in the code.</li>
+</ol>
+<p>Commons CLI has specialised classes and methods for each of the stages. Let's start with the definition stage.</p>
+<h4 id="definition-stage-the-options-class">Definition stage: the <code>Options</code> class</h4>
+<p>In this stage we define all the options with their parameters. Every option is created as an instance of the <code>Option</code> class, then all options are added to an <code>Options</code> (note the plural form) object.</p>
+<p>A single option can be defined like the following:</p>
+<div class="highlight"><pre><span></span><span class="n">Option</span> <span class="n">verboseOption</span> <span class="o">=</span> <span class="n">Option</span><span class="p">.</span><span class="na">builder</span><span class="p">(</span><span class="s">&quot;v&quot;</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">longOpt</span><span class="p">(</span><span class="s">&quot;verbose&quot;</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">desc</span><span class="p">(</span><span class="s">&quot;Print status with verbosity.&quot;</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">required</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">hasArg</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">build</span><span class="p">();</span>
+</pre></div>
+
+
+<p>We use the static <code>builder</code> method of the <code>Option</code> class to gradually build an option with all the features we need. We can set:</p>
+<ul>
+<li>the short version of the option as a parameter of the <code>builder</code> method (<code>v</code> in this example), so that we can use it as <code>-v</code> on the command line);</li>
+<li>the long version of the option (<code>longOpt("verbose")</code>), so that we can use it as <code>--verbose</code>;</li>
+<li>a description (<code>desc("Print status with verbosity.")</code>) to show when the usage message is displayed by calling the application with the <code>-h</code> or <code>--help</code> option, as we will see later on;</li>
+<li>whether the parameter is required (<code>required()</code> or <code>required(true)</code>) or optional (<code>required(false)</code>);</li>
+<li>whether the parameter is a no-argument flag (<code>hasArg(false)</code>) or has at least one argument (<code>hasArg()</code> or <code>hasArg(true)</code>).</li>
+</ul>
+<p>We can also set more advanced features as in the following two examples:</p>
+<div class="highlight"><pre><span></span><span class="n">Option</span> <span class="n">fileOption</span> <span class="o">=</span> <span class="n">Option</span><span class="p">.</span><span class="na">builder</span><span class="p">(</span><span class="s">&quot;f&quot;</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">longOpt</span><span class="p">(</span><span class="s">&quot;file&quot;</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">desc</span><span class="p">(</span><span class="s">&quot;File to be processed.&quot;</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">required</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">numberOfArgs</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">argName</span><span class="p">(</span><span class="s">&quot;THEFILE&quot;</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">valueSeparator</span><span class="p">(</span><span class="sc">&#39;,&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">build</span><span class="p">();</span>
+
+<span class="n">Option</span> <span class="n">numberOption</span> <span class="o">=</span> <span class="n">Option</span><span class="p">.</span><span class="na">builder</span><span class="p">(</span><span class="s">&quot;n&quot;</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">longOpt</span><span class="p">(</span><span class="s">&quot;number&quot;</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">desc</span><span class="p">(</span><span class="s">&quot;Number to be processed.&quot;</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">required</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">hasArg</span><span class="p">()</span>
+    <span class="p">.</span><span class="na">argName</span><span class="p">(</span><span class="s">&quot;number&quot;</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">type</span><span class="p">(</span><span class="n">Number</span><span class="p">.</span><span class="na">class</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">build</span><span class="p">();</span>
+</pre></div>
+
+
+<p>where we also have:</p>
+<ul>
+<li>the name of the argument to show in the usage message along with the option (<code>argName("number")</code>);</li>
+<li>the number of arguments that a string should be parsed to (<code>numberOfArgs(n)</code> if it's not 1, in which case <code>hasArg()</code> can be used) and their separator (<code>valueSeparator(',')</code>), to be used together when we want to pass multiple values for the same option;</li>
+<li>the type the argument should be parsed to (<code>type(Number.class)</code>).</li>
+</ul>
+<p>Once all the options have been defined with their own parameters, an <code>Options</code> object should be created and all the options should be added to it:</p>
+<div class="highlight"><pre><span></span><span class="n">Options</span> <span class="n">options</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Options</span><span class="p">();</span>
+<span class="n">options</span><span class="p">.</span><span class="na">addOption</span><span class="p">(</span><span class="n">verboseOption</span><span class="p">);</span>
+<span class="n">options</span><span class="p">.</span><span class="na">addOption</span><span class="p">(</span><span class="n">fileOption</span><span class="p">);</span>
+<span class="n">options</span><span class="p">.</span><span class="na">addOption</span><span class="p">(</span><span class="n">numberOption</span><span class="p">);</span>
+</pre></div>
+
+
+<p>If we want to create a help message automatically, we can use the <code>HelpFormatter</code> class with the <code>Options</code> object as in this example:</p>
+<div class="highlight"><pre><span></span><span class="n">HelpFormatter</span> <span class="n">formatter</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HelpFormatter</span><span class="p">();</span>
+<span class="n">String</span> <span class="n">helpHeader</span> <span class="o">=</span> <span class="s">&quot;List of options:&quot;</span><span class="p">;</span>
+<span class="n">String</span> <span class="n">helpFooter</span> <span class="o">=</span> <span class="s">&quot;------&quot;</span><span class="p">;</span>
+<span class="n">formatter</span><span class="p">.</span><span class="na">setSyntaxPrefix</span><span class="p">(</span><span class="s">&quot;Usage: &quot;</span><span class="p">);</span>
+<span class="n">formatter</span><span class="p">.</span><span class="na">printHelp</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="s">&quot;example&quot;</span><span class="p">,</span> <span class="n">helpHeader</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">helpFooter</span><span class="p">,</span> <span class="kc">true</span><span class="p">);</span>
+</pre></div>
+
+
+<p>With this code we are:</p>
+<ul>
+<li>limiting the length of each help line to 80;</li>
+<li>using <code>"example"</code> as a name for the command in the usage line;</li>
+<li>adding a header and a footer around the options;</li>
+<li>generating a usage line automatically (if set to <code>false</code> the usage line would consist only of the command name).</li>
+</ul>
+<p>When running our application, this will show the following text:</p>
+<div class="highlight"><pre><span></span>Usage: example [-f &lt;THEFILE&gt;] [-n &lt;number&gt;] [-v]
+List of options:
+ -f,--file &lt;THEFILE&gt;    File to be processed.
+ -n,--number &lt;number&gt;   Number to be processed.
+ -v,--verbose           Print status with verbosity.
+------
+</pre></div>
+
+
+<h4 id="parsing-stage-the-commandlineparser-class">Parsing stage: the <code>CommandLineParser</code> class</h4>
+<p>With the <code>Options</code> object initialised, we need now to create a parser to parse the content of <code>args[]</code> into options. We need therefore to create an instance of the <code>CommandLineParser</code> class whose only actual implementation at the moment is <code>DefaultParser</code>, which replaces all the other more specialised deprecated parsers like <code>GnuParser</code> and <code>PosixParser</code>:</p>
+<div class="highlight"><pre><span></span><span class="n">CommandLineParser</span> <span class="n">parser</span> <span class="o">=</span> <span class="k">new</span> <span class="n">DefaultParser</span><span class="p">();</span>
+</pre></div>
+
+
+<p>We are now ready to perform the actual parsing by returning a <code>CommandLine</code> object that will be used in the next stage:</p>
+<div class="highlight"><pre><span></span><span class="n">CommandLine</span> <span class="n">cmd</span> <span class="o">=</span> <span class="n">parser</span><span class="p">.</span><span class="na">parse</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">args</span><span class="p">);</span>
+</pre></div>
+
+
+<p>The <code>parse</code> method can throw a <code>ParseException</code>, so it has to be used in a <code>try/catch</code> block.</p>
+<h4 id="interrogation-stage-the-commandline-class">Interrogation stage: the <code>CommandLine</code> class</h4>
+<p>Now that the <code>CommandLine</code> object is initialised as well, we can use it to get the values for the options we need.</p>
+<p>A simple flag can be retrieved with the <code>hasOption</code> method:</p>
+<div class="highlight"><pre><span></span><span class="kt">boolean</span> <span class="n">verbose</span> <span class="o">=</span> <span class="n">cmd</span><span class="p">.</span><span class="na">hasOption</span><span class="p">(</span><span class="s">&quot;verbose&quot;</span><span class="p">);</span>
+</pre></div>
+
+
+<p>while a multi-valued argument can be retrieved with <code>getOptionValues</code>:</p>
+<div class="highlight"><pre><span></span><span class="n">String</span><span class="o">[]</span> <span class="n">fileNames</span> <span class="o">=</span> <span class="n">cmd</span><span class="p">.</span><span class="na">getOptionValues</span><span class="p">(</span><span class="s">&quot;file&quot;</span><span class="p">);</span>
+</pre></div>
+
+
+<p>and a typed argument can be retrieved with <code>getParsedOptionValue</code>:</p>
+<div class="highlight"><pre><span></span><span class="n">Number</span> <span class="n">number</span> <span class="o">=</span> <span class="p">(</span><span class="n">Long</span><span class="p">)</span> <span class="n">cmd</span><span class="p">.</span><span class="na">getParsedOptionValue</span><span class="p">(</span><span class="n">NUMBER_OPTION</span><span class="p">);</span>
+</pre></div>
+
+
+<p>(In this example, it is interesting to note that we had to use the <code>Number</code> type because <code>getParsedOptionValue</code> uses the <code>TypeHandler</code> class internally, which in turn uses the <code>PatternOptionBuilder</code> class that defines <code>Number</code> (no subclasses) as a returnable type for numbers.)</p>
+<h4 id="putting-everything-together">Putting everything together</h4>
+<p>The options' values can now be used within the application. As an example, we could add a simple <code>println</code> that makes use of all of them:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span>
+    <span class="s">&quot;%s files were provided: &#39;%s&#39;. Verbosity is set to &#39;%s&#39; and the number is %d.%n&quot;</span><span class="p">,</span>
+    <span class="n">fileNames</span><span class="p">.</span><span class="na">length</span><span class="p">,</span> <span class="n">String</span><span class="p">.</span><span class="na">join</span><span class="p">(</span><span class="s">&quot;, &quot;</span><span class="p">,</span> <span class="n">fileNames</span><span class="p">),</span> <span class="n">verbose</span><span class="p">,</span> <span class="n">number</span><span class="p">);</span>
+</pre></div>
+
+
+<p>A quick way to run Maven-based code is to use the <code>mvn exec:java</code> command, so that we do not have to deal with the classpath and the dependencies. For instance, if we put all the code in a <code>CliExamples</code> class, we can run:</p>
+<div class="highlight"><pre><span></span> mvn exec:java -Dexec.mainClass<span class="o">=</span>CliExamples -Dexec.args<span class="o">=</span><span class="s2">&quot;-v -f 01.txt,02.txt,03.txt,04.txt -n 42&quot;</span>
+</pre></div>
+
+
+<p>and, besides the aforementioned help message, the result will be:</p>
+<div class="highlight"><pre><span></span>4 files were provided: &#39;01.txt, 02.txt, 03.txt, 04.txt&#39;. Verbosity is set to &#39;true&#39; and the number is 42.
+</pre></div>
+
+
+<p>You can find the whole example in the <a href="https://github.com/nvitucci/apothem-resources/tree/master/apache-commons-cli">companion repository</a>.</p>
+<h3 id="conclusions">Conclusions</h3>
+<p>Since using an application from the command line is a common task, a library that abstracts most of the details is very welcome. Although dated, Apache Commons CLI still does a very good job and is so lightweight that it can be easily added to any existing Java-based application to add a nice user interface.</p>
+    </div>
+  </article>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+<div class="row">
+  <ul class="col-sm-6 list-inline">
+    <li class="list-inline-item"><a href="https://apothem.blog/archives.html">Archives</a></li>
+    <li class="list-inline-item"><a href="https://apothem.blog/categories.html">Categories</a></li>
+      <li class="list-inline-item"><a href="https://apothem.blog/tags.html">Tags</a></li>
+  </ul>
+  <p class="col-sm-6 text-sm-right text-muted">
+    Generated by <a href="https://github.com/getpelican/pelican" target="_blank">Pelican</a>
+    / <a href="https://github.com/nairobilug/pelican-alchemy" target="_blank">&#x2728;</a>
+  </p>
+</div>    </div>
+  </footer>
+</body>
+
+</html>

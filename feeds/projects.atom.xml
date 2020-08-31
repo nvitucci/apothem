@@ -1,5 +1,175 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM - projects</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/projects.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2020-06-30T00:00:00+01:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache Commons Text</title><link href="https://apothem.blog/apache-commons-text.html" rel="alternate"></link><published>2020-06-30T00:00:00+01:00</published><updated>2020-06-30T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2020-06-30:/apache-commons-text.html</id><summary type="html">&lt;p&gt;Today we are back to the &lt;a href="https://commons.apache.org/"&gt;Apache Commons&lt;/a&gt; project with a library for string manipulation and comparison, &lt;a href="http://commons.apache.org/proper/commons-text/"&gt;Apache Commons Text&lt;/a&gt;. The library can be a lightweight alternative to larger NLP libraries or a good complement to the powerful &lt;code&gt;StringUtils&lt;/code&gt; class from the &lt;a href="http://commons.apache.org/proper/commons-lang/"&gt;Apache Commons Lang&lt;/a&gt; library. What I really like …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Today we are back to the &lt;a href="https://commons.apache.org/"&gt;Apache Commons&lt;/a&gt; project with a library for string manipulation and comparison, &lt;a href="http://commons.apache.org/proper/commons-text/"&gt;Apache Commons Text&lt;/a&gt;. The library can be a lightweight alternative to larger NLP libraries or a good complement to the powerful &lt;code&gt;StringUtils&lt;/code&gt; class from the &lt;a href="http://commons.apache.org/proper/commons-lang/"&gt;Apache Commons Lang&lt;/a&gt; library. What I really like of Commons Text, besides the "base" operations on strings, is the collection of string similarity measures that allow to quantify &lt;em&gt;how much&lt;/em&gt; two strings are close to each other, as we will see in detail in the &lt;code&gt;text.similarity&lt;/code&gt; section.&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>APOTHEM - projects</title><link href="https://apothem.blog/" rel="alternate"></link><link href="https://apothem.blog/feeds/projects.atom.xml" rel="self"></link><id>https://apothem.blog/</id><updated>2020-08-31T00:00:00+01:00</updated><subtitle>Apache Project(s) of the month</subtitle><entry><title>Apache Commons CLI</title><link href="https://apothem.blog/apache-commons-cli.html" rel="alternate"></link><published>2020-08-31T00:00:00+01:00</published><updated>2020-08-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2020-08-31:/apache-commons-cli.html</id><summary type="html">&lt;p&gt;A common task when developing user-facing applications is to parse command line parameters to turn them into runtime options. The task is certainly repetitive and prone to error when it is reimplemented time and again, but another little library from the &lt;a href="https://commons.apache.org/"&gt;Apache Commons&lt;/a&gt; project makes it definitely an easier and …&lt;/p&gt;</summary><content type="html">&lt;p&gt;A common task when developing user-facing applications is to parse command line parameters to turn them into runtime options. The task is certainly repetitive and prone to error when it is reimplemented time and again, but another little library from the &lt;a href="https://commons.apache.org/"&gt;Apache Commons&lt;/a&gt; project makes it definitely an easier and more enjoyable experience: enter &lt;a href="http://commons.apache.org/proper/commons-cli/"&gt;Apache Commons CLI&lt;/a&gt;!&lt;/p&gt;
+&lt;div class="toc"&gt;&lt;span class="toctitle"&gt;Index:&lt;/span&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#setting-up"&gt;Setting up&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#stages-of-processing"&gt;Stages of processing&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href="#definition-stage-the-options-class"&gt;Definition stage: the Options class&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#parsing-stage-the-commandlineparser-class"&gt;Parsing stage: the CommandLineParser class&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#interrogation-stage-the-commandline-class"&gt;Interrogation stage: the CommandLine class&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#putting-everything-together"&gt;Putting everything together&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="#conclusions"&gt;Conclusions&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;h3 id="setting-up"&gt;Setting up&lt;/h3&gt;
+&lt;p&gt;At the moment of writing, the most recent version of Apache Commons CLI is 1.4 (although a complete rewrite known as &lt;a href="http://commons.apache.org/sandbox/commons-cli2/"&gt;CLI2&lt;/a&gt; is in the works, but yet unfinished).&lt;/p&gt;
+&lt;p&gt;As we have done in the &lt;a href="https://apothem.blog/apache-commons-text.html"&gt;Apache Commons Text article&lt;/a&gt;, we will use the library by means of a &lt;code&gt;pom.xml&lt;/code&gt; file containing the following lines:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;blog.apothem&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;apache-commons-cli-example&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;0.0.1-SNAPSHOT&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+
+&lt;span class="nt"&gt;&amp;lt;dependencies&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;commons-cli&lt;span class="nt"&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;commons-cli&lt;span class="nt"&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.4&lt;span class="nt"&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/dependencies&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;Again, we will create a class with a &lt;code&gt;main&lt;/code&gt; method and write the entire code there; the complete code is available as always in the companion &lt;a href="https://github.com/nvitucci/apothem-resources/tree/master/apache-commons-cli"&gt;Apothem resources repository&lt;/a&gt;.&lt;/p&gt;
+&lt;h3 id="stages-of-processing"&gt;Stages of processing&lt;/h3&gt;
+&lt;p&gt;Command line processing is usually made up of three stages:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;the &lt;em&gt;definition stage&lt;/em&gt;, where the options relevant to the application are defined;&lt;/li&gt;
+&lt;li&gt;the &lt;em&gt;parsing stage&lt;/em&gt;, where the text that is passed from the command line to the application (the content of &lt;code&gt;args[]&lt;/code&gt; in a typical Java &lt;code&gt;main(String args[])&lt;/code&gt; method) is interpreted as a list of options with or without values;&lt;/li&gt;
+&lt;li&gt;the &lt;em&gt;interrogation stage&lt;/em&gt;, where the options are actually used in the code.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Commons CLI has specialised classes and methods for each of the stages. Let's start with the definition stage.&lt;/p&gt;
+&lt;h4 id="definition-stage-the-options-class"&gt;Definition stage: the &lt;code&gt;Options&lt;/code&gt; class&lt;/h4&gt;
+&lt;p&gt;In this stage we define all the options with their parameters. Every option is created as an instance of the &lt;code&gt;Option&lt;/code&gt; class, then all options are added to an &lt;code&gt;Options&lt;/code&gt; (note the plural form) object.&lt;/p&gt;
+&lt;p&gt;A single option can be defined like the following:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Option&lt;/span&gt; &lt;span class="n"&gt;verboseOption&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Option&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;builder&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;v&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;longOpt&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;verbose&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;desc&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Print status with verbosity.&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;required&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;hasArg&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;build&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We use the static &lt;code&gt;builder&lt;/code&gt; method of the &lt;code&gt;Option&lt;/code&gt; class to gradually build an option with all the features we need. We can set:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the short version of the option as a parameter of the &lt;code&gt;builder&lt;/code&gt; method (&lt;code&gt;v&lt;/code&gt; in this example), so that we can use it as &lt;code&gt;-v&lt;/code&gt; on the command line);&lt;/li&gt;
+&lt;li&gt;the long version of the option (&lt;code&gt;longOpt("verbose")&lt;/code&gt;), so that we can use it as &lt;code&gt;--verbose&lt;/code&gt;;&lt;/li&gt;
+&lt;li&gt;a description (&lt;code&gt;desc("Print status with verbosity.")&lt;/code&gt;) to show when the usage message is displayed by calling the application with the &lt;code&gt;-h&lt;/code&gt; or &lt;code&gt;--help&lt;/code&gt; option, as we will see later on;&lt;/li&gt;
+&lt;li&gt;whether the parameter is required (&lt;code&gt;required()&lt;/code&gt; or &lt;code&gt;required(true)&lt;/code&gt;) or optional (&lt;code&gt;required(false)&lt;/code&gt;);&lt;/li&gt;
+&lt;li&gt;whether the parameter is a no-argument flag (&lt;code&gt;hasArg(false)&lt;/code&gt;) or has at least one argument (&lt;code&gt;hasArg()&lt;/code&gt; or &lt;code&gt;hasArg(true)&lt;/code&gt;).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We can also set more advanced features as in the following two examples:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Option&lt;/span&gt; &lt;span class="n"&gt;fileOption&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Option&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;builder&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;f&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;longOpt&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;file&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;desc&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;File to be processed.&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;required&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;numberOfArgs&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;argName&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;THEFILE&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;valueSeparator&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="sc"&gt;&amp;#39;,&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;build&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+
+&lt;span class="n"&gt;Option&lt;/span&gt; &lt;span class="n"&gt;numberOption&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Option&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;builder&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;n&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;longOpt&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;number&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;desc&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Number to be processed.&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;required&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;hasArg&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;argName&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;number&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;type&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Number&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;build&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;where we also have:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the name of the argument to show in the usage message along with the option (&lt;code&gt;argName("number")&lt;/code&gt;);&lt;/li&gt;
+&lt;li&gt;the number of arguments that a string should be parsed to (&lt;code&gt;numberOfArgs(n)&lt;/code&gt; if it's not 1, in which case &lt;code&gt;hasArg()&lt;/code&gt; can be used) and their separator (&lt;code&gt;valueSeparator(',')&lt;/code&gt;), to be used together when we want to pass multiple values for the same option;&lt;/li&gt;
+&lt;li&gt;the type the argument should be parsed to (&lt;code&gt;type(Number.class)&lt;/code&gt;).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Once all the options have been defined with their own parameters, an &lt;code&gt;Options&lt;/code&gt; object should be created and all the options should be added to it:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Options&lt;/span&gt; &lt;span class="n"&gt;options&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;Options&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+&lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;addOption&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;verboseOption&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;addOption&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fileOption&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;addOption&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;numberOption&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;If we want to create a help message automatically, we can use the &lt;code&gt;HelpFormatter&lt;/code&gt; class with the &lt;code&gt;Options&lt;/code&gt; object as in this example:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;HelpFormatter&lt;/span&gt; &lt;span class="n"&gt;formatter&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;HelpFormatter&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+&lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;helpHeader&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;List of options:&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;helpFooter&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;------&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="n"&gt;formatter&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setSyntaxPrefix&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Usage: &amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="n"&gt;formatter&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printHelp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;80&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;example&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;helpHeader&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;helpFooter&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;With this code we are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;limiting the length of each help line to 80;&lt;/li&gt;
+&lt;li&gt;using &lt;code&gt;"example"&lt;/code&gt; as a name for the command in the usage line;&lt;/li&gt;
+&lt;li&gt;adding a header and a footer around the options;&lt;/li&gt;
+&lt;li&gt;generating a usage line automatically (if set to &lt;code&gt;false&lt;/code&gt; the usage line would consist only of the command name).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;When running our application, this will show the following text:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Usage: example [-f &amp;lt;THEFILE&amp;gt;] [-n &amp;lt;number&amp;gt;] [-v]
+List of options:
+ -f,--file &amp;lt;THEFILE&amp;gt;    File to be processed.
+ -n,--number &amp;lt;number&amp;gt;   Number to be processed.
+ -v,--verbose           Print status with verbosity.
+------
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4 id="parsing-stage-the-commandlineparser-class"&gt;Parsing stage: the &lt;code&gt;CommandLineParser&lt;/code&gt; class&lt;/h4&gt;
+&lt;p&gt;With the &lt;code&gt;Options&lt;/code&gt; object initialised, we need now to create a parser to parse the content of &lt;code&gt;args[]&lt;/code&gt; into options. We need therefore to create an instance of the &lt;code&gt;CommandLineParser&lt;/code&gt; class whose only actual implementation at the moment is &lt;code&gt;DefaultParser&lt;/code&gt;, which replaces all the other more specialised deprecated parsers like &lt;code&gt;GnuParser&lt;/code&gt; and &lt;code&gt;PosixParser&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;CommandLineParser&lt;/span&gt; &lt;span class="n"&gt;parser&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;DefaultParser&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;We are now ready to perform the actual parsing by returning a &lt;code&gt;CommandLine&lt;/code&gt; object that will be used in the next stage:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;CommandLine&lt;/span&gt; &lt;span class="n"&gt;cmd&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parser&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;parse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;options&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The &lt;code&gt;parse&lt;/code&gt; method can throw a &lt;code&gt;ParseException&lt;/code&gt;, so it has to be used in a &lt;code&gt;try/catch&lt;/code&gt; block.&lt;/p&gt;
+&lt;h4 id="interrogation-stage-the-commandline-class"&gt;Interrogation stage: the &lt;code&gt;CommandLine&lt;/code&gt; class&lt;/h4&gt;
+&lt;p&gt;Now that the &lt;code&gt;CommandLine&lt;/code&gt; object is initialised as well, we can use it to get the values for the options we need.&lt;/p&gt;
+&lt;p&gt;A simple flag can be retrieved with the &lt;code&gt;hasOption&lt;/code&gt; method:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="n"&gt;verbose&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;cmd&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;hasOption&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;verbose&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;while a multi-valued argument can be retrieved with &lt;code&gt;getOptionValues&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="o"&gt;[]&lt;/span&gt; &lt;span class="n"&gt;fileNames&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;cmd&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getOptionValues&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;file&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and a typed argument can be retrieved with &lt;code&gt;getParsedOptionValue&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Number&lt;/span&gt; &lt;span class="n"&gt;number&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Long&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="n"&gt;cmd&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getParsedOptionValue&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;NUMBER_OPTION&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;(In this example, it is interesting to note that we had to use the &lt;code&gt;Number&lt;/code&gt; type because &lt;code&gt;getParsedOptionValue&lt;/code&gt; uses the &lt;code&gt;TypeHandler&lt;/code&gt; class internally, which in turn uses the &lt;code&gt;PatternOptionBuilder&lt;/code&gt; class that defines &lt;code&gt;Number&lt;/code&gt; (no subclasses) as a returnable type for numbers.)&lt;/p&gt;
+&lt;h4 id="putting-everything-together"&gt;Putting everything together&lt;/h4&gt;
+&lt;p&gt;The options' values can now be used within the application. As an example, we could add a simple &lt;code&gt;println&lt;/code&gt; that makes use of all of them:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;quot;%s files were provided: &amp;#39;%s&amp;#39;. Verbosity is set to &amp;#39;%s&amp;#39; and the number is %d.%n&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="n"&gt;fileNames&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;length&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;join&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;, &amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;fileNames&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;verbose&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;number&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;A quick way to run Maven-based code is to use the &lt;code&gt;mvn exec:java&lt;/code&gt; command, so that we do not have to deal with the classpath and the dependencies. For instance, if we put all the code in a &lt;code&gt;CliExamples&lt;/code&gt; class, we can run:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt; mvn exec:java -Dexec.mainClass&lt;span class="o"&gt;=&lt;/span&gt;CliExamples -Dexec.args&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;-v -f 01.txt,02.txt,03.txt,04.txt -n 42&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;and, besides the aforementioned help message, the result will be:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;4 files were provided: &amp;#39;01.txt, 02.txt, 03.txt, 04.txt&amp;#39;. Verbosity is set to &amp;#39;true&amp;#39; and the number is 42.
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;You can find the whole example in the &lt;a href="https://github.com/nvitucci/apothem-resources/tree/master/apache-commons-cli"&gt;companion repository&lt;/a&gt;.&lt;/p&gt;
+&lt;h3 id="conclusions"&gt;Conclusions&lt;/h3&gt;
+&lt;p&gt;Since using an application from the command line is a common task, a library that abstracts most of the details is very welcome. Although dated, Apache Commons CLI still does a very good job and is so lightweight that it can be easily added to any existing Java-based application to add a nice user interface.&lt;/p&gt;</content><category term="projects"></category><category term="library"></category><category term="Apache Commons"></category><category term="CLI"></category><category term="command line"></category></entry><entry><title>Apache Commons Text</title><link href="https://apothem.blog/apache-commons-text.html" rel="alternate"></link><published>2020-06-30T00:00:00+01:00</published><updated>2020-06-30T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2020-06-30:/apache-commons-text.html</id><summary type="html">&lt;p&gt;Today we are back to the &lt;a href="https://commons.apache.org/"&gt;Apache Commons&lt;/a&gt; project with a library for string manipulation and comparison, &lt;a href="http://commons.apache.org/proper/commons-text/"&gt;Apache Commons Text&lt;/a&gt;. The library can be a lightweight alternative to larger NLP libraries or a good complement to the powerful &lt;code&gt;StringUtils&lt;/code&gt; class from the &lt;a href="http://commons.apache.org/proper/commons-lang/"&gt;Apache Commons Lang&lt;/a&gt; library. What I really like …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Today we are back to the &lt;a href="https://commons.apache.org/"&gt;Apache Commons&lt;/a&gt; project with a library for string manipulation and comparison, &lt;a href="http://commons.apache.org/proper/commons-text/"&gt;Apache Commons Text&lt;/a&gt;. The library can be a lightweight alternative to larger NLP libraries or a good complement to the powerful &lt;code&gt;StringUtils&lt;/code&gt; class from the &lt;a href="http://commons.apache.org/proper/commons-lang/"&gt;Apache Commons Lang&lt;/a&gt; library. What I really like of Commons Text, besides the "base" operations on strings, is the collection of string similarity measures that allow to quantify &lt;em&gt;how much&lt;/em&gt; two strings are close to each other, as we will see in detail in the &lt;code&gt;text.similarity&lt;/code&gt; section.&lt;/p&gt;
 &lt;p&gt;The Commons Text library contains a few packages which we will explore one by one. We will just skip the &lt;code&gt;text.lookup&lt;/code&gt; and &lt;code&gt;text.matcher&lt;/code&gt; packages because they only contain one very specialized class each, which I do not consider very interesting.&lt;/p&gt;
 &lt;div class="toc"&gt;&lt;span class="toctitle"&gt;Index:&lt;/span&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#setting-up"&gt;Setting up&lt;/a&gt;&lt;/li&gt;
