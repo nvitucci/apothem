@@ -84,10 +84,10 @@
 &lt;h3 id="modules"&gt;Modules&lt;/h3&gt;
 &lt;p&gt;In this section we will explore each component with code examples.&lt;/p&gt;
 &lt;h4 id="core"&gt;&lt;code&gt;Core&lt;/code&gt;&lt;/h4&gt;
-&lt;p&gt;The &lt;code&gt;Core&lt;/code&gt; package contains some of the interfaces used throughout the library, but most importantly it contains some number-related utilities as static methods within the &lt;code&gt;core.ArithmeticUtils&lt;/code&gt; and &lt;code&gt;core.Precision&lt;/code&gt; classes. For instance, given two integer numbers &lt;em&gt;x = 256&lt;/em&gt; and &lt;em&gt;y = 6&lt;/em&gt;, we can:&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;Core&lt;/code&gt; package contains some of the interfaces used throughout the library, but most importantly it contains some number-related utilities as static methods within the &lt;code&gt;core.ArithmeticUtils&lt;/code&gt; and &lt;code&gt;core.Precision&lt;/code&gt; classes. For instance, given two integer numbers &lt;span class="math"&gt;\(x = 256\)&lt;/span&gt; and &lt;span class="math"&gt;\(y = 6\)&lt;/span&gt;, we can:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;calculate the (unsigned) quotient and reminder of the division &lt;em&gt;x / y&lt;/em&gt;:&lt;/p&gt;
+&lt;p&gt;calculate the (unsigned) quotient and reminder of the division &lt;span class="math"&gt;\(x / y\)&lt;/span&gt;:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;256&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
@@ -107,7 +107,7 @@
 
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;find the &lt;a href="https://en.wikipedia.org/wiki/Greatest_common_divisor"&gt;greatest common divisor&lt;/a&gt; (gcd) and the &lt;a href="https://en.wikipedia.org/wiki/Least_common_multiple"&gt;least common multiple&lt;/a&gt; (lcm) between &lt;em&gt;x&lt;/em&gt; and &lt;em&gt;y&lt;/em&gt;:&lt;/p&gt;
+&lt;p&gt;find the &lt;a href="https://en.wikipedia.org/wiki/Greatest_common_divisor"&gt;greatest common divisor&lt;/a&gt; (gcd) and the &lt;a href="https://en.wikipedia.org/wiki/Least_common_multiple"&gt;least common multiple&lt;/a&gt; (lcm) between &lt;span class="math"&gt;\(x\)&lt;/span&gt; and &lt;span class="math"&gt;\(y\)&lt;/span&gt;:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;gcd(%d, %d) = %d%n&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
         &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ArithmeticUtils&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;gcd&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
 &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;lcm(%d, %d) = %d%n&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
@@ -124,7 +124,7 @@ lcm(256, 6) = 768
 
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;calculate the powers &lt;em&gt;x ^ 2&lt;/em&gt; and &lt;em&gt;x ^ y&lt;/em&gt;, where the second one needs a cast to &lt;code&gt;BigInteger&lt;/code&gt; since the result is too large to be contained in a &lt;code&gt;long&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;calculate the powers &lt;span class="math"&gt;\(x^2\)&lt;/span&gt; and &lt;span class="math"&gt;\(x^y\)&lt;/span&gt;, where the second one needs a cast to &lt;code&gt;BigInteger&lt;/code&gt; since the result is too large to be contained in a &lt;code&gt;long&lt;/code&gt;:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%d ^ %d = %d%n&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
         &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ArithmeticUtils&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;pow&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
 &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%d ^ %d = %d%n&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
@@ -141,7 +141,7 @@ lcm(256, 6) = 768
 
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;check whether &lt;em&gt;x&lt;/em&gt; and &lt;em&gt;x + 1&lt;/em&gt; are powers of 2:&lt;/p&gt;
+&lt;p&gt;check whether &lt;span class="math"&gt;\(x\)&lt;/span&gt; and &lt;span class="math"&gt;\(x + 1\)&lt;/span&gt; are powers of 2:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Is %d a power of 2? %b%n&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
         &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ArithmeticUtils&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;isPowerOfTwo&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
 &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Is %d + 1 a power of 2? %b%n&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
@@ -158,7 +158,7 @@ Is 256 + 1 a power of 2? false
 
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Using the methods from the &lt;code&gt;core.Precision&lt;/code&gt; class, given a decimal number &lt;em&gt;x = 1.23456789&lt;/em&gt; we can:&lt;/p&gt;
+&lt;p&gt;Using the methods from the &lt;code&gt;core.Precision&lt;/code&gt; class, given a decimal number &lt;span class="math"&gt;\(x = 1.23456789\)&lt;/span&gt; we can:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;round it to 2, 4 and 6 places:&lt;/p&gt;
@@ -181,7 +181,7 @@ Rounding 1.234568 to 6 places = 1.234568
 
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;check that it is equal to &lt;em&gt;x + 1e-6&lt;/em&gt; up to a certain precision:&lt;/p&gt;
+&lt;p&gt;check that it is equal to &lt;span class="math"&gt;\(x + 10^{-6}\)&lt;/span&gt; up to a certain precision &lt;span class="math"&gt;\(\epsilon\)&lt;/span&gt;:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;double&lt;/span&gt; &lt;span class="n"&gt;eps&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Arrays&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;asList&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mf"&gt;1e-3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;1e-6&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mf"&gt;1e-9&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
     &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%.9f == %.9f (up to %e)? %b%n&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
             &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mf"&gt;1e-6&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;eps&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Precision&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;equals&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mf"&gt;1e-6&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;eps&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
@@ -289,9 +289,9 @@ Array of dimensions [4, 4, 3]: index [1, 3, 2] corresponds to position 23
 &lt;h4 id="complex"&gt;&lt;code&gt;Complex&lt;/code&gt;&lt;/h4&gt;
 &lt;p&gt;This package contains definitions and methods for complex numbers, a type of number that is frequently used in physics and engineering. A complex number can be created in three different ways:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;using the cartesian coordinates, so &lt;em&gt;z = a + b * i&lt;/em&gt; would be expressed as the tuple &lt;em&gt;(a, b)&lt;/em&gt;;&lt;/li&gt;
-&lt;li&gt;using the polar coordinates, so &lt;em&gt;z = rho * (cos(theta) + i * sin(theta))&lt;/em&gt; would be expressed as the tuple &lt;em&gt;(rho, theta)&lt;/em&gt; (and, to convert from cartesian coordinates, &lt;em&gt;rho = sqrt(a ^ 2 + b ^2)&lt;/em&gt; and &lt;em&gt;theta = atan2(a, b)&lt;/em&gt;);&lt;/li&gt;
-&lt;li&gt;using the cis (&lt;strong&gt;c&lt;/strong&gt;os + &lt;strong&gt;i s&lt;/strong&gt;in) form, so &lt;em&gt;z = cos(x) + i * sin(x)&lt;/em&gt; (and, equivalently, &lt;em&gt;z = exp(i * x)&lt;/em&gt;) would be expressed by the single number &lt;em&gt;x&lt;/em&gt;.&lt;/li&gt;
+&lt;li&gt;using the cartesian coordinates, so &lt;span class="math"&gt;\(z = a + b * i\)&lt;/span&gt; would be expressed as the tuple &lt;span class="math"&gt;\((a, b)\)&lt;/span&gt;;&lt;/li&gt;
+&lt;li&gt;using the polar coordinates, so &lt;span class="math"&gt;\(z = \rho * (cos(\theta) + i * sin(\theta))\)&lt;/span&gt; would be expressed as the tuple &lt;span class="math"&gt;\((\rho, \theta)\)&lt;/span&gt; and, to convert from cartesian coordinates, &lt;span class="math"&gt;\(\rho = \sqrt{a^2 + b^2}\)&lt;/span&gt; and &lt;span class="math"&gt;\(\theta = atan2(a, b)\)&lt;/span&gt;;&lt;/li&gt;
+&lt;li&gt;using the cis (&lt;strong&gt;c&lt;/strong&gt;os + &lt;strong&gt;i s&lt;/strong&gt;in) form, so &lt;span class="math"&gt;\(z = cos(x) + i * sin(x)\)&lt;/span&gt; and, equivalently, &lt;span class="math"&gt;\(z = e^{ix}\)&lt;/span&gt; would be expressed by the single number &lt;span class="math"&gt;\(x\)&lt;/span&gt;.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;These three methods can be implemented as in the following example:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Complex&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Complex&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;ofCartesian&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
@@ -309,7 +309,7 @@ Array of dimensions [4, 4, 3]: index [1, 3, 2] corresponds to position 23
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;We can see that, although they should theoretically be the same, &lt;em&gt;z&lt;/em&gt; and &lt;em&gt;z2&lt;/em&gt; are not considered equal due to numerical instability:&lt;/p&gt;
+&lt;p&gt;We can see that, although they should theoretically be the same, &lt;span class="math"&gt;\(z\)&lt;/span&gt; and &lt;span class="math"&gt;\(z_2\)&lt;/span&gt; are not considered equal due to numerical instability:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%s == %s? %b%n&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
     &lt;span class="n"&gt;z&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;z2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;z&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;equals&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;z2&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
@@ -381,7 +381,7 @@ Array of dimensions [4, 4, 3]: index [1, 3, 2] corresponds to position 23
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;Using the previously seen &lt;code&gt;Precision.equals&lt;/code&gt; method, we can even show &lt;a href="https://en.wikipedia.org/wiki/Euler%27s_identity"&gt;Euler's identity&lt;/a&gt; for &lt;em&gt;z = exp(i * pi)&lt;/em&gt;:&lt;/p&gt;
+&lt;p&gt;Using the previously seen &lt;code&gt;Precision.equals&lt;/code&gt; method, we can even show &lt;a href="https://en.wikipedia.org/wiki/Euler%27s_identity"&gt;Euler's identity&lt;/a&gt; for &lt;span class="math"&gt;\(z = e^{i\pi}\)&lt;/span&gt;:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;double&lt;/span&gt; &lt;span class="n"&gt;eps&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;1e-15&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Re(%s) == -1 up to %s? %b%n&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
         &lt;span class="n"&gt;z3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;eps&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Precision&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;equals&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;z3&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;real&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;eps&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
@@ -634,7 +634,7 @@ Quaternion [0.5 1.0 1.0 1.0]
 
 
 &lt;p&gt;For more information on how quaternion algebra works, you can check the &lt;a href="https://en.wikipedia.org/wiki/Quaternion"&gt;Wikipedia page&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Another interesting class from this package is &lt;code&gt;Slerp&lt;/code&gt;, where the only available method &lt;code&gt;apply&lt;/code&gt; is used to create a &lt;a href="https://en.wikipedia.org/wiki/Slerp"&gt;spherical linear interpolation&lt;/a&gt; (or &lt;em&gt;slerp&lt;/em&gt;) between two quaternions, with the purpose of smoothly transforming the first into the second (useful for instance in 3D-rotation animation tasks). A slerp from the special quaternion &lt;strong&gt;i&lt;/strong&gt; = &lt;em&gt;(0, 1, 0, 0)&lt;/em&gt; to the other special quaternion &lt;strong&gt;j&lt;/strong&gt; = &lt;em&gt;(0, 0, 1, 0)&lt;/em&gt; can be created as follows:&lt;/p&gt;
+&lt;p&gt;Another interesting class from this package is &lt;code&gt;Slerp&lt;/code&gt;, where the only available method &lt;code&gt;apply&lt;/code&gt; is used to create a &lt;a href="https://en.wikipedia.org/wiki/Slerp"&gt;spherical linear interpolation&lt;/a&gt; (or &lt;em&gt;slerp&lt;/em&gt;) between two quaternions, with the purpose of smoothly transforming the first into the second (useful for instance in 3D-rotation animation tasks). A slerp from the special quaternion &lt;span class="math"&gt;\(\boldsymbol{i} = (0, 1, 0, 0)\)&lt;/span&gt; to the other special quaternion &lt;span class="math"&gt;\(\boldsymbol{j} = (0, 0, 1, 0)\)&lt;/span&gt; can be created as follows:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Slerp&lt;/span&gt; &lt;span class="n"&gt;slerp&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;Slerp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Quaternion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;I&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Quaternion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;J&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
@@ -666,7 +666,7 @@ Quaternion [0.5 1.0 1.0 1.0]
 
 
 &lt;h4 id="combinatorics"&gt;&lt;code&gt;Combinatorics&lt;/code&gt;&lt;/h4&gt;
-&lt;p&gt;This package contains several classes for common combinatorial concepts such as &lt;a href="https://en.wikipedia.org/wiki/Factorial"&gt;factorials&lt;/a&gt; (to calculate the number of permutations of &lt;em&gt;n&lt;/em&gt; objects) and &lt;a href="https://en.wikipedia.org/wiki/Combination"&gt;combinations&lt;/a&gt; (to calculate the number of ways &lt;em&gt;n&lt;/em&gt; objects can be arranged in groups of &lt;em&gt;k&lt;/em&gt; objects). For example, given &lt;em&gt;n = 10&lt;/em&gt;, we can calculate the factorial (as a &lt;code&gt;long&lt;/code&gt; and as a &lt;code&gt;double&lt;/code&gt;) and log-factorial of &lt;em&gt;n&lt;/em&gt;:&lt;/p&gt;
+&lt;p&gt;This package contains several classes for common combinatorial concepts such as &lt;a href="https://en.wikipedia.org/wiki/Factorial"&gt;factorials&lt;/a&gt; (to calculate the number of permutations of &lt;span class="math"&gt;\(n\)&lt;/span&gt; objects) and &lt;a href="https://en.wikipedia.org/wiki/Combination"&gt;combinations&lt;/a&gt; (to calculate the number of ways &lt;span class="math"&gt;\(n\)&lt;/span&gt; objects can be arranged in groups of &lt;span class="math"&gt;\(k\)&lt;/span&gt; objects). For example, given &lt;span class="math"&gt;\(n = 10\)&lt;/span&gt;, we can calculate the factorial (as a &lt;code&gt;long&lt;/code&gt; and as a &lt;code&gt;double&lt;/code&gt;) and log-factorial of &lt;span class="math"&gt;\(n\)&lt;/span&gt;:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
 &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%d! = %d%n&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
@@ -686,7 +686,7 @@ log(10!) = 15.104413
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;Furthermore, given &lt;em&gt;k = 3&lt;/em&gt;, we can calculate the binomial coefficient &lt;em&gt;(n k)&lt;/em&gt; (i.e. the number of &lt;em&gt;k&lt;/em&gt;-combinations of &lt;em&gt;n&lt;/em&gt; objects), both as a &lt;code&gt;long&lt;/code&gt; and as a &lt;code&gt;double&lt;/code&gt;, and its logarithm:&lt;/p&gt;
+&lt;p&gt;Furthermore, given &lt;span class="math"&gt;\(k = 3\)&lt;/span&gt;, we can calculate the binomial coefficient &lt;span class="math"&gt;\(\binom{n}{k}\)&lt;/span&gt; (i.e. the number of &lt;span class="math"&gt;\(k\)&lt;/span&gt;-combinations of &lt;span class="math"&gt;\(n\)&lt;/span&gt; objects), both as a &lt;code&gt;long&lt;/code&gt; and as a &lt;code&gt;double&lt;/code&gt;, and its logarithm:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;k&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 
 &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Binomial coefficient (%d %d) = %d%n&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
@@ -728,7 +728,7 @@ First three combinations: [0, 1, 2], [0, 1, 3], [0, 2, 3]
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;One important thing that must be noted here is the potentially large size of the numbers involved. The factorial grows very quickly, so the numbers for which the factorial can fit in a &lt;code&gt;long&lt;/code&gt; are very few (just up to &lt;em&gt;n = 20&lt;/em&gt;); the binomial grows quickly as well, so its input is also limited (in fact it can be calculated only for &lt;em&gt;n &amp;lt;= 66&lt;/em&gt;). This problem can be alleviated by using approximations, either using the &lt;code&gt;Double&lt;/code&gt; version of both classes (i.e. &lt;code&gt;FactorialDouble&lt;/code&gt; and &lt;code&gt;BinomialCoefficientDouble&lt;/code&gt;) or using their logarithmic versions (i.e. &lt;code&gt;LogFactorial&lt;/code&gt; and &lt;code&gt;LogBinomialCoefficient&lt;/code&gt;), which in turn use the &lt;code&gt;LogGamma&lt;/code&gt; class from the &lt;code&gt;Gamma&lt;/code&gt; package. It would be interesting to see also a version of &lt;code&gt;Factorial&lt;/code&gt; and &lt;code&gt;BinomialCoefficient&lt;/code&gt; that makes use of &lt;code&gt;BigInteger&lt;/code&gt;s to allow for exact calculation on larger numbers.&lt;/p&gt;
+&lt;p&gt;One important thing that must be noted here is the potentially large size of the numbers involved. The factorial grows very quickly, so the numbers for which the factorial can fit in a &lt;code&gt;long&lt;/code&gt; are very few (just up to &lt;span class="math"&gt;\(n = 20\)&lt;/span&gt;); the binomial grows quickly as well, so its input is also limited (in fact it can be calculated only for &lt;span class="math"&gt;\(n &amp;lt;= 66\)&lt;/span&gt;). This problem can be alleviated by using approximations, either using the &lt;code&gt;Double&lt;/code&gt; version of both classes (i.e. &lt;code&gt;FactorialDouble&lt;/code&gt; and &lt;code&gt;BinomialCoefficientDouble&lt;/code&gt;) or using their logarithmic versions (i.e. &lt;code&gt;LogFactorial&lt;/code&gt; and &lt;code&gt;LogBinomialCoefficient&lt;/code&gt;), which in turn use the &lt;code&gt;LogGamma&lt;/code&gt; class from the &lt;code&gt;Gamma&lt;/code&gt; package. It would be interesting to see also a version of &lt;code&gt;Factorial&lt;/code&gt; and &lt;code&gt;BinomialCoefficient&lt;/code&gt; that makes use of &lt;code&gt;BigInteger&lt;/code&gt;s to allow for exact calculation on larger numbers.&lt;/p&gt;
 &lt;h4 id="gamma"&gt;&lt;code&gt;Gamma&lt;/code&gt;&lt;/h4&gt;
 &lt;p&gt;This package is very specific to a certain class of mathematical functions derived from the &lt;a href="https://en.wikipedia.org/wiki/Gamma_function"&gt;gamma function&lt;/a&gt;, including:&lt;/p&gt;
 &lt;ul&gt;
@@ -759,7 +759,7 @@ erf^(-1)(0.842700) = 0.999998
 
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;the &lt;em&gt;gamma&lt;/em&gt; function itself, its derivatives &lt;em&gt;digamma&lt;/em&gt; and &lt;em&gt;trigamma&lt;/em&gt;, and its logarithm &lt;em&gt;log-gamma&lt;/em&gt;, which are calculated in two interesting points to show their values (with &lt;em&gt;g&lt;/em&gt; being the &lt;a href="https://en.wikipedia.org/wiki/Euler%E2%80%93Mascheroni_constant"&gt;Euler–Mascheroni constant&lt;/a&gt;):&lt;/p&gt;
+&lt;p&gt;the &lt;em&gt;gamma&lt;/em&gt; function itself, its derivatives &lt;em&gt;digamma&lt;/em&gt; and &lt;em&gt;trigamma&lt;/em&gt;, and its logarithm &lt;em&gt;log-gamma&lt;/em&gt;, which are calculated in two interesting points to show their values (with &lt;span class="math"&gt;\(g\)&lt;/span&gt; being the &lt;a href="https://en.wikipedia.org/wiki/Euler%E2%80%93Mascheroni_constant"&gt;Euler–Mascheroni constant&lt;/a&gt;):&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Gamma(1) = %f%n&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
         &lt;span class="n"&gt;Gamma&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;value&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
 &lt;span class="n"&gt;System&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;out&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Gamma(0.5) = %f (sqrt(pi))%n&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
@@ -800,7 +800,69 @@ log-gamma(0.5) = 0.572365 (log(sqrt(pi)))
 &lt;p&gt;Among the packages we have seen so far, this seems less connected to the concept of "number" and closer to the concept of "function".&lt;/p&gt;
 &lt;h3 id="conclusions"&gt;Conclusions&lt;/h3&gt;
 &lt;p&gt;The Commons Numbers library is a good step towards a light, easily-embeddable and general purpose number library, with many common number types (especially fractions and complex numbers) and useful utilities such as the &lt;code&gt;Precision&lt;/code&gt; class. The library makes these "special" numbers quite easy to use, although Java itself is still missing a much desired feature (&lt;em&gt;operator overloading&lt;/em&gt;) that would make numeric computing even more appealing.&lt;/p&gt;
-&lt;p&gt;The library could be extended to add more functionalities to some number types (e.g. more operations for angles and vectors, close equality check for complex numbers) and a better integration with &lt;code&gt;BigInteger&lt;/code&gt;s, but the current beta version seems very promising.&lt;/p&gt;</content><category term="projects"></category><category term="library"></category><category term="Apache Commons"></category><category term="numbers"></category><category term="math"></category></entry><entry><title>Apache Commons CLI</title><link href="https://apothem.blog/apache-commons-cli.html" rel="alternate"></link><published>2020-08-31T00:00:00+01:00</published><updated>2020-08-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2020-08-31:/apache-commons-cli.html</id><summary type="html">&lt;p&gt;A common task when developing user-facing applications is to parse command line parameters to turn them into runtime options. The task is certainly repetitive and prone to error when it is reimplemented time and again, but another little library from the &lt;a href="https://commons.apache.org/"&gt;Apache Commons&lt;/a&gt; project makes it definitely an easier and …&lt;/p&gt;</summary><content type="html">&lt;p&gt;A common task when developing user-facing applications is to parse command line parameters to turn them into runtime options. The task is certainly repetitive and prone to error when it is reimplemented time and again, but another little library from the &lt;a href="https://commons.apache.org/"&gt;Apache Commons&lt;/a&gt; project makes it definitely an easier and more enjoyable experience: enter &lt;a href="http://commons.apache.org/proper/commons-cli/"&gt;Apache Commons CLI&lt;/a&gt;!&lt;/p&gt;
+&lt;p&gt;The library could be extended to add more functionalities to some number types (e.g. more operations for angles and vectors, close equality check for complex numbers) and a better integration with &lt;code&gt;BigInteger&lt;/code&gt;s, but the current beta version seems very promising.&lt;/p&gt;
+&lt;script type="text/javascript"&gt;if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width &lt; 768) ? "left" : align;
+        indent = (screen.width &lt; 768) ? "0em" : indent;
+        linebreak = (screen.width &lt; 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/latest.js?config=TeX-AMS-MML_HTMLorMML';
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+&lt;/script&gt;</content><category term="projects"></category><category term="library"></category><category term="Apache Commons"></category><category term="numbers"></category><category term="math"></category></entry><entry><title>Apache Commons CLI</title><link href="https://apothem.blog/apache-commons-cli.html" rel="alternate"></link><published>2020-08-31T00:00:00+01:00</published><updated>2020-08-31T00:00:00+01:00</updated><author><name>Nicola Vitucci</name></author><id>tag:apothem.blog,2020-08-31:/apache-commons-cli.html</id><summary type="html">&lt;p&gt;A common task when developing user-facing applications is to parse command line parameters to turn them into runtime options. The task is certainly repetitive and prone to error when it is reimplemented time and again, but another little library from the &lt;a href="https://commons.apache.org/"&gt;Apache Commons&lt;/a&gt; project makes it definitely an easier and …&lt;/p&gt;</summary><content type="html">&lt;p&gt;A common task when developing user-facing applications is to parse command line parameters to turn them into runtime options. The task is certainly repetitive and prone to error when it is reimplemented time and again, but another little library from the &lt;a href="https://commons.apache.org/"&gt;Apache Commons&lt;/a&gt; project makes it definitely an easier and more enjoyable experience: enter &lt;a href="http://commons.apache.org/proper/commons-cli/"&gt;Apache Commons CLI&lt;/a&gt;!&lt;/p&gt;
 &lt;div class="toc"&gt;&lt;span class="toctitle"&gt;Index:&lt;/span&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a href="#setting-up"&gt;Setting up&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#stages-of-processing"&gt;Stages of processing&lt;/a&gt;&lt;ul&gt;
