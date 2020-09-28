@@ -73,5 +73,5 @@ MARKDOWN = {
     'output_format': 'html5',
 }
 
-PLUGINS = ['pelican_alias']
+PLUGINS = ['pelican_alias', 'render_math']
 
