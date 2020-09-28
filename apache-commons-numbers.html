@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>  Apache Commons Numbers | APOTHEM
+</title>
+  <link rel="canonical" href="https://apothem.blog/apache-commons-numbers.html">
+
+    <link rel="icon" type="image/x-icon" href="https://apothem.blog/favicon.ico">
+
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/pygments/default.min.css">
+  <link rel="stylesheet" href="https://apothem.blog/theme/css/theme.css">
+
+  <link rel="alternate" type="application/atom+xml" title="Full Atom Feed"
+        href="https://apothem.blog/feeds/all.atom.xml">
+  <link rel="alternate" type="application/atom+xml" title="Categories Atom Feed"
+        href="https://apothem.blog/feeds/{slug}.atom.xml">  
+  <meta name="description" content="Although Java is probably not the first programming language to come to mind for scientific computing, there are several projects and libraries that try to bridge the gap. One prominent example is from the Apache Commons project: Apache Commons Math, a group of specialized mathematics and statistics components, has been …">
+
+
+</head>
+
+<body>
+  <header class="header">
+    <div class="container">
+<div class="row">
+    <div class="col-sm-4">
+      <a href="https://apothem.blog/">
+        <img class="img-fluid rounded" src=https://apothem.blog/images/profile.svg width=180 alt="APOTHEM">
+      </a>
+    </div>
+  <div class="col-sm-8">
+    <h1 class="title"><a href="https://apothem.blog/">APOTHEM</a></h1>
+      <p class="text-muted">Apache Project(s) of the month</p>
+      <ul class="list-inline">
+          <li class="list-inline-item"><a href="https://projects.apache.org" target="_blank">projects.apache.org</a></li>
+              <li class="list-inline-item text-muted">|</li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/about.html">About</a></li>
+            <li class="list-inline-item"><a href="https://apothem.blog/pages/faq.html">FAQ</a></li>
+            <li class=" list-inline-item text-muted">|</li>
+          <li class="list-inline-item"><a class="fa fa-github" href="https://github.com/nvitucci/apothem" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-twitter" href="https://twitter.com/nvitucci" target="_blank"></a></li>
+          <li class="list-inline-item"><a class="fa fa-rss" href="feeds/all.atom.xml" target="_blank"></a></li>
+      </ul>
+  </div>
+</div>    </div>
+  </header>
+
+  <div class="main">
+    <div class="container">
+      <h2>  Apache Commons Numbers
+</h2>
+      <hr>
+  <article class="article">
+    <header>
+      <ul class="list-inline">
+        <li class="list-inline-item text-muted" title="2020-09-28T00:00:00+01:00">
+          <i class="fa fa-clock-o"></i>
+          Mon 28 September 2020
+        </li>
+        <li class="list-inline-item">
+          <i class="fa fa-folder-open-o"></i>
+          <a href="https://apothem.blog/category/projects.html">projects</a>
+        </li>
+          <li class="list-inline-item">
+            <i class="fa fa-files-o"></i>
+              <a href="https://apothem.blog/tag/library.html">#library</a>,               <a href="https://apothem.blog/tag/apache-commons.html">#Apache Commons</a>,               <a href="https://apothem.blog/tag/numbers.html">#numbers</a>,               <a href="https://apothem.blog/tag/math.html">#math</a>          </li>
+      </ul>
+    </header>
+    <div class="content">
+      <p>Although Java is probably not the first programming language to come to mind for scientific computing, there are several projects and libraries that try to bridge the gap. One prominent example is from the <a href="https://commons.apache.org/">Apache Commons</a> project: <a href="https://commons.apache.org/proper/commons-math/">Apache Commons Math</a>, a group of specialized mathematics and statistics components, has been introduced in 2004 and is now at its 3.6.1 stable release, with version 4.0 still under development. The library includes a large number of components, ranging from linear algebra to geometry, from ordinary differential equations to complex numbers, and so on.</p>
+<p>The difficulty in maintaining the balance between backwards compatibility and adding improvements or new functionalities has inspired the creation of lower level libraries that contain only specific components (numbers, geometric primitives, etc.) and, as such, are smaller and easier to maintain. The library that we will explore in this article, <a href="https://commons.apache.org/proper/commons-numbers/">Apache Commons Numbers</a>, is dedicated to different types of numbers (fractions, angles, complex numbers, etc.), while other libraries have been created in a similar fashion for <a href="https://commons.apache.org/proper/commons-geometry/">geometry</a>, <a href="https://commons.apache.org/proper/commons-statistics/">statistics</a>, and <a href="https://commons.apache.org/proper/commons-rng/">random numbers generation</a>. Given that the documentation is still at a very early stage for Numbers, hopefully this review will be useful to the library developers too.</p>
+<div class="toc"><span class="toctitle">Index:</span><ul>
+<li><a href="#setting-up">Setting up</a></li>
+<li><a href="#modules">Modules</a><ul>
+<li><a href="#core">Core</a></li>
+<li><a href="#arrays">Arrays</a></li>
+<li><a href="#complex">Complex</a></li>
+<li><a href="#angle">Angle</a></li>
+<li><a href="#fraction">Fraction</a></li>
+<li><a href="#primes">Primes</a></li>
+<li><a href="#quaternion">Quaternion</a></li>
+<li><a href="#combinatorics">Combinatorics</a></li>
+<li><a href="#gamma">Gamma</a></li>
+</ul>
+</li>
+<li><a href="#conclusions">Conclusions</a></li>
+</ul>
+</div>
+<h3 id="setting-up">Setting up</h3>
+<p>The Commons Numbers library is currently in <a href="https://en.wikipedia.org/wiki/Software_release_life_cycle#Beta">beta stage</a>, basically meaning that it is still being tested and subject to change. While we would usually start exploring a library from its stable version and possibly add some observations about the development version, since there is no stable release for Numbers we will use the beta version throughout.</p>
+<p>As we have done in the <a href="https://apothem.blog/apache-commons-cli.html">Apache Commons CLI article</a>, we will use the library by means of a <code>pom.xml</code> file. Since we need to add several components, it is more practical to also set a <code>commons.numbers.version</code> property that can be updated at once, for instance when a first release becomes available. The POM file may look like the following:</p>
+<div class="highlight"><pre><span></span><span class="nt">&lt;groupId&gt;</span>blog.apothem<span class="nt">&lt;/groupId&gt;</span>
+<span class="nt">&lt;artifactId&gt;</span>apache-commons-numbers-example<span class="nt">&lt;/artifactId&gt;</span>
+<span class="nt">&lt;version&gt;</span>0.0.1-SNAPSHOT<span class="nt">&lt;/version&gt;</span>
+
+<span class="nt">&lt;properties&gt;</span>
+    <span class="nt">&lt;commons.numbers.version&gt;</span>1.0-beta1<span class="nt">&lt;/commons.numbers.version&gt;</span>
+<span class="nt">&lt;/properties&gt;</span>
+
+<span class="nt">&lt;dependencies&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>org.apache.commons<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>commons-numbers-core<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>${commons.numbers.version}<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>org.apache.commons<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>commons-numbers-angle<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>${commons.numbers.version}<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>org.apache.commons<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>commons-numbers-arrays<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>${commons.numbers.version}<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>org.apache.commons<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>commons-numbers-combinatorics<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>${commons.numbers.version}<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>org.apache.commons<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>commons-numbers-complex<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>${commons.numbers.version}<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>org.apache.commons<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>commons-numbers-fraction<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>${commons.numbers.version}<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>org.apache.commons<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>commons-numbers-gamma<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>${commons.numbers.version}<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>org.apache.commons<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>commons-numbers-primes<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>${commons.numbers.version}<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>org.apache.commons<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>commons-numbers-quaternion<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>${commons.numbers.version}<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+<span class="nt">&lt;/dependencies&gt;</span>
+</pre></div>
+
+
+<p>Again, we will create a class with a <code>main</code> method and write the entire code there; the complete code is available as always in the companion <a href="https://github.com/nvitucci/apothem-resources/tree/master/apache-commons-numbers">Apothem resources repository</a>.</p>
+<p>For the time being, I am skipping two components of the library, namely <code>Field</code> and <code>RootFinder</code>, since it is more difficult to create easy examples for both; I might add them as an update later on.</p>
+<h3 id="modules">Modules</h3>
+<p>In this section we will explore each component with code examples.</p>
+<h4 id="core"><code>Core</code></h4>
+<p>The <code>Core</code> package contains some of the interfaces used throughout the library, but most importantly it contains some number-related utilities as static methods within the <code>core.ArithmeticUtils</code> and <code>core.Precision</code> classes. For instance, given two integer numbers <em>x = 256</em> and <em>y = 6</em>, we can:</p>
+<ul>
+<li>
+<p>calculate the (unsigned) quotient and reminder of the division <em>x / y</em>:</p>
+<div class="highlight"><pre><span></span><span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">256</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">6</span><span class="p">;</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;%d / %d = %d%n&quot;</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ArithmeticUtils</span><span class="p">.</span><span class="na">divideUnsigned</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;%d %% %d = %d%n&quot;</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ArithmeticUtils</span><span class="p">.</span><span class="na">remainderUnsigned</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>256 / 6 = 42
+256 % 6 = 4
+</pre></div>
+
+
+</li>
+<li>
+<p>find the <a href="https://en.wikipedia.org/wiki/Greatest_common_divisor">greatest common divisor</a> (gcd) and the <a href="https://en.wikipedia.org/wiki/Least_common_multiple">least common multiple</a> (lcm) between <em>x</em> and <em>y</em>:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;gcd(%d, %d) = %d%n&quot;</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ArithmeticUtils</span><span class="p">.</span><span class="na">gcd</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;lcm(%d, %d) = %d%n&quot;</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ArithmeticUtils</span><span class="p">.</span><span class="na">lcm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>gcd(256, 6) = 2
+lcm(256, 6) = 768
+</pre></div>
+
+
+</li>
+<li>
+<p>calculate the powers <em>x ^ 2</em> and <em>x ^ y</em>, where the second one needs a cast to <code>BigInteger</code> since the result is too large to be contained in a <code>long</code>:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;%d ^ %d = %d%n&quot;</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">ArithmeticUtils</span><span class="p">.</span><span class="na">pow</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;%d ^ %d = %d%n&quot;</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ArithmeticUtils</span><span class="p">.</span><span class="na">pow</span><span class="p">(</span><span class="n">BigInteger</span><span class="p">.</span><span class="na">valueOf</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">y</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>256 ^ 2 = 65536
+256 ^ 6 = 281474976710656
+</pre></div>
+
+
+</li>
+<li>
+<p>check whether <em>x</em> and <em>x + 1</em> are powers of 2:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Is %d a power of 2? %b%n&quot;</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">ArithmeticUtils</span><span class="p">.</span><span class="na">isPowerOfTwo</span><span class="p">(</span><span class="n">x</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Is %d + 1 a power of 2? %b%n&quot;</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">ArithmeticUtils</span><span class="p">.</span><span class="na">isPowerOfTwo</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Is 256 a power of 2? true
+Is 256 + 1 a power of 2? false
+</pre></div>
+
+
+</li>
+</ul>
+<p>Using the methods from the <code>core.Precision</code> class, given a decimal number <em>x = 1.23456789</em> we can:</p>
+<ul>
+<li>
+<p>round it to 2, 4 and 6 places:</p>
+<div class="highlight"><pre><span></span><span class="kt">double</span> <span class="n">x</span> <span class="o">=</span> <span class="mf">1.23456789</span><span class="p">;</span>
+
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">places</span> <span class="p">:</span> <span class="n">Arrays</span><span class="p">.</span><span class="na">asList</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span> <span class="p">{</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Rounding %f to %d places = %f%n&quot;</span><span class="p">,</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">places</span><span class="p">,</span> <span class="n">Precision</span><span class="p">.</span><span class="na">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">places</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Rounding 1.234568 to 2 places = 1.230000
+Rounding 1.234568 to 4 places = 1.234600
+Rounding 1.234568 to 6 places = 1.234568
+</pre></div>
+
+
+</li>
+<li>
+<p>check that it is equal to <em>x + 1e-6</em> up to a certain precision:</p>
+<div class="highlight"><pre><span></span><span class="k">for</span> <span class="p">(</span><span class="kt">double</span> <span class="n">eps</span> <span class="p">:</span> <span class="n">Arrays</span><span class="p">.</span><span class="na">asList</span><span class="p">(</span><span class="mf">1e-3</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="mf">1e-9</span><span class="p">))</span> <span class="p">{</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;%.9f == %.9f (up to %e)? %b%n&quot;</span><span class="p">,</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">x</span> <span class="o">+</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">Precision</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span> <span class="o">+</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">eps</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>1.234567890 == 1.234568890 (up to 1.000000e-03)? true
+1.234567890 == 1.234568890 (up to 1.000000e-06)? true
+1.234567890 == 1.234568890 (up to 1.000000e-09)? false
+</pre></div>
+
+
+</li>
+<li>
+<p>check whether two <code>NaN</code>s are equal, using both the same <code>equals</code> method and the <code>equalsIncludingNaN</code> method which takes <code>NaN</code>s into account:</p>
+<div class="highlight"><pre><span></span><span class="kt">double</span> <span class="n">nan</span> <span class="o">=</span> <span class="n">Double</span><span class="p">.</span><span class="na">NaN</span><span class="p">;</span>
+<span class="kt">double</span> <span class="n">inf</span> <span class="o">=</span> <span class="n">Double</span><span class="p">.</span><span class="na">POSITIVE_INFINITY</span><span class="p">;</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;%f == %f? %b%n&quot;</span><span class="p">,</span>
+        <span class="n">nan</span><span class="p">,</span> <span class="n">nan</span><span class="p">,</span> <span class="n">Precision</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="n">nan</span><span class="p">,</span> <span class="n">nan</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;%f - %f == %f - %f? %b%n&quot;</span><span class="p">,</span>
+        <span class="n">inf</span><span class="p">,</span> <span class="n">inf</span><span class="p">,</span> <span class="n">inf</span><span class="p">,</span> <span class="n">inf</span><span class="p">,</span> <span class="n">Precision</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="n">inf</span> <span class="o">-</span> <span class="n">inf</span><span class="p">,</span> <span class="n">inf</span> <span class="o">-</span> <span class="n">inf</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;%f == %f (including NaN)? %b%n&quot;</span><span class="p">,</span>
+        <span class="n">nan</span><span class="p">,</span> <span class="n">nan</span><span class="p">,</span> <span class="n">Precision</span><span class="p">.</span><span class="na">equalsIncludingNaN</span><span class="p">(</span><span class="n">nan</span><span class="p">,</span> <span class="n">nan</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;%f - %f == %f - %f (including NaN)? %b%n&quot;</span><span class="p">,</span>
+        <span class="n">inf</span><span class="p">,</span> <span class="n">inf</span><span class="p">,</span> <span class="n">inf</span><span class="p">,</span> <span class="n">inf</span><span class="p">,</span> <span class="n">Precision</span><span class="p">.</span><span class="na">equalsIncludingNaN</span><span class="p">(</span><span class="n">inf</span> <span class="o">-</span> <span class="n">inf</span><span class="p">,</span> <span class="n">inf</span> <span class="o">-</span> <span class="n">inf</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>NaN == NaN? false
+Infinity - Infinity == Infinity - Infinity? false
+NaN == NaN (including NaN)? true
+Infinity - Infinity == Infinity - Infinity (including NaN)? true
+</pre></div>
+
+
+</li>
+</ul>
+<h4 id="arrays"><code>Arrays</code></h4>
+<p>This package can be used for basic linear algebra operations, such as:</p>
+<ul>
+<li>
+<p>calculating the norm of a vector (which is called <code>SafeNorm</code> but could probably just be called <code>Norm</code>, as there is no other norm defined):</p>
+<div class="highlight"><pre><span></span><span class="kt">double</span><span class="o">[]</span> <span class="n">array1</span> <span class="o">=</span> <span class="p">{</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">};</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Norm of %s = %f%n&quot;</span><span class="p">,</span>
+        <span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">array1</span><span class="p">),</span> <span class="n">SafeNorm</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="n">array1</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Norm of [0.1, 0.4, 0.1] = 0.424264
+</pre></div>
+
+
+</li>
+<li>
+<p>calculating the <a href="https://en.wikipedia.org/wiki/Cosine_similarity">cosine similiarity</a> and the <a href="https://en.wikipedia.org/wiki/Dot_product">dot product</a> between two vectors:</p>
+<div class="highlight"><pre><span></span><span class="kt">double</span><span class="o">[]</span> <span class="n">array2</span> <span class="o">=</span> <span class="p">{</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">};</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Angle between %s and %s = %f%n&quot;</span><span class="p">,</span>
+        <span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">array1</span><span class="p">),</span> <span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">array2</span><span class="p">),</span> <span class="n">CosAngle</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;dot(%s, %s) = %f%n&quot;</span><span class="p">,</span>
+        <span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">array1</span><span class="p">),</span> <span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">array2</span><span class="p">),</span> <span class="n">LinearCombination</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="n">array1</span><span class="p">,</span> <span class="n">array2</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Angle between [0.1, 0.4, 0.1] and [-0.1, -0.4, -0.1] = -1.000000
+dot([0.1, 0.4, 0.1], [-0.1, -0.4, -0.1]) = -0.180000
+</pre></div>
+
+
+</li>
+<li>
+<p>converting the index of a multidimensional array from a multidimensional index (e.g. <em>(1, 3, 2)</em>) to a unidimensional (linear) index (e.g. <em>23</em>) and vice versa, with the conversion logic explained in the <a href="https://commons.apache.org/proper/commons-numbers/commons-numbers-arrays/apidocs/org/apache/commons/numbers/arrays/MultidimensionalCounter.html">class Javadoc</a>:</p>
+<div class="highlight"><pre><span></span><span class="n">MultidimensionalCounter</span> <span class="n">counter</span> <span class="o">=</span> <span class="n">MultidimensionalCounter</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>
+<span class="kt">int</span> <span class="n">pos</span> <span class="o">=</span> <span class="mi">23</span><span class="p">;</span>
+<span class="kt">int</span><span class="o">[]</span> <span class="n">index</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">};</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Array of dimensions %s: position %d corresponds to index %s%n&quot;</span><span class="p">,</span>
+        <span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">counter</span><span class="p">.</span><span class="na">getSizes</span><span class="p">()),</span> <span class="n">pos</span><span class="p">,</span> <span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">counter</span><span class="p">.</span><span class="na">toMulti</span><span class="p">(</span><span class="n">pos</span><span class="p">)));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Array of dimensions %s: index %s corresponds to position %d%n&quot;</span><span class="p">,</span>
+        <span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">counter</span><span class="p">.</span><span class="na">getSizes</span><span class="p">()),</span> <span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">index</span><span class="p">),</span> <span class="n">counter</span><span class="p">.</span><span class="na">toUni</span><span class="p">(</span><span class="n">index</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Array of dimensions [4, 4, 3]: position 23 corresponds to index [1, 3, 2]
+Array of dimensions [4, 4, 3]: index [1, 3, 2] corresponds to position 23
+</pre></div>
+
+
+</li>
+</ul>
+<p>It could be useful if some vector algebra functions were added (such as vector sum and scaling), although more sophisticated operations would probably be better left as part of a linear algebra-focused library.</p>
+<h4 id="complex"><code>Complex</code></h4>
+<p>This package contains definitions and methods for complex numbers, a type of number that is frequently used in physics and engineering. A complex number can be created in three different ways:</p>
+<ul>
+<li>using the cartesian coordinates, so <em>z = a + b * i</em> would be expressed as the tuple <em>(a, b)</em>;</li>
+<li>using the polar coordinates, so <em>z = rho * (cos(theta) + i * sin(theta))</em> would be expressed as the tuple <em>(rho, theta)</em> (and, to convert from cartesian coordinates, <em>rho = sqrt(a ^ 2 + b ^2)</em> and <em>theta = atan2(a, b)</em>);</li>
+<li>using the cis (<strong>c</strong>os + <strong>i s</strong>in) form, so <em>z = cos(x) + i * sin(x)</em> (and, equivalently, <em>z = exp(i * x)</em>) would be expressed by the single number <em>x</em>.</li>
+</ul>
+<p>These three methods can be implemented as in the following example:</p>
+<div class="highlight"><pre><span></span><span class="n">Complex</span> <span class="n">z</span> <span class="o">=</span> <span class="n">Complex</span><span class="p">.</span><span class="na">ofCartesian</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+<span class="n">Complex</span> <span class="n">z2</span> <span class="o">=</span> <span class="n">Complex</span><span class="p">.</span><span class="na">ofPolar</span><span class="p">(</span><span class="n">Math</span><span class="p">.</span><span class="na">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">Math</span><span class="p">.</span><span class="na">PI</span> <span class="o">/</span> <span class="mi">4</span><span class="p">);</span>
+<span class="n">Complex</span> <span class="n">z3</span> <span class="o">=</span> <span class="n">Complex</span><span class="p">.</span><span class="na">ofCis</span><span class="p">(</span><span class="n">Math</span><span class="p">.</span><span class="na">PI</span><span class="p">);</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;z: %s, z2: %s, z3: %s%n&quot;</span><span class="p">,</span>
+        <span class="n">z</span><span class="p">,</span> <span class="n">z2</span><span class="p">,</span> <span class="n">z3</span><span class="p">);</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>z: (1.0,1.0), z2: (1.0000000000000002,1.0), z3: (-1.0,1.2246467991473532E-16)
+</pre></div>
+
+
+<p>We can see that, although they should theoretically be the same, <em>z</em> and <em>z2</em> are not considered equal due to numerical instability:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;%s == %s? %b%n&quot;</span><span class="p">,</span>
+    <span class="n">z</span><span class="p">,</span> <span class="n">z2</span><span class="p">,</span> <span class="n">z</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="n">z2</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>(1.0,1.0) == (1.0000000000000002,1.0)? false
+</pre></div>
+
+
+<p>For this reason, it would be useful to have an "almost equals" method available for complex numbers too. However, there are many other methods that, given a complex number, can:</p>
+<ul>
+<li>extract its real and imaginary part, its absolute value and its argument;</li>
+<li>calculate its conjugate and its squared norm;</li>
+<li>calculate the value of several trigonometric functions.</li>
+</ul>
+<p>Examples:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Given z = %s:%n&quot;</span><span class="p">,</span> <span class="n">z</span><span class="p">);</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tRe(z) = %s, Im(z) = %s%n&quot;</span><span class="p">,</span>
+        <span class="n">z</span><span class="p">.</span><span class="na">real</span><span class="p">(),</span> <span class="n">z</span><span class="p">.</span><span class="na">imag</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tabs(z) = %s, arg(z) = %s%n&quot;</span><span class="p">,</span>
+        <span class="n">z</span><span class="p">.</span><span class="na">abs</span><span class="p">(),</span> <span class="n">z</span><span class="p">.</span><span class="na">arg</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tconj(z) = %s%n&quot;</span><span class="p">,</span> <span class="n">z</span><span class="p">.</span><span class="na">conj</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tnorm(z) = %f%n&quot;</span><span class="p">,</span> <span class="n">z</span><span class="p">.</span><span class="na">norm</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tasin(z) = %s%n&quot;</span><span class="p">,</span> <span class="n">z</span><span class="p">.</span><span class="na">asin</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tacos(z) = %s%n&quot;</span><span class="p">,</span> <span class="n">z</span><span class="p">.</span><span class="na">acos</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tatan(z) = %s%n&quot;</span><span class="p">,</span> <span class="n">z</span><span class="p">.</span><span class="na">atan</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tasinh(z) = %s%n&quot;</span><span class="p">,</span> <span class="n">z</span><span class="p">.</span><span class="na">asinh</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tacosh(z) = %s%n&quot;</span><span class="p">,</span> <span class="n">z</span><span class="p">.</span><span class="na">acosh</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tatanh(z) = %s%n&quot;</span><span class="p">,</span> <span class="n">z</span><span class="p">.</span><span class="na">atanh</span><span class="p">());</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Given z = (1.0,1.0):
+        Re(z) = 1.0, Im(z) = 1.0
+        abs(z) = 1.4142135623730951, arg(z) = 0.7853981633974483
+        conj(z) = (1.0,-1.0)
+        norm(z) = 2.000000
+        asin(z) = (0.6662394324925152,1.0612750619050357)
+        acos(z) = (0.9045568943023814,-1.0612750619050357)
+        atan(z) = (1.0172219678978514,0.40235947810852507)
+        asinh(z) = (1.0612750619050357,0.6662394324925152)
+        acosh(z) = (1.0612750619050357,0.9045568943023814)
+        atanh(z) = (0.40235947810852507,1.0172219678978514)
+</pre></div>
+
+
+<p>Furthermore, given two complex numbers, it is possible to add, subtract, multiply, and divide them, and raise one to the power of the other one:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Given z = %s anz z2 = %s:%n&quot;</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">z2</span><span class="p">);</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tz + z2 = %s%n&quot;</span><span class="p">,</span> <span class="n">z</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">z2</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tz - z2 = %s%n&quot;</span><span class="p">,</span> <span class="n">z</span><span class="p">.</span><span class="na">subtract</span><span class="p">(</span><span class="n">z2</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tz * z2 = %s%n&quot;</span><span class="p">,</span> <span class="n">z</span><span class="p">.</span><span class="na">multiply</span><span class="p">(</span><span class="n">z2</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tz / z2 = %s%n&quot;</span><span class="p">,</span> <span class="n">z</span><span class="p">.</span><span class="na">divide</span><span class="p">(</span><span class="n">z2</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tz ^ z2 = %s%n&quot;</span><span class="p">,</span> <span class="n">z</span><span class="p">.</span><span class="na">pow</span><span class="p">(</span><span class="n">z2</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Given z = (1.0,1.0) anz z2 = (1.0000000000000002,1.0):
+        z + z2 = (2.0,2.0)
+        z - z2 = (-2.220446049250313E-16,0.0)
+        z * z2 = (2.220446049250313E-16,2.0)
+        z / z2 = (0.9999999999999998,1.1102230246251563E-16)
+        z ^ z2 = (0.273957253830121,0.5837007587586148)
+</pre></div>
+
+
+<p>Using the previously seen <code>Precision.equals</code> method, we can even show <a href="https://en.wikipedia.org/wiki/Euler%27s_identity">Euler's identity</a> for <em>z = exp(i * pi)</em>:</p>
+<div class="highlight"><pre><span></span><span class="kt">double</span> <span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-15</span><span class="p">;</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Re(%s) == -1 up to %s? %b%n&quot;</span><span class="p">,</span>
+        <span class="n">z3</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">Precision</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="n">z3</span><span class="p">.</span><span class="na">real</span><span class="p">(),</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">eps</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Im(%s) == 0 up to %s? %b%n&quot;</span><span class="p">,</span>
+        <span class="n">z3</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">Precision</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="n">z3</span><span class="p">.</span><span class="na">imag</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">eps</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Re((-1.0,1.2246467991473532E-16)) == -1 up to 1.0E-15? true
+Im((-1.0,1.2246467991473532E-16)) == 0 up to 1.0E-15? true
+</pre></div>
+
+
+<h4 id="angle"><code>Angle</code></h4>
+<p>This package can be used to define angles from different units of measurement, namely degrees, radians, and turns (where 1 turn = 360 degrees):</p>
+<div class="highlight"><pre><span></span><span class="n">PlaneAngle</span> <span class="n">alpha</span> <span class="o">=</span> <span class="n">PlaneAngle</span><span class="p">.</span><span class="na">ofDegrees</span><span class="p">(</span><span class="mi">180</span><span class="p">);</span>
+<span class="n">PlaneAngle</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">PlaneAngle</span><span class="p">.</span><span class="na">ofRadians</span><span class="p">(</span><span class="n">Math</span><span class="p">.</span><span class="na">PI</span><span class="p">);</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Angle alpha in degrees: %f%n&quot;</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">.</span><span class="na">toDegrees</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Angle alpha in radians: %f%n&quot;</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">.</span><span class="na">toRadians</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Angle alpha in turns: %f%n&quot;</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">.</span><span class="na">toTurns</span><span class="p">());</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Angle beta in degrees: %f%n&quot;</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">.</span><span class="na">toDegrees</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Angle beta in radians: %f%n&quot;</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">.</span><span class="na">toRadians</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Angle beta in turns: %f%n&quot;</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">.</span><span class="na">toTurns</span><span class="p">());</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Angle alpha in degrees: 180.000000
+Angle alpha in radians: 3.141593
+Angle alpha in turns: 0.500000
+Angle beta in degrees: 180.000000
+Angle beta in radians: 3.141593
+Angle beta in turns: 0.500000
+</pre></div>
+
+
+<p>Angles can also be compared for equality:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Are angles alpha and beta equal? %b%n&quot;</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="n">beta</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Are angles alpha and beta equal? true
+</pre></div>
+
+
+<p>The package is currently missing operations between angles, such as addition and multiplication by scalars.</p>
+<h4 id="fraction"><code>Fraction</code></h4>
+<p>This package can be used to define fractions, where instead of a (possibly approximate) decimal value we want to use a rational number and perform operations on it. Fractions can be created from a numerator and a denominator or from a decimal value, in which case the denominator can optionally be limited to a maximum (useful to adjust the precision of the conversion):</p>
+<div class="highlight"><pre><span></span><span class="n">List</span><span class="o">&lt;</span><span class="n">Fraction</span><span class="o">&gt;</span> <span class="n">fractions</span> <span class="o">=</span> <span class="n">Arrays</span><span class="p">.</span><span class="na">asList</span><span class="p">(</span>
+        <span class="n">Fraction</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span>
+        <span class="n">Fraction</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+        <span class="n">Fraction</span><span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="mf">0.99245</span><span class="p">),</span>
+        <span class="n">Fraction</span><span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="mf">0.99245</span><span class="p">,</span> <span class="mi">10000000</span><span class="p">));</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Fractions: %s%n&quot;</span><span class="p">,</span>
+        <span class="n">fractions</span><span class="p">.</span><span class="na">stream</span><span class="p">().</span><span class="na">map</span><span class="p">(</span><span class="n">Fraction</span><span class="p">::</span><span class="n">toString</span><span class="p">).</span><span class="na">collect</span><span class="p">(</span><span class="n">Collectors</span><span class="p">.</span><span class="na">joining</span><span class="p">(</span><span class="s">&quot; ; &quot;</span><span class="p">)));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Fractions: 4 / 9 ; 1 / 2 ; 263 / 265 ; 19849 / 20000
+</pre></div>
+
+
+<p>A fraction can be:</p>
+<ul>
+<li>decomposed into numerator and denominator;</li>
+<li>converted to a decimal number;</li>
+<li>converted to its reciprocal;</li>
+<li>negated;</li>
+<li>raised to a power.</li>
+</ul>
+<p>Examples:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;The fraction %s has numerator %d and denominator %d%n&quot;</span><span class="p">,</span>
+        <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="na">getNumerator</span><span class="p">(),</span> <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="na">getDenominator</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;%s as a decimal number: %f%n&quot;</span><span class="p">,</span>
+        <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="na">doubleValue</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Reciprocal of %s: %s%n&quot;</span><span class="p">,</span>
+        <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="na">reciprocal</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Additive inverse of %s: %s%n&quot;</span><span class="p">,</span>
+        <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="na">negate</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;(%s) ^ 3 = %s%n&quot;</span><span class="p">,</span>
+        <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="na">pow</span><span class="p">(</span><span class="mi">3</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>The fraction 4 / 9 has numerator 4 and denominator 9
+4 / 9 as a decimal number: 0.444444
+Reciprocal of 4 / 9: 9 / 4
+Additive inverse of 4 / 9: -4 / 9
+(4 / 9) ^ 3 = 64 / 729
+</pre></div>
+
+
+<p>A fraction can be added, subtracted, multiplied, and divided by another one:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;(%s) + (%s) = %s%n&quot;</span><span class="p">,</span>
+        <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="na">add</span><span class="p">(</span><span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;(%s) - (%s) = %s%n&quot;</span><span class="p">,</span>
+        <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="na">subtract</span><span class="p">(</span><span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;(%s) * (%s) = %s%n&quot;</span><span class="p">,</span>
+        <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="na">multiply</span><span class="p">(</span><span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;(%s) / (%s) = %s%n&quot;</span><span class="p">,</span>
+        <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="na">divide</span><span class="p">(</span><span class="n">fractions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>(4 / 9) + (1 / 2) = 17 / 18
+(4 / 9) - (1 / 2) = -1 / 18
+(4 / 9) * (1 / 2) = 2 / 9
+(4 / 9) / (1 / 2) = 8 / 9
+</pre></div>
+
+
+<h4 id="primes"><code>Primes</code></h4>
+<p>This package is dedicated to <a href="https://en.wikipedia.org/wiki/Prime_number">prime numbers</a>, a class of numbers with many applications especially in cryptography. The <code>Primes</code> class has methods to determine whether a number is prime, to find the closest prime to a number, and to decompose a number into prime factors:</p>
+<div class="highlight"><pre><span></span><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">n</span> <span class="p">:</span> <span class="n">Arrays</span><span class="p">.</span><span class="na">asList</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">42</span><span class="p">))</span> <span class="p">{</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Is %d prime? %b%n&quot;</span><span class="p">,</span>
+            <span class="n">n</span><span class="p">,</span> <span class="n">Primes</span><span class="p">.</span><span class="na">isPrime</span><span class="p">(</span><span class="n">n</span><span class="p">));</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;What is the closest prime to %d? %d%n&quot;</span><span class="p">,</span>
+            <span class="n">n</span><span class="p">,</span> <span class="n">Primes</span><span class="p">.</span><span class="na">nextPrime</span><span class="p">(</span><span class="n">n</span><span class="p">));</span> <span class="c1">// Note: why is it 2 when n = 2?</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Prime factors of %d: %s%n&quot;</span><span class="p">,</span>
+            <span class="n">n</span><span class="p">,</span> <span class="n">Primes</span><span class="p">.</span><span class="na">primeFactors</span><span class="p">(</span><span class="n">n</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Is 2 prime? true
+What is the closest prime to 2? 2
+Prime factors of 2: [2]
+Is 4 prime? false
+What is the closest prime to 4? 5
+Prime factors of 4: [2, 2]
+Is 42 prime? false
+What is the closest prime to 42? 43
+Prime factors of 42: [2, 3, 7]
+</pre></div>
+
+
+<h4 id="quaternion"><code>Quaternion</code></h4>
+<p>This package introduces the concept of <a href="https://en.wikipedia.org/wiki/Quaternion">quaternion</a>, an extension to complex numbers that is widely used in computer graphics and robotics due to its convenience in implementing rotations around multiple axes. A quaternion is composed of two parts, a scalar and a tridimensional vector; it can therefore be created with different methods, where the simplest one sets the scalar part to zero (thus creating a so-called <em>pure quaternion</em>):</p>
+<div class="highlight"><pre><span></span><span class="n">List</span><span class="o">&lt;</span><span class="n">Quaternion</span><span class="o">&gt;</span> <span class="n">quaternions</span> <span class="o">=</span> <span class="n">Arrays</span><span class="p">.</span><span class="na">asList</span><span class="p">(</span>
+        <span class="n">Quaternion</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="k">new</span> <span class="kt">double</span><span class="o">[]</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">}),</span>
+        <span class="n">Quaternion</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="k">new</span> <span class="kt">double</span><span class="o">[]</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">}),</span>
+        <span class="n">Quaternion</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
+</pre></div>
+
+
+<p>Each quaternion can be:</p>
+<ul>
+<li>checked for "pureness";</li>
+<li>conjugated;</li>
+<li>inverted;</li>
+<li>normalized (as a versor) or converted to positive polar form (defined as "the unit quaternion with positive scalar part", although this could be made more clear);</li>
+<li>divided by a scalar, for instance by its own norm (to check that the normalization method yields the correct result).</li>
+</ul>
+<p>Examples:</p>
+<div class="highlight"><pre><span></span><span class="k">for</span> <span class="p">(</span><span class="n">Quaternion</span> <span class="n">q</span> <span class="p">:</span> <span class="n">quaternions</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Quaternion %s%n&quot;</span><span class="p">,</span> <span class="n">q</span><span class="p">);</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tIs it pure (up to 1e-10)? %b%n&quot;</span><span class="p">,</span>
+            <span class="n">q</span><span class="p">.</span><span class="na">isPure</span><span class="p">(</span><span class="mf">1e-10</span><span class="p">));</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tConjugate: %s%n&quot;</span><span class="p">,</span>
+            <span class="n">q</span><span class="p">.</span><span class="na">conjugate</span><span class="p">());</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tInverse: %s%n&quot;</span><span class="p">,</span>
+            <span class="n">q</span><span class="p">.</span><span class="na">inverse</span><span class="p">());</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tNormalized form: %s%n&quot;</span><span class="p">,</span>
+            <span class="n">q</span><span class="p">.</span><span class="na">normalize</span><span class="p">());</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tPositive polar form: %s%n&quot;</span><span class="p">,</span>
+            <span class="n">q</span><span class="p">.</span><span class="na">positivePolarForm</span><span class="p">());</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tQuaternion divided by its norm %f: %s%n&quot;</span><span class="p">,</span>
+            <span class="n">q</span><span class="p">.</span><span class="na">norm</span><span class="p">(),</span> <span class="n">q</span><span class="p">.</span><span class="na">divide</span><span class="p">(</span><span class="n">q</span><span class="p">.</span><span class="na">norm</span><span class="p">()));</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Quaternion [0.0 1.0 1.0 1.0]
+        Is it pure (up to 1e-10)? true
+        Conjugate: [0.0 -1.0 -1.0 -1.0]
+        Inverse: [0.0 -0.3333333333333333 -0.3333333333333333 -0.3333333333333333]
+        Normalized form: [0.0 0.5773502691896258 0.5773502691896258 0.5773502691896258]
+        Positive polar form: [0.0 0.5773502691896258 0.5773502691896258 0.5773502691896258]
+        Quaternion divided by its norm 1.732051: [0.0 0.5773502691896258 0.5773502691896258 0.5773502691896258]
+Quaternion [2.0 1.0 1.0 1.0]
+        Is it pure (up to 1e-10)? false
+        Conjugate: [2.0 -1.0 -1.0 -1.0]
+        Inverse: [0.2857142857142857 -0.14285714285714285 -0.14285714285714285 -0.14285714285714285]
+        Normalized form: [0.7559289460184544 0.3779644730092272 0.3779644730092272 0.3779644730092272]
+        Positive polar form: [0.7559289460184544 0.3779644730092272 0.3779644730092272 0.3779644730092272]
+        Quaternion divided by its norm 2.645751: [0.7559289460184544 0.3779644730092272 0.3779644730092272 0.3779644730092272]
+Quaternion [0.5 1.0 1.0 1.0]
+        Is it pure (up to 1e-10)? false
+        Conjugate: [0.5 -1.0 -1.0 -1.0]
+        Inverse: [0.15384615384615385 -0.3076923076923077 -0.3076923076923077 -0.3076923076923077]
+        Normalized form: [0.2773500981126146 0.5547001962252291 0.5547001962252291 0.5547001962252291]
+        Positive polar form: [0.2773500981126146 0.5547001962252291 0.5547001962252291 0.5547001962252291]
+        Quaternion divided by its norm 1.802776: [0.2773500981126146 0.5547001962252291 0.5547001962252291 0.5547001962252291]
+</pre></div>
+
+
+<p>Two quaternions can be added, subtracted, and multiplied (the division is only allowed by a decimal number):</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;%s + %s = %s%n&quot;</span><span class="p">,</span>
+        <span class="n">quaternions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">quaternions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">quaternions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="na">add</span><span class="p">(</span><span class="n">quaternions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;%s - %s = %s%n&quot;</span><span class="p">,</span>
+        <span class="n">quaternions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">quaternions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">quaternions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="na">subtract</span><span class="p">(</span><span class="n">quaternions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;%s * %s = %s%n&quot;</span><span class="p">,</span>
+        <span class="n">quaternions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">quaternions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">quaternions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="na">multiply</span><span class="p">(</span><span class="n">quaternions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>[0.0 1.0 1.0 1.0] + [2.0 1.0 1.0 1.0] = [2.0 2.0 2.0 2.0]
+[0.0 1.0 1.0 1.0] - [2.0 1.0 1.0 1.0] = [-2.0 0.0 0.0 0.0]
+[0.0 1.0 1.0 1.0] * [2.0 1.0 1.0 1.0] = [-3.0 2.0 2.0 2.0]
+</pre></div>
+
+
+<p>and it is also possible to calculate the dot product between them:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;dot(%s, %s) = %s%n&quot;</span><span class="p">,</span>
+        <span class="n">quaternions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">quaternions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">quaternions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="na">dot</span><span class="p">(</span><span class="n">quaternions</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>dot([0.0 1.0 1.0 1.0], [2.0 1.0 1.0 1.0]) = 3.0
+</pre></div>
+
+
+<p>For more information on how quaternion algebra works, you can check the <a href="https://en.wikipedia.org/wiki/Quaternion">Wikipedia page</a>.</p>
+<p>Another interesting class from this package is <code>Slerp</code>, where the only available method <code>apply</code> is used to create a <a href="https://en.wikipedia.org/wiki/Slerp">spherical linear interpolation</a> (or <em>slerp</em>) between two quaternions, with the purpose of smoothly transforming the first into the second (useful for instance in 3D-rotation animation tasks). A slerp from the special quaternion <strong>i</strong> = <em>(0, 1, 0, 0)</em> to the other special quaternion <strong>j</strong> = <em>(0, 0, 1, 0)</em> can be created as follows:</p>
+<div class="highlight"><pre><span></span><span class="n">Slerp</span> <span class="n">slerp</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Slerp</span><span class="p">(</span><span class="n">Quaternion</span><span class="p">.</span><span class="na">I</span><span class="p">,</span> <span class="n">Quaternion</span><span class="p">.</span><span class="na">J</span><span class="p">);</span>
+</pre></div>
+
+
+<p>We want the transition to take place in intervals of 0.1, so we use a <code>for</code> loop:</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Slerp demo%n&quot;</span><span class="p">);</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">double</span> <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">;</span> <span class="n">t</span> <span class="o">+=</span> <span class="mf">0.1</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;\tQuaternion at t = %f: %s%n&quot;</span><span class="p">,</span>
+            <span class="n">t</span><span class="p">,</span> <span class="n">slerp</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">t</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Slerp demo
+        Quaternion at t = 0.000000: [0.0 1.0 0.0 0.0]
+        Quaternion at t = 0.100000: [0.0 0.9876883405951378 0.15643446504023087 0.0]
+        Quaternion at t = 0.200000: [0.0 0.9510565162951536 0.30901699437494745 0.0]
+        Quaternion at t = 0.300000: [0.0 0.8910065241883679 0.45399049973954686 0.0]
+        Quaternion at t = 0.400000: [0.0 0.8090169943749475 0.5877852522924731 0.0]
+        Quaternion at t = 0.500000: [0.0 0.7071067811865476 0.7071067811865476 0.0]
+        Quaternion at t = 0.600000: [0.0 0.5877852522924731 0.8090169943749475 0.0]
+        Quaternion at t = 0.700000: [0.0 0.45399049973954686 0.8910065241883679 0.0]
+        Quaternion at t = 0.800000: [0.0 0.3090169943749475 0.9510565162951535 0.0]
+        Quaternion at t = 0.900000: [0.0 0.15643446504023104 0.9876883405951378 0.0]
+        Quaternion at t = 1.000000: [0.0 1.743934249004316E-16 1.0 0.0]
+</pre></div>
+
+
+<h4 id="combinatorics"><code>Combinatorics</code></h4>
+<p>This package contains several classes for common combinatorial concepts such as <a href="https://en.wikipedia.org/wiki/Factorial">factorials</a> (to calculate the number of permutations of <em>n</em> objects) and <a href="https://en.wikipedia.org/wiki/Combination">combinations</a> (to calculate the number of ways <em>n</em> objects can be arranged in groups of <em>k</em> objects). For example, given <em>n = 10</em>, we can calculate the factorial (as a <code>long</code> and as a <code>double</code>) and log-factorial of <em>n</em>:</p>
+<div class="highlight"><pre><span></span><span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;%d! = %d%n&quot;</span><span class="p">,</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">Factorial</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="n">n</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;%d! = %f (double)%n&quot;</span><span class="p">,</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">FactorialDouble</span><span class="p">.</span><span class="na">create</span><span class="p">().</span><span class="na">value</span><span class="p">(</span><span class="n">n</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;log(%d!) = %f%n&quot;</span><span class="p">,</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">LogFactorial</span><span class="p">.</span><span class="na">create</span><span class="p">().</span><span class="na">value</span><span class="p">(</span><span class="n">n</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>10! = 3628800
+10! = 3628800.000000 (double)
+log(10!) = 15.104413
+</pre></div>
+
+
+<p>Furthermore, given <em>k = 3</em>, we can calculate the binomial coefficient <em>(n k)</em> (i.e. the number of <em>k</em>-combinations of <em>n</em> objects), both as a <code>long</code> and as a <code>double</code>, and its logarithm:</p>
+<div class="highlight"><pre><span></span><span class="kt">int</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Binomial coefficient (%d %d) = %d%n&quot;</span><span class="p">,</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">BinomialCoefficient</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Binomial coefficient (%d %d) = %f (double)%n&quot;</span><span class="p">,</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">BinomialCoefficientDouble</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Log of the binomial coefficient (%d %d) = %f%n&quot;</span><span class="p">,</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">LogBinomialCoefficient</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Binomial coefficient (10 3) = 120
+Binomial coefficient (10 3) = 120.000000 (double)
+Log of the binomial coefficient (10 3) = 4.787492
+</pre></div>
+
+
+<p>We can also calculate the combinations themselves, take their number and show some of them:</p>
+<div class="highlight"><pre><span></span><span class="n">Combinations</span> <span class="n">comb</span> <span class="o">=</span> <span class="n">Combinations</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">);</span>
+<span class="n">List</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">[]&gt;</span> <span class="n">combList</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;</span><span class="p">();</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span><span class="o">[]</span> <span class="n">element</span> <span class="p">:</span> <span class="n">comb</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">combList</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">element</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Number of combinations C(%d, %d): %d%n&quot;</span><span class="p">,</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">combList</span><span class="p">.</span><span class="na">size</span><span class="p">());</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;First three combinations: %s, %s, %s%n&quot;</span><span class="p">,</span>
+        <span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">combList</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">0</span><span class="p">)),</span> <span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">combList</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
+        <span class="n">Arrays</span><span class="p">.</span><span class="na">toString</span><span class="p">(</span><span class="n">combList</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="mi">2</span><span class="p">)));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>Number of combinations C(10, 3): 120
+First three combinations: [0, 1, 2], [0, 1, 3], [0, 2, 3]
+</pre></div>
+
+
+<p>One important thing that must be noted here is the potentially large size of the numbers involved. The factorial grows very quickly, so the numbers for which the factorial can fit in a <code>long</code> are very few (just up to <em>n = 20</em>); the binomial grows quickly as well, so its input is also limited (in fact it can be calculated only for <em>n &lt;= 66</em>). This problem can be alleviated by using approximations, either using the <code>Double</code> version of both classes (i.e. <code>FactorialDouble</code> and <code>BinomialCoefficientDouble</code>) or using their logarithmic versions (i.e. <code>LogFactorial</code> and <code>LogBinomialCoefficient</code>), which in turn use the <code>LogGamma</code> class from the <code>Gamma</code> package. It would be interesting to see also a version of <code>Factorial</code> and <code>BinomialCoefficient</code> that makes use of <code>BigInteger</code>s to allow for exact calculation on larger numbers.</p>
+<h4 id="gamma"><code>Gamma</code></h4>
+<p>This package is very specific to a certain class of mathematical functions derived from the <a href="https://en.wikipedia.org/wiki/Gamma_function">gamma function</a>, including:</p>
+<ul>
+<li>
+<p>the <a href="https://en.wikipedia.org/wiki/Error_function">error function</a> and its inverse:</p>
+<div class="highlight"><pre><span></span><span class="k">for</span> <span class="p">(</span><span class="kt">double</span> <span class="n">value</span> <span class="p">:</span> <span class="n">Arrays</span><span class="p">.</span><span class="na">asList</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">))</span> <span class="p">{</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;erf(%f) = %f%n&quot;</span><span class="p">,</span>
+            <span class="n">value</span><span class="p">,</span> <span class="n">Erf</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="n">value</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="k">for</span> <span class="p">(</span><span class="kt">double</span> <span class="n">value</span> <span class="p">:</span> <span class="n">Arrays</span><span class="p">.</span><span class="na">asList</span><span class="p">(</span><span class="mf">0.9999</span><span class="p">,</span> <span class="mf">0.9953</span><span class="p">,</span> <span class="mf">0.8427</span><span class="p">))</span> <span class="p">{</span>
+    <span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;erf^(-1)(%f) = %f%n&quot;</span><span class="p">,</span>
+            <span class="n">value</span><span class="p">,</span> <span class="n">InverseErf</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="n">value</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>erf(1.000000) = 0.842701
+erf(2.000000) = 0.995322
+erf(3.000000) = 0.999978
+erf^(-1)(0.999900) = 2.751064
+erf^(-1)(0.995300) = 1.998925
+erf^(-1)(0.842700) = 0.999998
+</pre></div>
+
+
+</li>
+<li>
+<p>the <em>gamma</em> function itself, its derivatives <em>digamma</em> and <em>trigamma</em>, and its logarithm <em>log-gamma</em>, which are calculated in two interesting points to show their values (with <em>g</em> being the <a href="https://en.wikipedia.org/wiki/Euler%E2%80%93Mascheroni_constant">Euler–Mascheroni constant</a>):</p>
+<div class="highlight"><pre><span></span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Gamma(1) = %f%n&quot;</span><span class="p">,</span>
+        <span class="n">Gamma</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Gamma(0.5) = %f (sqrt(pi))%n&quot;</span><span class="p">,</span>
+        <span class="n">Gamma</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="mf">0.5</span><span class="p">));</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Digamma(1) = %f (-g)%n&quot;</span><span class="p">,</span>
+        <span class="n">Digamma</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Digamma(0.5) = %f (-2 * ln(2) - g)%n&quot;</span><span class="p">,</span>
+        <span class="n">Digamma</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="mf">0.5</span><span class="p">));</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Trigamma(1) = %f (pi ** 2 / 6)%n&quot;</span><span class="p">,</span>
+        <span class="n">Trigamma</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;Trigamma(0.5) = %f (pi ** 2 / 2)%n&quot;</span><span class="p">,</span>
+        <span class="n">Trigamma</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="mf">0.5</span><span class="p">));</span>
+
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;log-gamma(1) = %f%n&quot;</span><span class="p">,</span>
+        <span class="n">LogGamma</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">printf</span><span class="p">(</span><span class="s">&quot;log-gamma(0.5) = %f (log(sqrt(pi)))%n&quot;</span><span class="p">,</span>
+        <span class="n">LogGamma</span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="mf">0.5</span><span class="p">));</span>
+</pre></div>
+
+
+<!-- -->
+
+<div class="highlight"><pre><span></span>gamma(1) = 1.000000
+gamma(0.5) = 1.772454 (sqrt(pi))
+digamma(1) = -0.577216 (-gamma)
+digamma(0.5) = -1.963510 (-2 * ln(2) - gamma)
+trigamma(1) = 1.644934 (pi ** 2 / 6)
+trigamma(0.5) = 4.934802 (pi ** 2 / 2)
+log-gamma(1) = -0.000000
+log-gamma(0.5) = 0.572365 (log(sqrt(pi)))
+</pre></div>
+
+
+</li>
+</ul>
+<p>Among the packages we have seen so far, this seems less connected to the concept of "number" and closer to the concept of "function".</p>
+<h3 id="conclusions">Conclusions</h3>
+<p>The Commons Numbers library is a good step towards a light, easily-embeddable and general purpose number library, with many common number types (especially fractions and complex numbers) and useful utilities such as the <code>Precision</code> class. The library makes these "special" numbers quite easy to use, although Java itself is still missing a much desired feature (<em>operator overloading</em>) that would make numeric computing even more appealing.</p>
+<p>The library could be extended to add more functionalities to some number types (e.g. more operations for angles and vectors, close equality check for complex numbers) and a better integration with <code>BigInteger</code>s, but the current beta version seems very promising.</p>
+    </div>
+  </article>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+<div class="row">
+  <ul class="col-sm-6 list-inline">
+    <li class="list-inline-item"><a href="https://apothem.blog/archives.html">Archives</a></li>
+    <li class="list-inline-item"><a href="https://apothem.blog/categories.html">Categories</a></li>
+      <li class="list-inline-item"><a href="https://apothem.blog/tags.html">Tags</a></li>
+  </ul>
+  <p class="col-sm-6 text-sm-right text-muted">
+    Generated by <a href="https://github.com/getpelican/pelican" target="_blank">Pelican</a>
+    / <a href="https://github.com/nairobilug/pelican-alchemy" target="_blank">&#x2728;</a>
+  </p>
+</div>    </div>
+  </footer>
+</body>
+
+</html>
