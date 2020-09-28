@@ -83,9 +83,9 @@ For the time being, I am skipping two components of the library, namely `Field` 
 In this section we will explore each component with code examples.
 
 #### `Core`
-The `Core` package contains some of the interfaces used throughout the library, but most importantly it contains some number-related utilities as static methods within the `core.ArithmeticUtils` and `core.Precision` classes. For instance, given two integer numbers _x = 256_ and _y = 6_, we can:
+The `Core` package contains some of the interfaces used throughout the library, but most importantly it contains some number-related utilities as static methods within the `core.ArithmeticUtils` and `core.Precision` classes. For instance, given two integer numbers $x = 256$ and $y = 6$, we can:
 
-- calculate the (unsigned) quotient and reminder of the division _x / y_:
+- calculate the (unsigned) quotient and reminder of the division $x / y$:
 
         :::java
         int x = 256;
@@ -102,7 +102,7 @@ The `Core` package contains some of the interfaces used throughout the library, 
         256 / 6 = 42
         256 % 6 = 4
 
-- find the [greatest common divisor](https://en.wikipedia.org/wiki/Greatest_common_divisor) (gcd) and the [least common multiple](https://en.wikipedia.org/wiki/Least_common_multiple) (lcm) between _x_ and _y_:
+- find the [greatest common divisor](https://en.wikipedia.org/wiki/Greatest_common_divisor) (gcd) and the [least common multiple](https://en.wikipedia.org/wiki/Least_common_multiple) (lcm) between $x$ and $y$:
 
         :::java
         System.out.printf("gcd(%d, %d) = %d%n",
@@ -116,7 +116,7 @@ The `Core` package contains some of the interfaces used throughout the library, 
         gcd(256, 6) = 2
         lcm(256, 6) = 768
 
-- calculate the powers _x ^ 2_ and _x ^ y_, where the second one needs a cast to `BigInteger` since the result is too large to be contained in a `long`:
+- calculate the powers $x^2$ and $x^y$, where the second one needs a cast to `BigInteger` since the result is too large to be contained in a `long`:
 
         :::java
         System.out.printf("%d ^ %d = %d%n",
@@ -130,7 +130,7 @@ The `Core` package contains some of the interfaces used throughout the library, 
         256 ^ 2 = 65536
         256 ^ 6 = 281474976710656
 
-- check whether _x_ and _x + 1_ are powers of 2:
+- check whether $x$ and $x + 1$ are powers of 2:
 
         :::java
         System.out.printf("Is %d a power of 2? %b%n",
@@ -144,7 +144,7 @@ The `Core` package contains some of the interfaces used throughout the library, 
         Is 256 a power of 2? true
         Is 256 + 1 a power of 2? false
 
-Using the methods from the `core.Precision` class, given a decimal number _x = 1.23456789_ we can:
+Using the methods from the `core.Precision` class, given a decimal number $x = 1.23456789$ we can:
 
 - round it to 2, 4 and 6 places:
 
@@ -163,7 +163,7 @@ Using the methods from the `core.Precision` class, given a decimal number _x = 1
         Rounding 1.234568 to 4 places = 1.234600
         Rounding 1.234568 to 6 places = 1.234568
 
-- check that it is equal to _x + 1e-6_ up to a certain precision:
+- check that it is equal to $x + 10^{-6}$ up to a certain precision $\epsilon$:
 
         :::java
         for (double eps : Arrays.asList(1e-3, 1e-6, 1e-9)) {
@@ -259,9 +259,9 @@ It could be useful if some vector algebra functions were added (such as vector s
 
 This package contains definitions and methods for complex numbers, a type of number that is frequently used in physics and engineering. A complex number can be created in three different ways:
 
-- using the cartesian coordinates, so _z = a + b * i_ would be expressed as the tuple _(a, b)_;
-- using the polar coordinates, so _z = rho * (cos(theta) + i * sin(theta))_ would be expressed as the tuple _(rho, theta)_ (and, to convert from cartesian coordinates, _rho = sqrt(a ^ 2 + b ^2)_ and _theta = atan2(a, b)_);
-- using the cis (**c**os + **i s**in) form, so _z = cos(x) + i * sin(x)_ (and, equivalently, _z = exp(i * x)_) would be expressed by the single number _x_.
+- using the cartesian coordinates, so $z = a + b * i$ would be expressed as the tuple $(a, b)$;
+- using the polar coordinates, so $z = \rho * (cos(\theta) + i * sin(\theta))$ would be expressed as the tuple $(\rho, \theta)$ and, to convert from cartesian coordinates, $\rho = \sqrt{a^2 + b^2}$ and $\theta = atan2(a, b)$;
+- using the cis (**c**os + **i s**in) form, so $z = cos(x) + i * sin(x)$ and, equivalently, $z = e^{ix}$ would be expressed by the single number $x$.
 
 These three methods can be implemented as in the following example:
 
@@ -278,7 +278,7 @@ These three methods can be implemented as in the following example:
     :::text
     z: (1.0,1.0), z2: (1.0000000000000002,1.0), z3: (-1.0,1.2246467991473532E-16)
 
-We can see that, although they should theoretically be the same, _z_ and _z2_ are not considered equal due to numerical instability:
+We can see that, although they should theoretically be the same, $z$ and $z_2$ are not considered equal due to numerical instability:
 
     :::java
     System.out.printf("%s == %s? %b%n",
@@ -348,7 +348,7 @@ Furthermore, given two complex numbers, it is possible to add, subtract, multipl
         	z / z2 = (0.9999999999999998,1.1102230246251563E-16)
         	z ^ z2 = (0.273957253830121,0.5837007587586148)
 
-Using the previously seen `Precision.equals` method, we can even show [Euler's identity](https://en.wikipedia.org/wiki/Euler%27s_identity) for _z = exp(i * pi)_:
+Using the previously seen `Precision.equals` method, we can even show [Euler's identity](https://en.wikipedia.org/wiki/Euler%27s_identity) for $z = e^{i\pi}$:
 
     :::java
     double eps = 1e-15;
@@ -597,7 +597,7 @@ and it is also possible to calculate the dot product between them:
 
 For more information on how quaternion algebra works, you can check the [Wikipedia page](https://en.wikipedia.org/wiki/Quaternion).
 
-Another interesting class from this package is `Slerp`, where the only available method `apply` is used to create a [spherical linear interpolation](https://en.wikipedia.org/wiki/Slerp) (or _slerp_) between two quaternions, with the purpose of smoothly transforming the first into the second (useful for instance in 3D-rotation animation tasks). A slerp from the special quaternion **i** = _(0, 1, 0, 0)_ to the other special quaternion **j** = _(0, 0, 1, 0)_ can be created as follows:
+Another interesting class from this package is `Slerp`, where the only available method `apply` is used to create a [spherical linear interpolation](https://en.wikipedia.org/wiki/Slerp) (or _slerp_) between two quaternions, with the purpose of smoothly transforming the first into the second (useful for instance in 3D-rotation animation tasks). A slerp from the special quaternion $\boldsymbol{i} = (0, 1, 0, 0)$ to the other special quaternion $\boldsymbol{j} = (0, 0, 1, 0)$ can be created as follows:
 
     :::java
     Slerp slerp = new Slerp(Quaternion.I, Quaternion.J);
@@ -629,7 +629,7 @@ We want the transition to take place in intervals of 0.1, so we use a `for` loop
 
 #### `Combinatorics`
 
-This package contains several classes for common combinatorial concepts such as [factorials](https://en.wikipedia.org/wiki/Factorial) (to calculate the number of permutations of _n_ objects) and [combinations](https://en.wikipedia.org/wiki/Combination) (to calculate the number of ways _n_ objects can be arranged in groups of _k_ objects). For example, given _n = 10_, we can calculate the factorial (as a `long` and as a `double`) and log-factorial of _n_:
+This package contains several classes for common combinatorial concepts such as [factorials](https://en.wikipedia.org/wiki/Factorial) (to calculate the number of permutations of $n$ objects) and [combinations](https://en.wikipedia.org/wiki/Combination) (to calculate the number of ways $n$ objects can be arranged in groups of $k$ objects). For example, given $n = 10$, we can calculate the factorial (as a `long` and as a `double`) and log-factorial of $n$:
 
     :::java
     int n = 10;
@@ -648,7 +648,7 @@ This package contains several classes for common combinatorial concepts such as 
     10! = 3628800.000000 (double)
     log(10!) = 15.104413
 
-Furthermore, given _k = 3_, we can calculate the binomial coefficient _(n k)_ (i.e. the number of _k_-combinations of _n_ objects), both as a `long` and as a `double`, and its logarithm:
+Furthermore, given $k = 3$, we can calculate the binomial coefficient $\binom{n}{k}$ (i.e. the number of $k$-combinations of $n$ objects), both as a `long` and as a `double`, and its logarithm:
 
     :::java
     int k = 3;
@@ -688,7 +688,7 @@ We can also calculate the combinations themselves, take their number and show so
     Number of combinations C(10, 3): 120
     First three combinations: [0, 1, 2], [0, 1, 3], [0, 2, 3]
 
-One important thing that must be noted here is the potentially large size of the numbers involved. The factorial grows very quickly, so the numbers for which the factorial can fit in a `long` are very few (just up to _n = 20_); the binomial grows quickly as well, so its input is also limited (in fact it can be calculated only for _n <= 66_). This problem can be alleviated by using approximations, either using the `Double` version of both classes (i.e. `FactorialDouble` and `BinomialCoefficientDouble`) or using their logarithmic versions (i.e. `LogFactorial` and `LogBinomialCoefficient`), which in turn use the `LogGamma` class from the `Gamma` package. It would be interesting to see also a version of `Factorial` and `BinomialCoefficient` that makes use of `BigInteger`s to allow for exact calculation on larger numbers.
+One important thing that must be noted here is the potentially large size of the numbers involved. The factorial grows very quickly, so the numbers for which the factorial can fit in a `long` are very few (just up to $n = 20$); the binomial grows quickly as well, so its input is also limited (in fact it can be calculated only for $n <= 66$). This problem can be alleviated by using approximations, either using the `Double` version of both classes (i.e. `FactorialDouble` and `BinomialCoefficientDouble`) or using their logarithmic versions (i.e. `LogFactorial` and `LogBinomialCoefficient`), which in turn use the `LogGamma` class from the `Gamma` package. It would be interesting to see also a version of `Factorial` and `BinomialCoefficient` that makes use of `BigInteger`s to allow for exact calculation on larger numbers.
 
 #### `Gamma`
 
@@ -717,7 +717,7 @@ This package is very specific to a certain class of mathematical functions deriv
         erf^(-1)(0.995300) = 1.998925
         erf^(-1)(0.842700) = 0.999998
 
-- the _gamma_ function itself, its derivatives _digamma_ and _trigamma_, and its logarithm _log-gamma_, which are calculated in two interesting points to show their values (with _g_ being the [Euler–Mascheroni constant](https://en.wikipedia.org/wiki/Euler%E2%80%93Mascheroni_constant)):
+- the _gamma_ function itself, its derivatives _digamma_ and _trigamma_, and its logarithm _log-gamma_, which are calculated in two interesting points to show their values (with $g$ being the [Euler–Mascheroni constant](https://en.wikipedia.org/wiki/Euler%E2%80%93Mascheroni_constant)):
 
         :::java
         System.out.printf("Gamma(1) = %f%n",
