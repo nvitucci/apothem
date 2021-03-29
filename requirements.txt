@@ -8,7 +8,7 @@ MarkupSafe==1.1.1
 pelican==4.5.0
 pelican-alias==1.1
 pelican-render-math==1.0.3
-Pygments==2.6.1
+Pygments==2.7.4
 python-dateutil==2.8.1
 pytz==2020.1
 six==1.15.0
